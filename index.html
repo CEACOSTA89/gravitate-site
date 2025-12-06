@@ -3,294 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gravitate Pictures</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Gravitate Pictures | Creative Technology</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
-            margin: 0 !important;
-            padding: 0 !important;
-            box-sizing: border-box !important;
-        }
-
-        html, body {
-            width: 100% !important;
-            height: 100% !important;
-            overflow-x: hidden !important;
-            background: #000 !important;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Syne', sans-serif !important;
-            color: white !important;
-            position: relative !important;
+            font-family: 'Space Grotesk', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
         }
 
         #canvas {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            z-index: 1 !important;
-        }
-
-        #hero {
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            text-align: center !important;
-            z-index: 10 !important;
-            transition: opacity 0.5s ease !important;
-        }
-
-        #hero.hidden {
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-
-        .logo {
-            font-size: 4rem !important;
-            font-weight: 700 !important;
-            letter-spacing: 0.5rem !important;
-            margin-bottom: 1rem !important;
-            color: #00ff88 !important;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5) !important;
-        }
-
-        .tagline {
-            font-size: 1.2rem !important;
-            letter-spacing: 0.2rem !important;
-            color: rgba(255,255,255,0.8) !important;
-            margin-top: 1rem !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 100;
+            pointer-events: none;
         }
 
         nav {
-            position: absolute !important;
-            top: 2rem !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            z-index: 100 !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 3rem !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 2rem 4rem 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            max-width: calc(100% - 80px);
+            margin: 0 auto;
         }
 
         .nav-logo {
-            font-size: 1.5rem !important;
-            font-weight: 700 !important;
-            color: #00ff88 !important;
-            cursor: pointer !important;
-            transition: transform 0.3s ease !important;
-        }
-
-        .nav-logo:hover {
-            transform: scale(1.1) !important;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00ff88, #8800ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
         }
 
         .nav-links {
-            display: flex !important;
-            gap: 2rem !important;
+            display: flex;
+            gap: 2.5rem;
         }
 
         .nav-links a {
-            color: rgba(255,255,255,0.7) !important;
-            text-decoration: none !important;
-            cursor: pointer !important;
-            transition: color 0.3s ease !important;
-            font-size: 0.9rem !important;
-            letter-spacing: 0.05rem !important;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: color 0.3s;
+            cursor: pointer;
         }
 
         .nav-links a:hover {
-            color: #00ff88 !important;
+            color: #00ff88;
+        }
+
+        .hero {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 500;
+            transition: opacity 0.5s;
+        }
+
+        .hero.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .hero-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(5rem, 15vw, 12rem);
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        .hero-logo .g {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-logo .p {
+            background: linear-gradient(135deg, #8800ff 0%, #aa00ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            background: linear-gradient(90deg, #00ff88, #8800ff, #00ff88);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
+            min-height: 2rem;
+        }
+
+        @keyframes shimmer {
+            to { background-position: 200% center; }
         }
 
         .content-overlay {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            background: rgba(0, 0, 0, 0.95) !important;
-            z-index: 50 !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-            transition: opacity 0.5s ease !important;
-            overflow-y: auto !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 200;
+            overflow-y: auto;
+            padding-top: calc(50vh - 50px);
+            padding-bottom: 4rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-in;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
         }
 
         .content-overlay.active {
-            opacity: 1 !important;
-            pointer-events: all !important;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .content-section {
-            display: none !important;
-            max-width: 900px !important;
-            margin: 8rem auto !important;
-            padding: 2rem !important;
-            color: white !important;
+            display: none;
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
         }
 
         .content-section.active {
-            display: block !important;
+            display: block;
         }
 
         .content-section h2 {
-            font-size: 2.5rem !important;
-            margin-bottom: 2rem !important;
-            color: #00ff88 !important;
-            text-align: center !important;
+            display: none;
         }
 
         .content-section p {
-            font-size: 1.1rem !important;
-            line-height: 1.8 !important;
-            color: rgba(255,255,255,0.8) !important;
-            text-align: center !important;
-            margin-bottom: 1rem !important;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.8);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+        }
+
+        .services-grid,
+        .clients-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 2rem;
         }
 
         .services-grid {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
-            gap: 2rem !important;
-            margin-top: 2rem !important;
-        }
-
-        .service-card {
-            background: rgba(0, 255, 136, 0.05) !important;
-            padding: 2rem !important;
-            border-radius: 8px !important;
-            border: 1px solid rgba(0, 255, 136, 0.2) !important;
-            transition: all 0.3s ease !important;
-        }
-
-        .service-card:hover {
-            background: rgba(0, 255, 136, 0.1) !important;
-            border-color: rgba(0, 255, 136, 0.4) !important;
-            transform: translateY(-5px) !important;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         }
 
         .clients-grid {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-            gap: 2rem !important;
-            margin-top: 2rem !important;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         }
 
+        .service-card,
         .client-card {
-            background: rgba(136, 0, 255, 0.05) !important;
-            padding: 1.5rem !important;
-            border-radius: 8px !important;
-            border: 1px solid rgba(136, 0, 255, 0.2) !important;
-            cursor: pointer !important;
-            transition: all 0.3s ease !important;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
         }
 
+        .service-card:hover,
         .client-card:hover {
-            background: rgba(136, 0, 255, 0.1) !important;
-            border-color: rgba(136, 0, 255, 0.4) !important;
-            transform: translateY(-5px) !important;
+            background: rgba(0,255,136,0.05);
+            border-color: rgba(0,255,136,0.4);
+            transform: translateY(-5px);
         }
 
         .client-card h4 {
-            font-family: 'Syne', sans-serif !important;
-            font-size: 1.3rem !important;
-            margin: 0 !important;
-            color: #00ff88 !important;
-            text-align: center !important;
-            line-height: 1.3 !important;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.3rem;
+            margin: 0;
+            color: #00ff88;
+            text-align: center;
+            line-height: 1.3;
         }
 
         .client-card-details {
-            max-height: 0 !important;
-            overflow: hidden !important;
-            transition: max-height 0.4s ease, margin-top 0.4s ease, opacity 0.3s ease !important;
-            opacity: 0 !important;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, margin-top 0.4s ease, opacity 0.3s ease;
+            opacity: 0;
         }
 
         .client-card.expanded .client-card-details,
         .client-card:hover .client-card-details {
-            max-height: 500px !important;
-            margin-top: 1rem !important;
-            opacity: 1 !important;
+            max-height: 500px;
+            margin-top: 1rem;
+            opacity: 1;
         }
 
         .client-card-subtitle {
-            font-size: 0.95rem !important;
-            color: rgba(136, 0, 255, 0.9) !important;
-            font-weight: 600 !important;
-            margin-bottom: 0.5rem !important;
-            text-align: center !important;
+            font-size: 0.95rem;
+            color: rgba(136, 0, 255, 0.9);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
         }
 
         .client-card-description {
-            font-size: 0.9rem !important;
-            line-height: 1.6 !important;
-            color: rgba(255,255,255,0.7) !important;
-            text-align: center !important;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
         }
 
         .service-card h3 {
-            font-family: 'Syne', sans-serif !important;
-            font-size: 1.2rem !important;
-            margin: 1rem 0 !important;
-            color: #00ff88 !important;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            color: #00ff88;
         }
 
         .close-btn {
-            position: absolute !important;
-            top: 2rem !important;
-            right: 2rem !important;
-            background: none !important;
-            border: none !important;
-            color: white !important;
-            font-size: 2rem !important;
-            cursor: pointer !important;
-            z-index: 101 !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-            transition: opacity 0.3s ease !important;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2000;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
         }
 
         .close-btn.active {
-            opacity: 1 !important;
-            pointer-events: all !important;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .close-btn:hover {
-            color: #00ff88 !important;
+            background: rgba(0,255,136,0.2);
+            transform: rotate(90deg);
         }
 
         @media (max-width: 768px) {
-            .logo {
-                font-size: 2.5rem !important;
+            nav {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 0.75rem;
+                background: rgba(0,0,0,0.95);
+            }
+
+            .nav-logo {
+                font-size: 1.2rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-links a {
+                font-size: 0.65rem;
+            }
+
+            .hero-logo {
+                font-size: clamp(4rem, 20vw, 8rem) !important;
             }
 
             .tagline {
                 font-size: 1rem !important;
             }
 
-            nav {
-                flex-direction: column !important;
-                gap: 1rem !important;
-            }
-
-            .nav-links {
-                flex-direction: column !important;
-                text-align: center !important;
-                gap: 0.5rem !important;
+            .content-overlay {
+                padding-top: calc(50vh - 100px);
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
 
             .content-section {
-                margin: 6rem auto !important;
-                padding: 1.5rem !important;
+                padding: 1.5rem;
+                max-width: 100%;
             }
 
-            .content-section h2 {
-                font-size: 2rem !important;
+            .content-section p {
+                font-size: 0.95rem;
+                line-height: 1.6;
+            }
+
+            .services-grid,
+            .clients-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .service-card,
+            .client-card {
+                padding: 1.5rem;
+            }
+
+            .close-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.3rem;
+                top: 0.5rem;
+                right: 0.5rem;
             }
         }
     </style>
@@ -298,8 +355,10 @@
 <body>
     <canvas id="canvas"></canvas>
 
-    <div id="hero">
-        <div class="logo">GRAVITATE</div>
+    <div class="hero" id="hero">
+        <div class="hero-logo">
+            <span class="g">G</span><span class="p">P</span>
+        </div>
         <div class="tagline" id="tagline">Creative Technology</div>
     </div>
 
@@ -476,27 +535,35 @@
 
             update() {
                 if (this.spreading) {
+                    // Apply damping to slow down the spread
                     this.vx *= this.spreadDamping;
                     this.vy *= this.spreadDamping;
 
+                    // Once velocity is low enough, stop spreading
                     if (Math.abs(this.vx) < 0.1 && Math.abs(this.vy) < 0.1) {
                         this.spreading = false;
                         this.vx = (Math.random() - 0.5) * 0.5;
                         this.vy = (Math.random() - 0.5) * 0.5;
                     }
                 } else if (this.fadingOut) {
+                    // Fade out and float away
                     if (this.opacity > 0) this.opacity -= 0.015;
                     this.vx = (Math.random() - 0.5) * 0.3;
                     this.vy = (Math.random() - 0.5) * 0.3;
                 } else if (this.forming) {
+                    // Move towards target position
                     const dx = this.targetX - this.x;
                     const dy = this.targetY - this.y;
                     this.vx = dx * 0.08;
                     this.vy = dy * 0.08;
 
+                    // Increase opacity when forming text
                     if (this.opacity < 1) this.opacity += 0.02;
+
+                    // Increase size when forming
                     if (this.size < 3) this.size += 0.05;
                 } else {
+                    // Reset to normal size and opacity when floating
                     if (this.opacity > 0.6) this.opacity -= 0.01;
                     if (this.size > 2) this.size -= 0.05;
                 }
@@ -511,6 +578,7 @@
             }
 
             spread() {
+                // Give particle a quick burst of speed in random direction
                 this.spreading = true;
                 this.vx = (Math.random() - 0.5) * 25;
                 this.vy = (Math.random() - 0.5) * 25;
@@ -540,6 +608,7 @@
         for (let i = 0; i < particleCount; i++) {
             particles.push(new Particle());
         }
+        console.log(`Created ${particles.length} particles on canvas ${w}x${h}`);
 
         // Initial spread on page load
         setTimeout(() => {
@@ -568,21 +637,56 @@
         let currentSection = null;
 
         function showSection(sectionName) {
+            // If already showing this section, do nothing
+            if (currentSection === sectionName) return;
+
+            const wasShowingContent = isShowingContent;
+            const previousSection = currentSection;
             currentSection = sectionName;
             isShowingContent = true;
 
-            document.getElementById('hero').classList.add('hidden');
+            // Hide hero if first time
+            if (!wasShowingContent) {
+                document.getElementById('hero').classList.add('hidden');
+            }
+
+            // Show close button
             document.querySelector('.close-btn').classList.add('active');
 
-            setTimeout(() => {
-                formTitleParticles(sectionName);
+            // If switching sections, morph particles directly
+            if (wasShowingContent && previousSection) {
+                // Fade out old content
+                document.getElementById('contentOverlay').classList.remove('active');
+
+                // Morph particles to new title (no scatter)
+                setTimeout(() => {
+                    formTitleParticles(sectionName);
+
+                    // Show new content after particles start forming
+                    setTimeout(() => {
+                        document.querySelectorAll('.content-section').forEach(section => {
+                            section.classList.remove('active');
+                        });
+                        document.getElementById(sectionName).classList.add('active');
+                        document.getElementById('contentOverlay').classList.add('active');
+                    }, 800);
+                }, 300);
+            } else {
+                // First time - scatter then form
+                particles.forEach(p => p.explode());
 
                 setTimeout(() => {
-                    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-                    document.getElementById(sectionName).classList.add('active');
-                    document.getElementById('contentOverlay').classList.add('active');
-                }, 1500);
-            }, 500);
+                    formTitleParticles(sectionName);
+
+                    setTimeout(() => {
+                        document.querySelectorAll('.content-section').forEach(section => {
+                            section.classList.remove('active');
+                        });
+                        document.getElementById(sectionName).classList.add('active');
+                        document.getElementById('contentOverlay').classList.add('active');
+                    }, 1500);
+                }, 500);
+            }
         }
 
         function formTitleParticles(sectionName) {
@@ -599,13 +703,20 @@
             const titlePoints = createTextPoints(titleText, titleSize, yPos);
             allPoints = allPoints.concat(titlePoints);
 
-            particles.forEach((p, i) => {
-                if (i < allPoints.length) {
-                    p.forming = true;
-                    p.targetX = allPoints[i].x;
-                    p.targetY = allPoints[i].y;
-                } else {
-                    p.fadingOut = true;
+            // Adjust particle count
+            while (particles.length < allPoints.length) {
+                particles.push(new Particle());
+            }
+            while (particles.length > allPoints.length) {
+                particles.pop();
+            }
+
+            // Set new targets
+            allPoints.forEach((point, i) => {
+                if (particles[i]) {
+                    particles[i].targetX = point.x;
+                    particles[i].targetY = point.y;
+                    particles[i].forming = true;
                 }
             });
         }
@@ -632,6 +743,7 @@
 
             const spacing = 3;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
+            // Desktop: shift left less (2 chars), Mobile: shift left more (6 chars)
             const leftShift = w > 768 ? fontSize * 0.2 : fontSize * 0.6;
 
             for (let y = 0; y < tempCanvas.height; y += spacing) {
@@ -656,19 +768,24 @@
             currentSection = null;
             document.querySelector('.close-btn').classList.remove('active');
 
+            // Hide content overlay
             document.getElementById('contentOverlay').classList.remove('active');
 
+            // Reset particles to floating state with spread burst
             particles.forEach(p => {
                 p.forming = false;
                 p.fadingOut = false;
                 p.opacity = Math.random() * 0.5 + 0.3;
+                // Trigger spread effect
                 p.spread();
             });
 
+            // Show hero
             setTimeout(() => {
                 document.getElementById('hero').classList.remove('hidden');
             }, 300);
 
+            // Reset tagline cycling
             taglineIndex = 0;
             taglineEl.textContent = taglines[0];
         }
@@ -677,10 +794,12 @@
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, w, h);
 
+            // Always draw connections when not forming
             if (!isShowingContent || particles.some(p => !p.forming)) {
                 drawConnections();
             }
 
+            // Always update and draw all particles
             particles.forEach(p => {
                 p.update();
                 p.draw();
@@ -689,26 +808,35 @@
             requestAnimationFrame(animate);
         }
 
+        // Start animation
         animate();
 
+        // Add transition styles for tagline
         taglineEl.style.transition = 'opacity 0.3s';
 
+        // Toggle card expansion
         function toggleCard(cardElement) {
+            // Prevent event bubbling
             event.stopPropagation();
+
+            // Toggle the expanded class on this card
             cardElement.classList.toggle('expanded');
         }
 
+        // ESC key to close overlay
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && isShowingContent) {
                 goHome();
             }
         });
 
+        // Double tap anywhere to close on mobile
         let lastTap = 0;
         document.addEventListener('touchend', (e) => {
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;
             if (tapLength < 300 && tapLength > 0) {
+                // Double tap detected
                 if (isShowingContent) {
                     goHome();
                 }
