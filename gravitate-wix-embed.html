@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravitate Pictures</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        html, body {
+            width: 100% !important;
+            height: 100% !important;
+            overflow-x: hidden !important;
+            background: #000 !important;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif !important;
+            color: white !important;
+            position: relative !important;
+        }
+
+        #canvas {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 1 !important;
+        }
+
+        #hero {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            text-align: center !important;
+            z-index: 10 !important;
+            transition: opacity 0.5s ease !important;
+        }
+
+        #hero.hidden {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        .logo {
+            font-size: 4rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.5rem !important;
+            margin-bottom: 1rem !important;
+            color: #00ff88 !important;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5) !important;
+        }
+
+        .tagline {
+            font-size: 1.2rem !important;
+            letter-spacing: 0.2rem !important;
+            color: rgba(255,255,255,0.8) !important;
+            margin-top: 1rem !important;
+        }
+
+        nav {
+            position: absolute !important;
+            top: 2rem !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 100 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 3rem !important;
+        }
+
+        .nav-logo {
+            font-size: 1.5rem !important;
+            font-weight: 700 !important;
+            color: #00ff88 !important;
+            cursor: pointer !important;
+            transition: transform 0.3s ease !important;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.1) !important;
+        }
+
+        .nav-links {
+            display: flex !important;
+            gap: 2rem !important;
+        }
+
+        .nav-links a {
+            color: rgba(255,255,255,0.7) !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+            transition: color 0.3s ease !important;
+            font-size: 0.9rem !important;
+            letter-spacing: 0.05rem !important;
+        }
+
+        .nav-links a:hover {
+            color: #00ff88 !important;
+        }
+
+        .content-overlay {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0, 0, 0, 0.95) !important;
+            z-index: 50 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transition: opacity 0.5s ease !important;
+            overflow-y: auto !important;
+        }
+
+        .content-overlay.active {
+            opacity: 1 !important;
+            pointer-events: all !important;
+        }
+
+        .content-section {
+            display: none !important;
+            max-width: 900px !important;
+            margin: 8rem auto !important;
+            padding: 2rem !important;
+            color: white !important;
+        }
+
+        .content-section.active {
+            display: block !important;
+        }
+
+        .content-section h2 {
+            font-size: 2.5rem !important;
+            margin-bottom: 2rem !important;
+            color: #00ff88 !important;
+            text-align: center !important;
+        }
+
+        .content-section p {
+            font-size: 1.1rem !important;
+            line-height: 1.8 !important;
+            color: rgba(255,255,255,0.8) !important;
+            text-align: center !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .services-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+            gap: 2rem !important;
+            margin-top: 2rem !important;
+        }
+
+        .service-card {
+            background: rgba(0, 255, 136, 0.05) !important;
+            padding: 2rem !important;
+            border-radius: 8px !important;
+            border: 1px solid rgba(0, 255, 136, 0.2) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .service-card:hover {
+            background: rgba(0, 255, 136, 0.1) !important;
+            border-color: rgba(0, 255, 136, 0.4) !important;
+            transform: translateY(-5px) !important;
+        }
+
+        .clients-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+            gap: 2rem !important;
+            margin-top: 2rem !important;
+        }
+
+        .client-card {
+            background: rgba(136, 0, 255, 0.05) !important;
+            padding: 1.5rem !important;
+            border-radius: 8px !important;
+            border: 1px solid rgba(136, 0, 255, 0.2) !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .client-card:hover {
+            background: rgba(136, 0, 255, 0.1) !important;
+            border-color: rgba(136, 0, 255, 0.4) !important;
+            transform: translateY(-5px) !important;
+        }
+
+        .client-card h4 {
+            font-family: 'Syne', sans-serif !important;
+            font-size: 1.3rem !important;
+            margin: 0 !important;
+            color: #00ff88 !important;
+            text-align: center !important;
+            line-height: 1.3 !important;
+        }
+
+        .client-card-details {
+            max-height: 0 !important;
+            overflow: hidden !important;
+            transition: max-height 0.4s ease, margin-top 0.4s ease, opacity 0.3s ease !important;
+            opacity: 0 !important;
+        }
+
+        .client-card.expanded .client-card-details,
+        .client-card:hover .client-card-details {
+            max-height: 500px !important;
+            margin-top: 1rem !important;
+            opacity: 1 !important;
+        }
+
+        .client-card-subtitle {
+            font-size: 0.95rem !important;
+            color: rgba(136, 0, 255, 0.9) !important;
+            font-weight: 600 !important;
+            margin-bottom: 0.5rem !important;
+            text-align: center !important;
+        }
+
+        .client-card-description {
+            font-size: 0.9rem !important;
+            line-height: 1.6 !important;
+            color: rgba(255,255,255,0.7) !important;
+            text-align: center !important;
+        }
+
+        .service-card h3 {
+            font-family: 'Syne', sans-serif !important;
+            font-size: 1.2rem !important;
+            margin: 1rem 0 !important;
+            color: #00ff88 !important;
+        }
+
+        .close-btn {
+            position: absolute !important;
+            top: 2rem !important;
+            right: 2rem !important;
+            background: none !important;
+            border: none !important;
+            color: white !important;
+            font-size: 2rem !important;
+            cursor: pointer !important;
+            z-index: 101 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transition: opacity 0.3s ease !important;
+        }
+
+        .close-btn.active {
+            opacity: 1 !important;
+            pointer-events: all !important;
+        }
+
+        .close-btn:hover {
+            color: #00ff88 !important;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem !important;
+            }
+
+            .tagline {
+                font-size: 1rem !important;
+            }
+
+            nav {
+                flex-direction: column !important;
+                gap: 1rem !important;
+            }
+
+            .nav-links {
+                flex-direction: column !important;
+                text-align: center !important;
+                gap: 0.5rem !important;
+            }
+
+            .content-section {
+                margin: 6rem auto !important;
+                padding: 1.5rem !important;
+            }
+
+            .content-section h2 {
+                font-size: 2rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div id="hero">
+        <div class="logo">GRAVITATE</div>
+        <div class="tagline" id="tagline">Creative Technology</div>
+    </div>
+
+    <nav>
+        <div class="nav-logo" onclick="goHome()">GP</div>
+        <div class="nav-links">
+            <a onclick="showSection('about')">Logline</a>
+            <a onclick="showSection('services')">Unicorn Ninja Abilities</a>
+            <a onclick="showSection('work')">Historiae Selectae</a>
+            <a onclick="showSection('contact')">Mindmeld</a>
+        </div>
+    </nav>
+
+    <button class="close-btn" onclick="goHome()">✕</button>
+
+    <div class="content-overlay" id="contentOverlay">
+        <div class="content-section" id="about">
+            <h2>Logline</h2>
+            <p>
+                I build AI that propels human ideas. From co-founding a video intelligence company acquired by Apple, to shipping Webby and Telly award-winning products and experiences at Verizon, to advising companies on generative pipelines and ML transformation—I've spent 15+ years at the intersection of machine learning and storytelling. Gravitate Pictures is where that experience lives, helping creatives figure out how generative tech actually fits into production.
+            </p>
+        </div>
+
+        <div class="content-section" id="services">
+            <h2>Unicorn Ninja Abilities</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>AI Product Strategy</h3>
+                    <p>Zero-to-one product builds through scale and exit. I've done it at startups (VILYNX → Apple) and inside Fortune 500s (Verizon, L'Oréal Paris). Strategy, roadmaps, GTM—the full stack.</p>
+                </div>
+                <div class="service-card">
+                    <h3>Generative Media</h3>
+                    <p>Runway, Kling, Pika, Sora, Midjourney—I know the tools. But the real work is building pipelines that turn IP into living systems. Custom models, narrative guardrails, production-validated workflows for studios and creatives.</p>
+                </div>
+                <div class="service-card">
+                    <h3>XR / AR / VR</h3>
+                    <p>From Angry Birds to Live Nation to a Star Wars activation with ILMxLAB using live mocap over 5G—I've shipped spatial experiences across gaming, entertainment, and live events.</p>
+                </div>
+                <div class="service-card">
+                    <h3>Conversational AI</h3>
+                    <p>I built conversational systems when they were Frankenstein stacks. Now they're hybrid solutions with humans in the loop. Enterprise assistants to creative CX—telecom, media, healthcare.</p>
+                </div>
+                <div class="service-card">
+                    <h3>Data & Analytics</h3>
+                    <p>Built video intelligence and early real-time social systems before they had names. Sentiment analysis, attribution modeling, predictive analytics—turning content data into decisions.</p>
+                </div>
+                <div class="service-card">
+                    <h3>GTM & Partnerships</h3>
+                    <p>Closed enterprise deals across broadcast, studios, and live entertainment. IP packaging, content automation partnerships, and startup advisory for VC-backed portfolio companies.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section" id="work">
+            <h2>Historiae Selectae</h2>
+            <div class="clients-grid">
+                <div class="client-card" onclick="toggleCard(this)">
+                    <h4>Comcast</h4>
+                    <div class="client-card-details">
+                        <div class="client-card-subtitle">SkyShowtime OTT Launch<br>(Product Consultant)</div>
+                        <div class="client-card-description">Product consultant within fulfillment pipeline and technology operations for the European streaming platform launch, coordinating cross-functional delivery across multiple markets.</div>
+                    </div>
+                </div>
+                <div class="client-card" onclick="toggleCard(this)">
+                    <h4>Verizon</h4>
+                    <div class="client-card-details">
+                        <div class="client-card-subtitle">AI/ML Products & XR Initiatives<br>(Product Manager)</div>
+                        <div class="client-card-description">Led award-winning AI products (Telly, Webby) including the Virtual Interactive Assistant that reduced resolution time by 37%. Live Nation 5G Concert and Angry Birds Sony XR activations. Design Thinking credentialed and cited for collaboration across units.</div>
+                    </div>
+                </div>
+                <div class="client-card" onclick="toggleCard(this)">
+                    <h4>Apple</h4>
+                    <div class="client-card-details">
+                        <div class="client-card-subtitle">VILYNX Acquisition<br>(Co-Founder)</div>
+                        <div class="client-card-description">SVP Business Development and Strategic Partnerships for video intelligence company acquired by Apple. Pivoted from B2C to B2B ML solutions, conjured PMF from scratch, securing enterprise partnerships with Comcast, RealNetworks, ABC, NBC, FOX, and CBS.</div>
+                    </div>
+                </div>
+                <div class="client-card" onclick="toggleCard(this)">
+                    <h4>The<br>Superposition</h4>
+                    <div class="client-card-details">
+                        <div class="client-card-subtitle">Living Worlds Technology<br>(Advisor)</div>
+                        <div class="client-card-description">Advising on multi-modal generative AI framework that transforms IP from static archives into living worlds. Production-validated across microdramas, historical narratives, comic books, and animated series.</div>
+                    </div>
+                </div>
+                <div class="client-card" onclick="toggleCard(this)">
+                    <h4>Marvel<br>Comics</h4>
+                    <div class="client-card-details">
+                        <div class="client-card-subtitle">What If? Secret Invasion<br>(Writer)</div>
+                        <div class="client-card-description">Conceived and wrote a story for the event series—later adapted into a Disney+ anthology. Royalty checks had Spider-Man on them before Disney acquired Marvel. Everest-level personal achievement, lowest paying.</div>
+                    </div>
+                </div>
+                <div class="client-card" onclick="toggleCard(this)">
+                    <h4>Yahoo<br>Japan</h4>
+                    <div class="client-card-details">
+                        <div class="client-card-subtitle">Japanese Sign Language Accessibility<br>(VP, Product Innovation)</div>
+                        <div class="client-card-description">As AI Foundation senior exec, led 9-month feasibility study for JSL system complementing NHK news content. Delivered tech schematics, ROI presentation, and 3D asset proof of concept that secured funding.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section" id="contact">
+            <h2>Mindmeld</h2>
+            <p>
+                chris@gravitatepictures.com<br><br>
+                4 East 27th Street, #20162, New York, NY
+            </p>
+            <a href="https://www.linkedin.com/in/chrisacosta01/" target="_blank" style="display: inline-block; margin-top: 2rem; padding: 0.8rem 2rem; background: #0077B5; color: white; text-decoration: none; border-radius: 4px; font-family: 'Syne', sans-serif; font-weight: 600; transition: background 0.3s ease;">
+                LinkedIn Profile
+            </a>
+        </div>
+    </div>
+
+    <footer style="position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 1000; color: rgba(255,255,255,0.3); font-size: 0.8rem; text-align: center;">
+        © 2026 Gravitate Pictures
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        let particles = [];
+        let isShowingContent = false;
+
+        // Tagline cycling
+        const taglines = ['Creative Technology', 'Technology for Creatives'];
+        let taglineIndex = 0;
+        const taglineEl = document.getElementById('tagline');
+
+        setInterval(() => {
+            if (!isShowingContent) {
+                taglineIndex = (taglineIndex + 1) % taglines.length;
+                taglineEl.style.opacity = '0';
+                setTimeout(() => {
+                    taglineEl.textContent = taglines[taglineIndex];
+                    taglineEl.style.opacity = '1';
+                }, 300);
+            }
+        }, 3000);
+
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+
+        resize();
+        window.addEventListener('resize', resize);
+
+        class Particle {
+            constructor() {
+                this.reset();
+                this.color = Math.random() > 0.5 ? '#00ff88' : '#8800ff';
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.baseVx = this.vx;
+                this.baseVy = this.vy;
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.forming = false;
+                this.fadingOut = false;
+                this.spreading = false;
+                this.spreadDamping = 0.75;
+            }
+
+            reset() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 1;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.fadingOut = false;
+            }
+
+            update() {
+                if (this.spreading) {
+                    this.vx *= this.spreadDamping;
+                    this.vy *= this.spreadDamping;
+
+                    if (Math.abs(this.vx) < 0.1 && Math.abs(this.vy) < 0.1) {
+                        this.spreading = false;
+                        this.vx = (Math.random() - 0.5) * 0.5;
+                        this.vy = (Math.random() - 0.5) * 0.5;
+                    }
+                } else if (this.fadingOut) {
+                    if (this.opacity > 0) this.opacity -= 0.015;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                } else if (this.forming) {
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    this.vx = dx * 0.08;
+                    this.vy = dy * 0.08;
+
+                    if (this.opacity < 1) this.opacity += 0.02;
+                    if (this.size < 3) this.size += 0.05;
+                } else {
+                    if (this.opacity > 0.6) this.opacity -= 0.01;
+                    if (this.size > 2) this.size -= 0.05;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (!this.forming && !this.fadingOut && !this.spreading) {
+                    if (this.x < 0 || this.x > w) this.vx *= -1;
+                    if (this.y < 0 || this.y > h) this.vy *= -1;
+                }
+            }
+
+            spread() {
+                this.spreading = true;
+                this.vx = (Math.random() - 0.5) * 25;
+                this.vy = (Math.random() - 0.5) * 25;
+            }
+
+            draw() {
+                if (this.opacity > 0) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = this.opacity;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            explode() {
+                this.forming = false;
+                this.fadingOut = false;
+                this.vx = (Math.random() - 0.5) * 15;
+                this.vy = (Math.random() - 0.5) * 15;
+            }
+        }
+
+        // Create particles
+        const particleCount = window.innerWidth < 768 ? 75 : 150;
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        // Initial spread on page load
+        setTimeout(() => {
+            particles.forEach(p => p.spread());
+        }, 100);
+
+        function drawConnections() {
+            particles.forEach((p1, i) => {
+                particles.slice(i + 1, i + 5).forEach(p2 => {
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(0, 255, 136, ${0.2 * (1 - dist / 150)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                });
+            });
+        }
+
+        let currentSection = null;
+
+        function showSection(sectionName) {
+            currentSection = sectionName;
+            isShowingContent = true;
+
+            document.getElementById('hero').classList.add('hidden');
+            document.querySelector('.close-btn').classList.add('active');
+
+            setTimeout(() => {
+                formTitleParticles(sectionName);
+
+                setTimeout(() => {
+                    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                    document.getElementById(sectionName).classList.add('active');
+                    document.getElementById('contentOverlay').classList.add('active');
+                }, 1500);
+            }, 500);
+        }
+
+        function formTitleParticles(sectionName) {
+            const titleText = {
+                'about': 'LOGLINE',
+                'services': 'UNICORN NINJA ABILITIES',
+                'work': 'HISTORIAE SELECTAE',
+                'contact': 'MINDMELD'
+            }[sectionName];
+
+            let allPoints = [];
+            let yPos = h / 2 - 180;
+            const titleSize = Math.min(56, Math.max(32, w * 0.05));
+            const titlePoints = createTextPoints(titleText, titleSize, yPos);
+            allPoints = allPoints.concat(titlePoints);
+
+            particles.forEach((p, i) => {
+                if (i < allPoints.length) {
+                    p.forming = true;
+                    p.targetX = allPoints[i].x;
+                    p.targetY = allPoints[i].y;
+                } else {
+                    p.fadingOut = true;
+                }
+            });
+        }
+
+        function createTextPoints(text, fontSize, customY = null) {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            tempCtx.font = `bold ${fontSize}px 'Syne', sans-serif`;
+            const metrics = tempCtx.measureText(text);
+            const textWidth = metrics.width;
+            const textHeight = fontSize;
+
+            tempCanvas.width = textWidth + 40;
+            tempCanvas.height = textHeight + 40;
+
+            tempCtx.font = `bold ${fontSize}px 'Syne', sans-serif`;
+            tempCtx.fillStyle = 'white';
+            tempCtx.textBaseline = 'middle';
+            tempCtx.fillText(text, 20, textHeight / 2 + 20);
+
+            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            const points = [];
+
+            const spacing = 3;
+            const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
+            const leftShift = w > 768 ? fontSize * 0.2 : fontSize * 0.6;
+
+            for (let y = 0; y < tempCanvas.height; y += spacing) {
+                for (let x = 0; x < tempCanvas.width; x += spacing) {
+                    const index = (y * tempCanvas.width + x) * 4;
+                    if (imageData.data[index + 3] > 128) {
+                        points.push({
+                            x: x + w / 2 - textWidth / 2 - leftShift,
+                            y: y + centerY
+                        });
+                    }
+                }
+            }
+
+            return points;
+        }
+
+        function goHome() {
+            if (!isShowingContent) return;
+
+            isShowingContent = false;
+            currentSection = null;
+            document.querySelector('.close-btn').classList.remove('active');
+
+            document.getElementById('contentOverlay').classList.remove('active');
+
+            particles.forEach(p => {
+                p.forming = false;
+                p.fadingOut = false;
+                p.opacity = Math.random() * 0.5 + 0.3;
+                p.spread();
+            });
+
+            setTimeout(() => {
+                document.getElementById('hero').classList.remove('hidden');
+            }, 300);
+
+            taglineIndex = 0;
+            taglineEl.textContent = taglines[0];
+        }
+
+        function animate() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            if (!isShowingContent || particles.some(p => !p.forming)) {
+                drawConnections();
+            }
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        taglineEl.style.transition = 'opacity 0.3s';
+
+        function toggleCard(cardElement) {
+            event.stopPropagation();
+            cardElement.classList.toggle('expanded');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isShowingContent) {
+                goHome();
+            }
+        });
+
+        let lastTap = 0;
+        document.addEventListener('touchend', (e) => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                if (isShowingContent) {
+                    goHome();
+                }
+            }
+            lastTap = currentTime;
+        });
+    </script>
+</body>
+</html>
