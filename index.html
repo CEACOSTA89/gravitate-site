@@ -1033,8 +1033,9 @@
 
             // Adjust vertical position - particles use textBaseline: 'middle' with offset
             // The particles have a vertical offset from the canvas padding (20px) and textHeight/2
-            // Subtract additional pixels to align perfectly on desktop (w > 768)
-            const verticalOffset = w > 768 ? 8 : 20;
+            // Desktop: subtract pixels to move solid title up (8px)
+            // Mobile: add more pixels to move solid title down (28px)
+            const verticalOffset = w > 768 ? 8 : 28;
             const adjustedY = startY + verticalOffset;
 
             // Set absolute position to match particles exactly
@@ -1087,8 +1088,8 @@
             const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
             const points = [];
 
-            // Tighter spacing for pixel-like text with more particles - 2px spacing
-            const spacing = 2;
+            // Desktop: tighter 2px spacing, Mobile: wider 3px spacing for crisper text
+            const spacing = w > 768 ? 2 : 3;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
             // Desktop: shift left less (2 chars), Mobile: shift left more (6 chars)
             const leftShift = w > 768 ? fontSize * 0.2 : fontSize * 0.6;
