@@ -770,10 +770,10 @@
         function formTitleParticles(sectionName) {
             const isMobile = w <= 768;
 
-            // Stack long titles on both desktop and mobile for better alignment
+            // Stack long titles - mobile uses 3-line format for services
             const titleText = {
                 'about': 'LOGLINE',
-                'services': 'UNICORN NINJA\nABILITIES',
+                'services': isMobile ? 'UNICORN\nNINJA\nABILITIES' : 'UNICORN NINJA\nABILITIES',
                 'work': 'HISTORIAE\nSELECTAE',
                 'contact': 'MINDMELD'
             }[sectionName];
