@@ -731,6 +731,7 @@
                 this.spreadDamping = 0.75;
                 this.settled = false;
                 this.hidden = false;
+                this.fadingToSolid = false;
             }
 
             reset() {
@@ -755,6 +756,17 @@
                         this.vx = (Math.random() - 0.5) * 0.5;
                         this.vy = (Math.random() - 0.5) * 0.5;
                     }
+                } else if (this.fadingToSolid) {
+                    // Gradual fade out while staying in position (crossfade with solid title)
+                    if (this.opacity > 0) {
+                        this.opacity -= 0.012;  // Slower fade for smooth crossfade
+                    } else {
+                        this.hidden = true;
+                        this.fadingToSolid = false;
+                    }
+                    // Stay in position (no movement)
+                    this.vx = 0;
+                    this.vy = 0;
                 } else if (this.fadingOut) {
                     // Fade out and float away
                     if (this.opacity > 0) this.opacity -= 0.015;
@@ -1042,24 +1054,27 @@
             solidTitle.style.left = `${startX}px`;
             solidTitle.style.top = `${adjustedY}px`;
 
-            // Start showing solid title first
+            // Start showing solid title with overlap - particles will fade out gradually
             solidTitle.classList.add('visible');
 
-            // Hide particles only after solid title starts appearing (300ms into 800ms transition)
-            setTimeout(() => {
-                particles.forEach(p => {
-                    p.hidden = true;
-                });
-            }, 300);
+            // Start fading out particles gradually while solid title fades in (smooth crossfade)
+            particles.forEach(p => {
+                p.fadingToSolid = true;
+            });
         }
 
         function hideSolidTitle() {
             const solidTitle = document.getElementById('solidTitle');
             solidTitle.classList.remove('visible');
 
-            // Show all particles again
+            // Show all particles again and reset fading state
             particles.forEach(p => {
                 p.hidden = false;
+                p.fadingToSolid = false;
+                // Restore opacity if it was faded out
+                if (p.forming && p.opacity < 1) {
+                    p.opacity = 1;
+                }
             });
         }
 
