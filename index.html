@@ -1088,8 +1088,8 @@
             const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
             const points = [];
 
-            // Desktop: tighter 2px spacing, Mobile: wider 3px spacing for crisper text
-            const spacing = w > 768 ? 2 : 3;
+            // Tighter spacing for pixel-like text with more particles - 2px spacing
+            const spacing = 2;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
             // Desktop: shift left less (2 chars), Mobile: shift left more (6 chars)
             const leftShift = w > 768 ? fontSize * 0.2 : fontSize * 0.6;
