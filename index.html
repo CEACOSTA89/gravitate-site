@@ -1033,7 +1033,9 @@
 
             // Adjust vertical position - particles use textBaseline: 'middle' with offset
             // The particles have a vertical offset from the canvas padding (20px) and textHeight/2
-            const adjustedY = startY + 20;
+            // Subtract additional pixels to align perfectly on desktop (w > 768)
+            const verticalOffset = w > 768 ? 8 : 20;
+            const adjustedY = startY + verticalOffset;
 
             // Set absolute position to match particles exactly
             solidTitle.style.left = `${startX}px`;
