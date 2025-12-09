@@ -159,7 +159,7 @@
             font-family: 'Syne', sans-serif;
             font-weight: 800;
             color: #00ff88;
-            z-index: 250;
+            z-index: 150;
             opacity: 0;
             pointer-events: none;
             transition: opacity 2.5s cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -282,7 +282,7 @@
             height: 100vh;
             z-index: 200;
             overflow-y: auto;
-            padding-top: calc(50vh - 50px);
+            padding-top: calc(50vh - 20px);
             padding-bottom: 4rem;
             opacity: 0;
             pointer-events: none;
@@ -1028,19 +1028,13 @@
                 particles.pop();
             }
 
-            // Set new targets and ensure particles are ready to form
+            // Set new targets
             allPoints.forEach((point, i) => {
                 if (particles[i]) {
                     particles[i].targetX = point.x;
                     particles[i].targetY = point.y;
                     particles[i].forming = true;
                     particles[i].settled = false;
-                    particles[i].hidden = false;
-                    particles[i].fadingToSolid = false;
-                    particles[i].fadingOut = false;
-                    particles[i].flashPhase = 0;
-                    particles[i].vibrateOffset = { x: 0, y: 0 };
-                    particles[i].opacity = 0.3;
                 }
             });
 
