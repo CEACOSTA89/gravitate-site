@@ -461,7 +461,7 @@
             }
 
             .content-overlay {
-                padding-top: calc(50vh - 100px);
+                padding-top: calc(50vh + 180px);
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
@@ -1099,14 +1099,18 @@
             const solidTitle = document.getElementById('solidTitle');
             solidTitle.classList.remove('visible');
 
-            // Show all particles again and reset fading state
+            // Show all particles again and reset ALL states completely
             particles.forEach(p => {
                 p.hidden = false;
                 p.fadingToSolid = false;
-                p.flashPhase = 0;  // Reset flash phase
-                // Restore opacity if it was faded out
-                if (p.forming && p.opacity < 1) {
-                    p.opacity = 1;
+                p.fadingOut = false;
+                p.flashPhase = 0;
+                p.vibrateOffset = { x: 0, y: 0 };
+                p.opacity = 1;
+                p.settled = false;
+                // Keep forming state if it was forming, otherwise reset
+                if (!p.forming) {
+                    p.opacity = Math.random() * 0.5 + 0.3;
                 }
             });
         }
@@ -1249,8 +1253,12 @@
             particles.forEach(p => {
                 p.forming = false;
                 p.fadingOut = false;
+                p.fadingToSolid = false;
+                p.flashPhase = 0;
+                p.vibrateOffset = { x: 0, y: 0 };
                 p.opacity = Math.random() * 0.5 + 0.3;
                 p.hidden = false;
+                p.settled = false;
                 // Trigger spread effect
                 p.spread();
             });
