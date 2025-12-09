@@ -1046,8 +1046,8 @@
             // Adjust vertical position - particles use textBaseline: 'middle' with offset
             // The particles have a vertical offset from the canvas padding (20px) and textHeight/2
             // Desktop: subtract pixels to move solid title up (8px)
-            // Mobile: add more pixels to move solid title down (28px)
-            const verticalOffset = w > 768 ? 8 : 28;
+            // Mobile: keep original offset (20px)
+            const verticalOffset = w > 768 ? 8 : 20;
             const adjustedY = startY + verticalOffset;
 
             // Set absolute position to match particles exactly
