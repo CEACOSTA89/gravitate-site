@@ -1028,13 +1028,19 @@
                 particles.pop();
             }
 
-            // Set new targets
+            // Set new targets and ensure particles are ready to form
             allPoints.forEach((point, i) => {
                 if (particles[i]) {
                     particles[i].targetX = point.x;
                     particles[i].targetY = point.y;
                     particles[i].forming = true;
                     particles[i].settled = false;
+                    particles[i].hidden = false;
+                    particles[i].fadingToSolid = false;
+                    particles[i].fadingOut = false;
+                    particles[i].flashPhase = 0;
+                    particles[i].vibrateOffset = { x: 0, y: 0 };
+                    particles[i].opacity = 0.3;
                 }
             });
 
