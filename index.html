@@ -461,7 +461,7 @@
             }
 
             .content-overlay {
-                padding-top: calc(50vh + 180px);
+                padding-top: calc(50vh + 120px);
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
@@ -1077,8 +1077,8 @@
             // Adjust vertical position - particles use textBaseline: 'middle' with offset
             // The particles have a vertical offset from the canvas padding (20px) and textHeight/2
             // Desktop: subtract pixels to move solid title up (8px)
-            // Mobile: keep original offset (20px)
-            const verticalOffset = w > 768 ? 8 : 20;
+            // Mobile: lower by letter height (20px + fontSize)
+            const verticalOffset = w > 768 ? 8 : (20 + fontSize);
             const adjustedY = startY + verticalOffset;
 
             // Set absolute position to match particles exactly
