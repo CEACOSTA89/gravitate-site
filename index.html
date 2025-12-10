@@ -1038,10 +1038,10 @@
                 }
             });
 
-            // Show solid title overlay after particles settle - start earlier for smooth crossfade
+            // Show solid title overlay AFTER particles finish their flash/bubble animation
             setTimeout(() => {
                 showSolidTitle(titleText, titleSize);
-            }, 900);
+            }, 3400);
         }
 
         function showSolidTitle(text, fontSize) {
