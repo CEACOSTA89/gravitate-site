@@ -162,7 +162,7 @@
             z-index: 150;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 2.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transition: opacity 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
             cursor: pointer;
             text-align: center;
             line-height: 1.3;
@@ -760,10 +760,10 @@
                     }
                 } else if (this.fadingToSolid) {
                     // Flash/pulse effect that accelerates over time to sync with solid fade-in
-                    this.flashPhase += 0.05;  // Slower increment for longer, smoother transition
+                    this.flashPhase += 0.08;  // Faster increment for quicker transition
 
-                    // Normalize flashPhase to 0-1 range over 2.5 seconds (matches solid fade duration)
-                    const progress = Math.min(this.flashPhase / 12.5, 1);  // 12.5 * 0.05 = ~2.5 seconds
+                    // Normalize flashPhase to 0-1 range over 1.5 seconds (matches solid fade duration)
+                    const progress = Math.min(this.flashPhase / 7.5, 1);  // 7.5 * 0.08 = ~1.5 seconds
 
                     // Accelerating pulse frequency - starts slow, speeds up dramatically
                     const pulseFrequency = 2 + (progress * progress * 15);  // Quadratic acceleration
@@ -800,13 +800,13 @@
                     this.vx = (Math.random() - 0.5) * 0.3;
                     this.vy = (Math.random() - 0.5) * 0.3;
                 } else if (this.forming) {
-                    // Move towards target position
+                    // Move towards target position (slowed down by 25% for smoother formation)
                     const dx = this.targetX - this.x;
                     const dy = this.targetY - this.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
-                    this.vx = dx * 0.08;
-                    this.vy = dy * 0.08;
+                    this.vx = dx * 0.06;
+                    this.vy = dy * 0.06;
 
                     // When close to target, mark as settled
                     if (distance < 2) {
@@ -967,14 +967,14 @@
                 setTimeout(() => {
                     formTitleParticles(sectionName);
 
-                    // Show new content after particles start forming
+                    // Show cards in sync with solid words appearing at 1.5 seconds
                     setTimeout(() => {
                         document.querySelectorAll('.content-section').forEach(section => {
                             section.classList.remove('active');
                         });
                         document.getElementById(sectionName).classList.add('active');
                         document.getElementById('contentOverlay').classList.add('active');
-                    }, 800);
+                    }, 1500);
                 }, 300);
             } else {
                 // First time - scatter then form
@@ -983,6 +983,7 @@
                 setTimeout(() => {
                     formTitleParticles(sectionName);
 
+                    // Show cards in sync with solid words appearing at 1.5 seconds (first time)
                     setTimeout(() => {
                         document.querySelectorAll('.content-section').forEach(section => {
                             section.classList.remove('active');
@@ -1038,10 +1039,10 @@
                 }
             });
 
-            // Show solid title overlay AFTER particles finish their flash/bubble animation
+            // Show solid title at 1.5 seconds to sync with particle bubble animation
             setTimeout(() => {
                 showSolidTitle(titleText, titleSize);
-            }, 3400);
+            }, 1500);
         }
 
         function showSolidTitle(text, fontSize) {
