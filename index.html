@@ -1121,9 +1121,9 @@
             const lines = titleText.split('\n');
             const lineHeight = titleSize * 1.3;
             const totalHeight = lines.length * lineHeight;
-            // Mobile: move up by 35vh to match content cards (was h/2, now h/2 - 0.35*h)
+            // Mobile: move up slightly to match content cards (reduce black space at top)
             // Desktop: keep centered positioning
-            const verticalShift = isMobile ? (h * 0.35) : 0;
+            const verticalShift = isMobile ? (h * 0.15) : 0;
             const startY = h / 2 - totalHeight / 2 - 100 - verticalShift;
 
             lines.forEach((line, lineIndex) => {
