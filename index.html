@@ -554,7 +554,7 @@
             }
 
             .content-overlay {
-                padding-top: calc(50vh - 25px);
+                padding-top: 15vh;
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
@@ -1121,7 +1121,10 @@
             const lines = titleText.split('\n');
             const lineHeight = titleSize * 1.3;
             const totalHeight = lines.length * lineHeight;
-            const startY = h / 2 - totalHeight / 2 - 100;
+            // Mobile: move up by 35vh to match content cards (was h/2, now h/2 - 0.35*h)
+            // Desktop: keep centered positioning
+            const verticalShift = isMobile ? (h * 0.35) : 0;
+            const startY = h / 2 - totalHeight / 2 - 100 - verticalShift;
 
             lines.forEach((line, lineIndex) => {
                 const yPos = startY + (lineIndex * lineHeight);
