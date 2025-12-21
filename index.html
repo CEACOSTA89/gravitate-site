@@ -1237,8 +1237,19 @@
             const totalHeight = lines.length * fontSize * lineHeight;
             const startY = h / 2 - totalHeight / 2 - 100;
 
+            // Detect iPad (portrait and landscape) - between 769 and 1024px width
+            const isIPad = w >= 769 && w <= 1024;
+
             // Apply the same left shift as particles
-            const leftShift = w > 768 ? fontSize * 0.2 : fontSize * 0.6;
+            // iPad needs specific positioning between mobile and desktop
+            let leftShift;
+            if (w <= 768) {
+                leftShift = fontSize * 0.6; // Mobile
+            } else if (isIPad) {
+                leftShift = fontSize * 0.35; // iPad - between mobile and desktop
+            } else {
+                leftShift = fontSize * 0.2; // Desktop
+            }
 
             // Get text width from canvas measurement (same as particles)
             const tempCanvas = document.createElement('canvas');
@@ -1256,8 +1267,16 @@
             // Adjust vertical position - particles use textBaseline: 'middle' with offset
             // The particles have a vertical offset from the canvas padding (20px) and textHeight/2
             // Desktop: subtract pixels to move solid title up (8px)
+            // iPad: specific offset for iPad alignment (15px)
             // Mobile: lower by letter height, then raise by 1% (20 + fontSize - h * 0.01)
-            const verticalOffset = w > 768 ? 8 : (20 + fontSize - h * 0.01);
+            let verticalOffset;
+            if (w <= 768) {
+                verticalOffset = 20 + fontSize - h * 0.01; // Mobile
+            } else if (isIPad) {
+                verticalOffset = 15; // iPad - between mobile and desktop
+            } else {
+                verticalOffset = 8; // Desktop
+            }
             const adjustedY = startY + verticalOffset;
 
             // Set absolute position to match particles exactly
@@ -1322,8 +1341,16 @@
             // Tighter spacing for pixel-like text with more particles - 2px spacing
             const spacing = 2;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
-            // Desktop: shift left less (2 chars), Mobile: shift left more (6 chars)
-            const leftShift = w > 768 ? fontSize * 0.2 : fontSize * 0.6;
+            // Desktop: shift left less (2 chars), iPad: medium shift, Mobile: shift left more (6 chars)
+            const isIPad = w >= 769 && w <= 1024;
+            let leftShift;
+            if (w <= 768) {
+                leftShift = fontSize * 0.6; // Mobile
+            } else if (isIPad) {
+                leftShift = fontSize * 0.35; // iPad - between mobile and desktop
+            } else {
+                leftShift = fontSize * 0.2; // Desktop
+            }
 
             for (let y = 0; y < tempCanvas.height; y += spacing) {
                 for (let x = 0; x < tempCanvas.width; x += spacing) {
@@ -1374,7 +1401,15 @@
 
                 const spacing = 2;
                 const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
-                const leftShift = w > 768 ? fontSize * 0.2 : fontSize * 0.6;
+                const isIPad = w >= 769 && w <= 1024;
+                let leftShift;
+                if (w <= 768) {
+                    leftShift = fontSize * 0.6; // Mobile
+                } else if (isIPad) {
+                    leftShift = fontSize * 0.35; // iPad - between mobile and desktop
+                } else {
+                    leftShift = fontSize * 0.2; // Desktop
+                }
 
                 // Special handling for E (6th letter, index 5)
                 const isE = (letterIndex === 5 && letter === 'E');
