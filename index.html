@@ -1244,6 +1244,9 @@
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
 
+            // Debug logging
+            console.log(`showSolidTitle - text: ${text}, w: ${w}, h: ${h}, isIPad: ${isIPad}, isIPadPortrait: ${isIPadPortrait}, isIPadLandscape: ${isIPadLandscape}`);
+
             // Apply the same left shift as particles
             // iPad needs specific positioning between mobile and desktop
             let leftShift;
