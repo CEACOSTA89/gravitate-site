@@ -1318,8 +1318,8 @@
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
 
-            // Detect Android landscape ONLY (not iPad) - very wide screens
-            const isAndroidLandscape = !isIPad && w > 1194 && h < 1200 && w > h;
+            // Detect Android landscape - matches CSS media query exactly
+            const isAndroidLandscape = !isIPad && w > h && w >= 600 && w <= 1024 && h <= 900;
 
             // Debug logging
             console.log(`showSolidTitle - text: ${text}, w: ${w}, h: ${h}, isIPad: ${isIPad}, isIPadPortrait: ${isIPadPortrait}, isIPadLandscape: ${isIPadLandscape}, isAndroidLandscape: ${isAndroidLandscape}`);
@@ -1435,8 +1435,8 @@
             const isIPad = (w >= 768 && w <= 1194) && (h >= 700 && h <= 1668);
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
-            // Detect Android landscape ONLY (not iPad) - very wide screens
-            const isAndroidLandscape = !isIPad && w > 1194 && h < 1200 && w > h;
+            // Detect Android landscape - matches CSS media query exactly
+            const isAndroidLandscape = !isIPad && w > h && w >= 600 && w <= 1024 && h <= 900;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
             // Desktop: shift left less (2 chars), iPad: medium shift, Mobile: shift left more (6 chars)
             let leftShift;
@@ -1503,8 +1503,8 @@
                 const isIPad = (w >= 768 && w <= 1194) && (h >= 700 && h <= 1668);
                 const isIPadPortrait = isIPad && h > w;
                 const isIPadLandscape = isIPad && w >= h;
-                // Detect Android landscape ONLY (not iPad) - very wide screens
-                const isAndroidLandscape = !isIPad && w > 1194 && h < 1200 && w > h;
+                // Detect Android landscape - matches CSS media query exactly
+                const isAndroidLandscape = !isIPad && w > h && w >= 600 && w <= 1024 && h <= 900;
                 const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
                 let leftShift;
                 if (!isIPad && w <= 768) {
