@@ -1422,9 +1422,9 @@
             if (!isIPad && w <= 768) {
                 verticalOffset = 20 + fontSize - h * 0.01; // Mobile (but not iPad)
             } else if (isIPadPortrait) {
-                verticalOffset = isChrome ? 45 : 30; // iPad Portrait - Chrome needs more offset
+                verticalOffset = isChrome ? (30 + h * 0.4) : 30; // iPad Portrait - Chrome needs 40% viewport height offset
             } else if (isIPadLandscape) {
-                verticalOffset = isChrome ? 32 : 17; // iPad Landscape - Chrome needs more offset
+                verticalOffset = isChrome ? (17 + h * 0.4) : 17; // iPad Landscape - Chrome needs 40% viewport height offset
             } else if (isAndroidLandscape) {
                 verticalOffset = 12; // Android Landscape - adjust for alignment
             } else {
