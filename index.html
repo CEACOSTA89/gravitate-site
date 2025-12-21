@@ -1415,13 +1415,16 @@
             // Desktop: subtract pixels to move solid title up (8px)
             // iPad: separate values for portrait vs landscape
             // Mobile: lower by letter height, then raise by 1% (20 + fontSize - h * 0.01)
+            // Detect Chrome vs Safari
+            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+
             let verticalOffset;
             if (!isIPad && w <= 768) {
                 verticalOffset = 20 + fontSize - h * 0.01; // Mobile (but not iPad)
             } else if (isIPadPortrait) {
-                verticalOffset = 45; // iPad Portrait - adjusted down
+                verticalOffset = isChrome ? 45 : 30; // iPad Portrait - Chrome needs more offset
             } else if (isIPadLandscape) {
-                verticalOffset = 32; // iPad Landscape - adjusted down
+                verticalOffset = isChrome ? 32 : 17; // iPad Landscape - Chrome needs more offset
             } else if (isAndroidLandscape) {
                 verticalOffset = 12; // Android Landscape - adjust for alignment
             } else {
