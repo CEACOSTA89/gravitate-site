@@ -1318,8 +1318,11 @@
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
 
+            // Detect Android landscape ONLY (not iPad) - very wide screens
+            const isAndroidLandscape = !isIPad && w > 1194 && h < 1200 && w > h;
+
             // Debug logging
-            console.log(`showSolidTitle - text: ${text}, w: ${w}, h: ${h}, isIPad: ${isIPad}, isIPadPortrait: ${isIPadPortrait}, isIPadLandscape: ${isIPadLandscape}`);
+            console.log(`showSolidTitle - text: ${text}, w: ${w}, h: ${h}, isIPad: ${isIPad}, isIPadPortrait: ${isIPadPortrait}, isIPadLandscape: ${isIPadLandscape}, isAndroidLandscape: ${isAndroidLandscape}`);
 
             // Apply the same left shift as particles
             // iPad needs specific positioning between mobile and desktop
@@ -1330,6 +1333,8 @@
                 leftShift = fontSize * 0.4; // iPad Portrait
             } else if (isIPadLandscape) {
                 leftShift = fontSize * 0.3; // iPad Landscape
+            } else if (isAndroidLandscape) {
+                leftShift = fontSize * 0.25; // Android Landscape
             } else {
                 leftShift = fontSize * 0.2; // Desktop
             }
@@ -1359,6 +1364,8 @@
                 verticalOffset = 30; // iPad Portrait - moved up 3% more
             } else if (isIPadLandscape) {
                 verticalOffset = 17; // iPad Landscape - perfect, no change
+            } else if (isAndroidLandscape) {
+                verticalOffset = 12; // Android Landscape - adjust for alignment
             } else {
                 verticalOffset = 8; // Desktop
             }
@@ -1428,6 +1435,8 @@
             const isIPad = (w >= 768 && w <= 1194) && (h >= 700 && h <= 1668);
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
+            // Detect Android landscape ONLY (not iPad) - very wide screens
+            const isAndroidLandscape = !isIPad && w > 1194 && h < 1200 && w > h;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
             // Desktop: shift left less (2 chars), iPad: medium shift, Mobile: shift left more (6 chars)
             let leftShift;
@@ -1437,6 +1446,8 @@
                 leftShift = fontSize * 0.4; // iPad Portrait
             } else if (isIPadLandscape) {
                 leftShift = fontSize * 0.3; // iPad Landscape
+            } else if (isAndroidLandscape) {
+                leftShift = fontSize * 0.25; // Android Landscape
             } else {
                 leftShift = fontSize * 0.2; // Desktop
             }
@@ -1492,6 +1503,8 @@
                 const isIPad = (w >= 768 && w <= 1194) && (h >= 700 && h <= 1668);
                 const isIPadPortrait = isIPad && h > w;
                 const isIPadLandscape = isIPad && w >= h;
+                // Detect Android landscape ONLY (not iPad) - very wide screens
+                const isAndroidLandscape = !isIPad && w > 1194 && h < 1200 && w > h;
                 const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
                 let leftShift;
                 if (!isIPad && w <= 768) {
@@ -1500,6 +1513,8 @@
                     leftShift = fontSize * 0.4; // iPad Portrait
                 } else if (isIPadLandscape) {
                     leftShift = fontSize * 0.3; // iPad Landscape
+                } else if (isAndroidLandscape) {
+                    leftShift = fontSize * 0.25; // Android Landscape
                 } else {
                     leftShift = fontSize * 0.2; // Desktop
                 }
