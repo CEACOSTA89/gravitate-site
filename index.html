@@ -1283,9 +1283,9 @@
             if (!isIPad && w <= 768) {
                 verticalOffset = 20 + fontSize - h * 0.01; // Mobile (but not iPad)
             } else if (isIPadPortrait) {
-                verticalOffset = 34; // iPad Portrait - raised up 20% to match particles
+                verticalOffset = 32; // iPad Portrait - moved up 5% more
             } else if (isIPadLandscape) {
-                verticalOffset = 15; // iPad Landscape - bit lower than desktop to match particles
+                verticalOffset = 16; // iPad Landscape - moved down 5% more
             } else {
                 verticalOffset = 8; // Desktop
             }
