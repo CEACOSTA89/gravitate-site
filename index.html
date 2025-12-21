@@ -583,6 +583,27 @@
             transform: rotate(90deg);
         }
 
+        /* iPad Portrait - fix nav spacing */
+        @media (min-width: 768px) and (max-width: 834px) and (orientation: portrait) {
+            nav {
+                padding: 1.5rem 2rem;
+                gap: 1rem;
+            }
+
+            .nav-logo {
+                font-size: 2rem;
+                margin-right: 1rem;
+            }
+
+            .nav-links {
+                gap: 1.2rem;
+            }
+
+            .nav-links a {
+                font-size: 0.9rem;
+            }
+        }
+
         @media (max-width: 768px) {
             nav {
                 padding: 1rem;
