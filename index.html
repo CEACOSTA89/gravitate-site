@@ -1348,11 +1348,15 @@
 
             // Tighter spacing for pixel-like text with more particles - 2px spacing
             const spacing = 2;
-            const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
-            // Desktop: shift left less (2 chars), iPad: medium shift, Mobile: shift left more (6 chars)
             const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
+            // For iPad landscape, move particles UP to match solid text
+            let centerY = customY !== null ? customY : h / 2 - textHeight / 2;
+            if (isIPadLandscape) {
+                centerY = centerY - fontSize; // Move particles up by fontSize amount
+            }
+            // Desktop: shift left less (2 chars), iPad: medium shift, Mobile: shift left more (6 chars)
             let leftShift;
             if (!isIPad && w <= 768) {
                 leftShift = fontSize * 0.6; // Mobile (but not iPad)
@@ -1412,10 +1416,14 @@
                 const imageData = letterCtx.getImageData(0, 0, letterCanvas.width, letterCanvas.height);
 
                 const spacing = 2;
-                const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
                 const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
                 const isIPadPortrait = isIPad && h > w;
                 const isIPadLandscape = isIPad && w >= h;
+                // For iPad landscape, move particles UP to match solid text
+                let centerY = customY !== null ? customY : h / 2 - textHeight / 2;
+                if (isIPadLandscape) {
+                    centerY = centerY - fontSize; // Move particles up by fontSize amount
+                }
                 let leftShift;
                 if (!isIPad && w <= 768) {
                     leftShift = fontSize * 0.6; // Mobile (but not iPad)
