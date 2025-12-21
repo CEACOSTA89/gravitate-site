@@ -1282,9 +1282,9 @@
                 verticalOffset = 42; // iPad Portrait - aligned correctly
             } else if (isIPadLandscape) {
                 verticalOffset = 8; // iPad Landscape - use desktop values since it renders like desktop
-                // Test LOGLINE only: force solid word down 100% more
+                // Test LOGLINE only: force solid word down 150% more
                 if (text === 'LOGLINE') {
-                    verticalOffset = verticalOffset + fontSize;
+                    verticalOffset = verticalOffset + (fontSize * 1.5);
                 }
             } else {
                 verticalOffset = 8; // Desktop
@@ -1356,9 +1356,9 @@
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
             let centerY = customY !== null ? customY : h / 2 - textHeight / 2;
-            // Test LOGLINE only in iPad landscape: force particles up 100%
+            // Test LOGLINE only in iPad landscape: force particles up 150%
             if (isIPadLandscape && text === 'LOGLINE') {
-                centerY = centerY - fontSize;
+                centerY = centerY - (fontSize * 1.5);
             }
             // Desktop: shift left less (2 chars), iPad: medium shift, Mobile: shift left more (6 chars)
             let leftShift;
