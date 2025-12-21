@@ -1281,7 +1281,7 @@
             } else if (isIPadPortrait) {
                 verticalOffset = 42; // iPad Portrait - aligned correctly
             } else if (isIPadLandscape) {
-                verticalOffset = 47; // iPad Landscape - lowered 95% more
+                verticalOffset = 8; // iPad Landscape - use desktop values since it renders like desktop
             } else {
                 verticalOffset = 8; // Desktop
             }
@@ -1351,11 +1351,7 @@
             const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
-            // For iPad landscape, move particles UP to match solid text
-            let centerY = customY !== null ? customY : h / 2 - textHeight / 2;
-            if (isIPadLandscape) {
-                centerY = centerY - fontSize; // Move particles up by fontSize amount
-            }
+            const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
             // Desktop: shift left less (2 chars), iPad: medium shift, Mobile: shift left more (6 chars)
             let leftShift;
             if (!isIPad && w <= 768) {
@@ -1419,11 +1415,7 @@
                 const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
                 const isIPadPortrait = isIPad && h > w;
                 const isIPadLandscape = isIPad && w >= h;
-                // For iPad landscape, move particles UP to match solid text
-                let centerY = customY !== null ? customY : h / 2 - textHeight / 2;
-                if (isIPadLandscape) {
-                    centerY = centerY - fontSize; // Move particles up by fontSize amount
-                }
+                const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
                 let leftShift;
                 if (!isIPad && w <= 768) {
                     leftShift = fontSize * 0.6; // Mobile (but not iPad)
