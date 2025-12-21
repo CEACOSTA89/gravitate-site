@@ -624,8 +624,8 @@
             50% { transform: rotate(90deg); }
         }
 
-        /* Show rotate message ONLY for Android landscape (not iPad) */
-        @media (orientation: landscape) and (min-width: 600px) and (max-width: 1023px) and (max-height: 600px) {
+        /* Show rotate message for Android AND iPad landscape */
+        @media (orientation: landscape) and (min-width: 600px) and (max-width: 1194px) and (max-height: 900px) {
             .rotate-message {
                 display: flex;
             }
@@ -1415,18 +1415,15 @@
             // Desktop: subtract pixels to move solid title up (8px)
             // iPad: separate values for portrait vs landscape
             // Mobile: lower by letter height, then raise by 1% (20 + fontSize - h * 0.01)
-            // Detect Chrome vs Safari
-            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-
             let verticalOffset;
             if (!isIPad && w <= 768) {
                 verticalOffset = 20 + fontSize - h * 0.01; // Mobile (but not iPad)
             } else if (isIPadPortrait) {
-                verticalOffset = isChrome ? (30 + h * 0.4) : 30; // iPad Portrait - Chrome needs 40% viewport height offset
+                verticalOffset = 30; // iPad Portrait
             } else if (isIPadLandscape) {
-                verticalOffset = isChrome ? (17 + h * 0.4) : 17; // iPad Landscape - Chrome needs 40% viewport height offset
+                verticalOffset = 17; // iPad Landscape (blocked by overlay anyway)
             } else if (isAndroidLandscape) {
-                verticalOffset = 12; // Android Landscape - adjust for alignment
+                verticalOffset = 12; // Android Landscape (blocked by overlay anyway)
             } else {
                 verticalOffset = 8; // Desktop
             }
