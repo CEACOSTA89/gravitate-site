@@ -1241,14 +1241,18 @@
             // iPad portrait is often 768px, 810px, 820px, or 834px depending on model
             // iPad landscape is 1024px, 1080px, 1112px, 1194px depending on model
             const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
+            const isIPadPortrait = isIPad && h > w;
+            const isIPadLandscape = isIPad && w >= h;
 
             // Apply the same left shift as particles
             // iPad needs specific positioning between mobile and desktop
             let leftShift;
             if (!isIPad && w <= 768) {
                 leftShift = fontSize * 0.6; // Mobile (but not iPad)
-            } else if (isIPad) {
-                leftShift = fontSize * 0.4; // iPad - adjusted for better alignment
+            } else if (isIPadPortrait) {
+                leftShift = fontSize * 0.4; // iPad Portrait
+            } else if (isIPadLandscape) {
+                leftShift = fontSize * 0.3; // iPad Landscape
             } else {
                 leftShift = fontSize * 0.2; // Desktop
             }
@@ -1269,13 +1273,15 @@
             // Adjust vertical position - particles use textBaseline: 'middle' with offset
             // The particles have a vertical offset from the canvas padding (20px) and textHeight/2
             // Desktop: subtract pixels to move solid title up (8px)
-            // iPad: specific offset for iPad alignment (needs to be higher to push text down)
+            // iPad: separate values for portrait vs landscape
             // Mobile: lower by letter height, then raise by 1% (20 + fontSize - h * 0.01)
             let verticalOffset;
             if (!isIPad && w <= 768) {
                 verticalOffset = 20 + fontSize - h * 0.01; // Mobile (but not iPad)
-            } else if (isIPad) {
-                verticalOffset = 25; // iPad - push solid text down more to match particles
+            } else if (isIPadPortrait) {
+                verticalOffset = 31; // iPad Portrait - push solid text down to match particles
+            } else if (isIPadLandscape) {
+                verticalOffset = 18; // iPad Landscape - less offset than portrait
             } else {
                 verticalOffset = 8; // Desktop
             }
@@ -1345,11 +1351,15 @@
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
             // Desktop: shift left less (2 chars), iPad: medium shift, Mobile: shift left more (6 chars)
             const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
+            const isIPadPortrait = isIPad && h > w;
+            const isIPadLandscape = isIPad && w >= h;
             let leftShift;
             if (!isIPad && w <= 768) {
                 leftShift = fontSize * 0.6; // Mobile (but not iPad)
-            } else if (isIPad) {
-                leftShift = fontSize * 0.4; // iPad - adjusted for better alignment
+            } else if (isIPadPortrait) {
+                leftShift = fontSize * 0.4; // iPad Portrait
+            } else if (isIPadLandscape) {
+                leftShift = fontSize * 0.3; // iPad Landscape
             } else {
                 leftShift = fontSize * 0.2; // Desktop
             }
@@ -1404,11 +1414,15 @@
                 const spacing = 2;
                 const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
                 const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
+                const isIPadPortrait = isIPad && h > w;
+                const isIPadLandscape = isIPad && w >= h;
                 let leftShift;
                 if (!isIPad && w <= 768) {
                     leftShift = fontSize * 0.6; // Mobile (but not iPad)
-                } else if (isIPad) {
-                    leftShift = fontSize * 0.4; // iPad - adjusted for better alignment
+                } else if (isIPadPortrait) {
+                    leftShift = fontSize * 0.4; // iPad Portrait
+                } else if (isIPadLandscape) {
+                    leftShift = fontSize * 0.3; // iPad Landscape
                 } else {
                     leftShift = fontSize * 0.2; // Desktop
                 }
