@@ -1237,16 +1237,18 @@
             const totalHeight = lines.length * fontSize * lineHeight;
             const startY = h / 2 - totalHeight / 2 - 100;
 
-            // Detect iPad (portrait and landscape) - between 769 and 1024px width
-            const isIPad = w >= 769 && w <= 1024;
+            // Detect iPad (portrait and landscape)
+            // iPad portrait is often 768px, 810px, 820px, or 834px depending on model
+            // iPad landscape is 1024px, 1080px, 1112px, 1194px depending on model
+            const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
 
             // Apply the same left shift as particles
             // iPad needs specific positioning between mobile and desktop
             let leftShift;
-            if (w <= 768) {
-                leftShift = fontSize * 0.6; // Mobile
+            if (!isIPad && w <= 768) {
+                leftShift = fontSize * 0.6; // Mobile (but not iPad)
             } else if (isIPad) {
-                leftShift = fontSize * 0.35; // iPad - between mobile and desktop
+                leftShift = fontSize * 0.4; // iPad - adjusted for better alignment
             } else {
                 leftShift = fontSize * 0.2; // Desktop
             }
@@ -1267,13 +1269,13 @@
             // Adjust vertical position - particles use textBaseline: 'middle' with offset
             // The particles have a vertical offset from the canvas padding (20px) and textHeight/2
             // Desktop: subtract pixels to move solid title up (8px)
-            // iPad: specific offset for iPad alignment (15px)
+            // iPad: specific offset for iPad alignment (needs to be higher to push text down)
             // Mobile: lower by letter height, then raise by 1% (20 + fontSize - h * 0.01)
             let verticalOffset;
-            if (w <= 768) {
-                verticalOffset = 20 + fontSize - h * 0.01; // Mobile
+            if (!isIPad && w <= 768) {
+                verticalOffset = 20 + fontSize - h * 0.01; // Mobile (but not iPad)
             } else if (isIPad) {
-                verticalOffset = 15; // iPad - between mobile and desktop
+                verticalOffset = 25; // iPad - push solid text down more to match particles
             } else {
                 verticalOffset = 8; // Desktop
             }
@@ -1342,12 +1344,12 @@
             const spacing = 2;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
             // Desktop: shift left less (2 chars), iPad: medium shift, Mobile: shift left more (6 chars)
-            const isIPad = w >= 769 && w <= 1024;
+            const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
             let leftShift;
-            if (w <= 768) {
-                leftShift = fontSize * 0.6; // Mobile
+            if (!isIPad && w <= 768) {
+                leftShift = fontSize * 0.6; // Mobile (but not iPad)
             } else if (isIPad) {
-                leftShift = fontSize * 0.35; // iPad - between mobile and desktop
+                leftShift = fontSize * 0.4; // iPad - adjusted for better alignment
             } else {
                 leftShift = fontSize * 0.2; // Desktop
             }
@@ -1401,12 +1403,12 @@
 
                 const spacing = 2;
                 const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
-                const isIPad = w >= 769 && w <= 1024;
+                const isIPad = (w >= 768 && w <= 1194) && (h >= 768 && h <= 1668);
                 let leftShift;
-                if (w <= 768) {
-                    leftShift = fontSize * 0.6; // Mobile
+                if (!isIPad && w <= 768) {
+                    leftShift = fontSize * 0.6; // Mobile (but not iPad)
                 } else if (isIPad) {
-                    leftShift = fontSize * 0.35; // iPad - between mobile and desktop
+                    leftShift = fontSize * 0.4; // iPad - adjusted for better alignment
                 } else {
                     leftShift = fontSize * 0.2; // Desktop
                 }
