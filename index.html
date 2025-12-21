@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Gravitate Pictures | AI Product Strategy & Creative Technology</title>
 
     <!-- SEO Meta Tags -->
@@ -273,6 +275,9 @@
             background: #000;
             color: #fff;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            touch-action: manipulation;
         }
 
         #canvas {
@@ -345,6 +350,9 @@
             text-transform: uppercase;
             transition: color 0.3s;
             cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-links a:hover {
@@ -587,6 +595,168 @@
         @media (min-width: 769px) and (max-width: 1024px) {
             .solid-title {
                 transform: translateX(-2%);
+            }
+        }
+
+        /* iPad Optimizations - Touch-friendly, performance-optimized for tablet viewing */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            /* Navigation optimizations for iPad */
+            .nav-logo {
+                font-size: 2.25rem;
+            }
+
+            .nav-links {
+                gap: 2rem;
+            }
+
+            .nav-links a {
+                font-size: 1.125rem;
+                padding: 0.5rem 0.75rem;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                border-radius: 4px;
+                transition: all 0.3s ease;
+            }
+
+            .nav-links a:hover,
+            .nav-links a:active {
+                background: rgba(0, 255, 136, 0.1);
+                transform: scale(1.05);
+            }
+
+            /* Hero optimizations for iPad screen size */
+            .hero-logo {
+                font-size: clamp(6rem, 12vw, 10rem);
+            }
+
+            .tagline {
+                font-size: 1.375rem;
+                padding: 0.5rem 1rem;
+            }
+
+            /* Content overlay optimizations */
+            .content-overlay {
+                padding-top: calc(50vh - 30px);
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+
+            .content-section {
+                padding: 2.5rem;
+                max-width: 800px;
+                border-radius: 16px;
+            }
+
+            .content-section p {
+                font-size: 1.125rem;
+                line-height: 1.75;
+                margin-bottom: 2.5rem;
+            }
+
+            /* Touch-optimized cards for iPad */
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.75rem;
+            }
+
+            .clients-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.75rem;
+            }
+
+            .service-card,
+            .client-card {
+                padding: 2.25rem;
+                min-height: 200px;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .service-card:active,
+            .client-card:active {
+                transform: scale(0.98);
+                background: rgba(0, 255, 136, 0.08);
+            }
+
+            .service-card h3 {
+                font-size: 1.35rem;
+                margin: 1.25rem 0;
+            }
+
+            .service-card p {
+                font-size: 1rem;
+                line-height: 1.7;
+            }
+
+            .client-card h4 {
+                font-size: 1.5rem;
+                line-height: 1.4;
+                padding: 0.5rem;
+            }
+
+            .client-card-subtitle {
+                font-size: 1.05rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .client-card-description {
+                font-size: 1rem;
+                line-height: 1.7;
+            }
+
+            .press-links {
+                font-size: 0.85rem;
+                margin-top: 1rem;
+            }
+
+            .press-links a {
+                padding: 0.25rem 0.5rem;
+                display: inline-block;
+                min-height: 32px;
+                line-height: 32px;
+            }
+
+            /* Close button - larger touch target for iPad */
+            .close-btn {
+                width: 56px;
+                height: 56px;
+                font-size: 1.75rem;
+                top: 1.25rem;
+                right: 1.25rem;
+                border: 3px solid #00ff88;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .close-btn:active {
+                transform: scale(0.95) rotate(90deg);
+            }
+
+            /* Footer optimization */
+            footer {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+
+            /* Smooth scrolling for content overlay */
+            .content-overlay {
+                -webkit-overflow-scrolling: touch;
+                scroll-behavior: smooth;
+            }
+
+            /* LinkedIn button optimization */
+            .content-section a[href*="linkedin"] {
+                padding: 1rem 2.5rem;
+                font-size: 1.125rem;
+                min-height: 48px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .content-section a[href*="linkedin"]:active {
+                transform: scale(0.97);
             }
         }
 
@@ -1090,12 +1260,22 @@
             }
         }
 
-        // Create particles
-        const particleCount = window.innerWidth < 768 ? 300 : 600;
+        // Create particles - optimized for device type
+        let particleCount;
+        const isIPad = window.innerWidth >= 769 && window.innerWidth <= 1024;
+
+        if (window.innerWidth < 768) {
+            particleCount = 300; // Mobile
+        } else if (isIPad) {
+            particleCount = 450; // iPad - balanced for performance and visual quality
+        } else {
+            particleCount = 600; // Desktop
+        }
+
         for (let i = 0; i < particleCount; i++) {
             particles.push(new Particle());
         }
-        console.log(`Created ${particles.length} particles on canvas ${w}x${h}`);
+        console.log(`Created ${particles.length} particles on canvas ${w}x${h} (${isIPad ? 'iPad' : window.innerWidth < 768 ? 'Mobile' : 'Desktop'})`);
 
         // Initial spread on page load
         setTimeout(() => {
