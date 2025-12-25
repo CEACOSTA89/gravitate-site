@@ -288,7 +288,7 @@
         .solid-title {
             position: fixed;
             font-family: 'Syne', sans-serif;
-            font-weight: 800;
+            font-weight: 900;
             color: #00ff88;
             z-index: 150;
             opacity: 0;
@@ -298,6 +298,9 @@
             text-align: center;
             line-height: 1.3;
             white-space: pre-line;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: geometricPrecision;
         }
 
         .solid-title.visible {
@@ -583,6 +586,215 @@
             transform: rotate(90deg);
         }
 
+        /* Video Lightbox */
+        .video-lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .video-lightbox.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .lightbox-close {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2001;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .lightbox-close:hover {
+            background: rgba(0,255,136,0.2);
+            transform: rotate(90deg);
+        }
+
+        .lightbox-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 1fr auto;
+            gap: 2rem;
+            width: 90%;
+            height: 85vh;
+            margin: 5vh auto;
+            padding: 2rem;
+        }
+
+        .lightbox-video-container {
+            grid-column: 1;
+            grid-row: 1;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .lightbox-video-container iframe {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .lightbox-metadata {
+            grid-column: 2;
+            grid-row: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+            padding-right: 1rem;
+            position: relative;
+        }
+
+
+        .metadata-section h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1rem;
+            color: #00ff88;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metadata-section p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .metadata-section a:hover {
+            color: #8800ff !important;
+        }
+
+        .lightbox-carousel {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .carousel-prev,
+        .carousel-next {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .carousel-prev:hover,
+        .carousel-next:hover {
+            background: rgba(0,255,136,0.2);
+            transform: scale(1.1);
+        }
+
+        .carousel-indicators {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .carousel-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .carousel-indicator.active {
+            background: #00ff88;
+            transform: scale(1.2);
+        }
+
+        .carousel-indicator:hover {
+            background: rgba(0,255,136,0.6);
+        }
+
+        /* Lightbox Responsive */
+        @media (max-width: 1024px) {
+            .lightbox-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                height: auto;
+                max-height: 90vh;
+            }
+
+            .lightbox-video-container {
+                grid-column: 1;
+                grid-row: 1;
+                height: 40vh;
+            }
+
+            .lightbox-metadata {
+                grid-column: 1;
+                grid-row: 2;
+                max-height: 30vh;
+            }
+
+            .lightbox-carousel {
+                grid-column: 1;
+                grid-row: 3;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .lightbox-content {
+                padding: 1rem;
+                width: 95%;
+            }
+
+            .lightbox-video-container {
+                height: 30vh;
+            }
+
+            .lightbox-metadata {
+                gap: 1rem;
+            }
+
+            .metadata-section h3 {
+                font-size: 0.9rem;
+            }
+
+            .metadata-section p {
+                font-size: 0.85rem;
+            }
+
+            .carousel-prev,
+            .carousel-next {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+
         /* Android Landscape Block */
         .rotate-message {
             display: none;
@@ -628,6 +840,10 @@
         @media (orientation: landscape) and (min-width: 600px) and (max-width: 1194px) and (max-height: 900px) {
             .rotate-message {
                 display: flex;
+            }
+            /* Hide rotate message when video is playing */
+            .rotate-message.hidden {
+                display: none !important;
             }
         }
 
@@ -856,6 +1072,7 @@
         <div class="nav-logo" onclick="goHome()">GP</div>
         <div class="nav-links">
             <a onclick="showSection('about')">Logline</a>
+            <a id="playNavLink" onclick="showSection('loglines')">PLAY</a>
             <a onclick="showSection('services')">Unicorn Ninja Abilities</a>
             <a onclick="showSection('work')">Historiae Selectae</a>
             <a onclick="showSection('contact')">Mindmeld</a>
@@ -987,16 +1204,152 @@
         </div>
     </div>
 
-    <footer style="position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 1000; color: rgba(255,255,255,0.3); font-size: 0.8rem; text-align: center;">
+    <!-- Video Lightbox -->
+    <div id="videoLightbox" class="video-lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+
+        <div class="lightbox-content">
+            <div class="lightbox-video-container" id="videoContainer">
+                <iframe id="lightboxVideoEmbed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <div class="lightbox-metadata">
+                <div class="metadata-section">
+                    <h3>Logline</h3>
+                    <p id="lightboxLogline"></p>
+                </div>
+                <div class="metadata-section">
+                    <h3>Models Employed</h3>
+                    <p id="lightboxModels"></p>
+                </div>
+                <div class="metadata-section">
+                    <h3>Pipeline</h3>
+                    <p id="lightboxPipeline"></p>
+                </div>
+                <div class="metadata-section">
+                    <h3>Research</h3>
+                    <p id="lightboxResearch">
+                        <a id="lightboxResearchLink" href="#" target="_blank" rel="noopener" style="color: #00ff88; text-decoration: none; transition: color 0.3s;">
+                            <span id="lightboxResearchTitle"></span> →
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="lightbox-carousel">
+                <button class="carousel-prev" onclick="previousVideo()">←</button>
+                <div class="carousel-indicators" id="carouselIndicators"></div>
+                <button class="carousel-next" onclick="nextVideo()">→</button>
+            </div>
+        </div>
+    </div>
+
+    <footer style="position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 1000; color: rgba(255,255,255,0.3); font-size: 0.8rem; text-align: center; pointer-events: none;">
         © 2025 Gravitate Pictures
     </footer>
 
     <script>
+        // FEATURE FLAG: Set to true to enable PLAY section
+        const FEATURE_PLAY_ENABLED = false;
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let w, h;
         let particles = [];
         let isShowingContent = false;
+
+        // ========================================
+        // MONTHLY UPDATE SECTION - Video Showcase
+        // ========================================
+        // Update this section monthly with new Vimeo embeds and research PDFs
+        // Last updated: January 2026
+        //
+        // Vimeo Embed Format: https://player.vimeo.com/video/VIDEO_ID?autoplay=1
+        // YouTube Embed Format: https://www.youtube.com/embed/VIDEO_ID?autoplay=1
+        // Research PDFs: Place PDFs in /research/ folder and link here
+        // ========================================
+
+        const videos = [
+            {
+                id: 1,
+                embedUrl: "https://player.vimeo.com/video/YOUR_VIMEO_ID_1?autoplay=1",  // UPDATE: Replace with Vimeo video ID
+                logline: "A visionary journey through abstract landscapes where reality bends to imagination.",
+                models: "Runway Gen-3, Midjourney v6, ElevenLabs",
+                pipeline: "Script → Midjourney → Runway Gen-3 → After Effects → Premiere",
+                researchLink: "/research/2026-01-video1-research.pdf",  // UPDATE: Monthly research PDF
+                researchTitle: "Generative Landscape Research",  // UPDATE: Research document title
+                shape: "circle",
+                date: "2026-01"  // Archive date for monthly rotation
+            },
+            {
+                id: 2,
+                embedUrl: "https://player.vimeo.com/video/YOUR_VIMEO_ID_2?autoplay=1",  // UPDATE: Replace with Vimeo video ID
+                logline: "Exploring the intersection of human emotion and artificial intelligence.",
+                models: "Sora, DALL-E 3, Whisper AI",
+                pipeline: "Concept → DALL-E 3 → Sora → Sound Design → Final Cut",
+                researchLink: "/research/2026-01-video2-research.pdf",  // UPDATE: Monthly research PDF
+                researchTitle: "AI Emotion Synthesis Study",  // UPDATE: Research document title
+                shape: "square",
+                date: "2026-01"
+            },
+            {
+                id: 3,
+                embedUrl: "https://player.vimeo.com/video/YOUR_VIMEO_ID_3?autoplay=1",  // UPDATE: Replace with Vimeo video ID
+                logline: "A meditation on time, memory, and the fragments that define our existence.",
+                models: "Runway Gen-3, Stable Diffusion XL, Mubert AI",
+                pipeline: "Storyboard → Stable Diffusion → Runway → Audio Mix → Resolve",
+                researchLink: "/research/2026-01-video3-research.pdf",  // UPDATE: Monthly research PDF
+                researchTitle: "Temporal Memory in Generative Systems",  // UPDATE: Research document title
+                shape: "triangle",
+                date: "2026-01"
+            },
+            {
+                id: 4,
+                embedUrl: "https://player.vimeo.com/video/YOUR_VIMEO_ID_4?autoplay=1",  // UPDATE: Replace with Vimeo video ID
+                logline: "Dancing particles reveal hidden patterns in the chaos of modern life.",
+                models: "Pika Labs, Midjourney v6, Suno AI",
+                pipeline: "Concept → Midjourney → Pika Labs → Sound Design → Premiere",
+                researchLink: "/research/2026-01-video4-research.pdf",  // UPDATE: Monthly research PDF
+                researchTitle: "Particle Systems & Emergence",  // UPDATE: Research document title
+                shape: "hexagon",
+                date: "2026-01"
+            },
+            {
+                id: 5,
+                embedUrl: "https://player.vimeo.com/video/YOUR_VIMEO_ID_5?autoplay=1",  // UPDATE: Replace with Vimeo video ID
+                logline: "An intimate portrait of transformation through digital metamorphosis.",
+                models: "Runway Gen-3, Leonardo AI, Musicgen",
+                pipeline: "Script → Leonardo AI → Runway → Compositing → Final Cut",
+                researchLink: "/research/2026-01-video5-research.pdf",  // UPDATE: Monthly research PDF
+                researchTitle: "Digital Metamorphosis Techniques",  // UPDATE: Research document title
+                shape: "pentagon",
+                date: "2026-01"
+            },
+            {
+                id: 6,
+                embedUrl: "https://player.vimeo.com/video/YOUR_VIMEO_ID_6?autoplay=1",  // UPDATE: Replace with Vimeo video ID
+                logline: "Witnessing the birth of consciousness in a synthetic world.",
+                models: "Sora, Midjourney v6, ElevenLabs",
+                pipeline: "Treatment → Midjourney → Sora → Audio Post → Resolve",
+                researchLink: "/research/2026-01-video6-research.pdf",  // UPDATE: Monthly research PDF
+                researchTitle: "Synthetic Consciousness Framework",  // UPDATE: Research document title
+                shape: "diamond",
+                date: "2026-01"
+            }
+        ];
+
+        // ========================================
+        // ARCHIVE - Previous Months
+        // ========================================
+        // Copy current videos array here before monthly update
+        // Format: const videos_YYYY_MM = [...];
+        // Example: const videos_2025_12 = [...previous month's videos...];
+        // ========================================
+
+        let videoFormations = []; // Array to hold formation data
+        let currentVideoIndex = 0; // Current video in lightbox
+        let isShowingVideoShowcase = false; // Video showcase state
+        let hasPlayedVideo = false; // Track if user has played any video
 
         // Tagline cycling
         const taglines = ['Creative Technology', 'Technology for Creatives'];
@@ -1043,6 +1396,9 @@
                 this.fadingToSolid = false;
                 this.flashPhase = 0;  // Track flash animation phase
                 this.vibrateOffset = { x: 0, y: 0 };  // Track vibration offset
+                this.bubbling = false;  // Track if particle is in bubbling mode
+                this.bubblePhase = 0;  // Phase for bubbling oscillation
+                this.videoIndex = -1;  // Which video formation this particle belongs to
             }
 
             reset() {
@@ -1108,6 +1464,19 @@
                     if (this.opacity > 0) this.opacity -= 0.015;
                     this.vx = (Math.random() - 0.5) * 0.3;
                     this.vy = (Math.random() - 0.5) * 0.3;
+                } else if (this.bubbling) {
+                    // Bubble in place with oscillating offset
+                    this.bubblePhase += 0.03;
+                    const offsetX = Math.sin(this.bubblePhase) * 2;
+                    const offsetY = Math.cos(this.bubblePhase * 1.3) * 2;
+
+                    // Move towards target with bubbling offset
+                    this.vx = ((this.targetX - this.x) + offsetX) * 0.04;
+                    this.vy = ((this.targetY - this.y) + offsetY) * 0.04;
+
+                    // Keep particles visible and LARGER for thick shapes
+                    if (this.opacity < 1) this.opacity += 0.03;
+                    if (this.size < 4) this.size += 0.1; // Increased from 2.5 to 4
                 } else if (this.forming) {
                     // Move towards target position (slowed down by 25% for smoother formation)
                     const dx = this.targetX - this.x;
@@ -1215,11 +1584,13 @@
         }
 
         // Create particles
-        const particleCount = window.innerWidth < 768 ? 300 : 600;
+        // Increased counts to support PLAY title + 6 video formations
+        // Mobile needs: ~60 (smaller PLAY) + 720 (6 shapes x 120) = ~780 minimum
+        // Desktop needs: ~100 (PLAY) + 900 (6 shapes x 150) = ~1000 minimum
+        const particleCount = window.innerWidth < 768 ? 900 : 1400;
         for (let i = 0; i < particleCount; i++) {
             particles.push(new Particle());
         }
-        console.log(`Created ${particles.length} particles on canvas ${w}x${h}`);
 
         // Initial spread on page load
         setTimeout(() => {
@@ -1228,7 +1599,13 @@
 
         function drawConnections() {
             particles.forEach((p1, i) => {
+                // Skip PLAY title particles (videoIndex -2) and video shape particles (videoIndex >= 0)
+                if (p1.videoIndex === -2 || p1.videoIndex >= 0) return;
+
                 particles.slice(i + 1, i + 5).forEach(p2 => {
+                    // Skip connections to PLAY title particles and video shape particles
+                    if (p2.videoIndex === -2 || p2.videoIndex >= 0) return;
+
                     const dx = p1.x - p2.x;
                     const dy = p1.y - p2.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -1248,6 +1625,17 @@
         let currentSection = null;
 
         function showSection(sectionName) {
+            // FEATURE FLAG: Block access to PLAY section if disabled
+            if (sectionName === 'loglines' && !FEATURE_PLAY_ENABLED) {
+                return;
+            }
+
+            // Special handling for video showcase
+            if (sectionName === 'loglines') {
+                showVideoShowcase();
+                return;
+            }
+
             // If already showing this section, do nothing
             if (currentSection === sectionName) return;
 
@@ -1255,6 +1643,10 @@
             const previousSection = currentSection;
             currentSection = sectionName;
             isShowingContent = true;
+            isShowingVideoShowcase = false; // Not video showcase
+
+            // Disable canvas pointer events for non-video sections
+            canvas.style.pointerEvents = 'none';
 
             // Hide hero if first time
             if (!wasShowingContent) {
@@ -1354,7 +1746,7 @@
             }, 1500);
         }
 
-        function showSolidTitle(text, fontSize) {
+        function showSolidTitle(text, fontSize, customY = null) {
             const solidTitle = document.getElementById('solidTitle');
             solidTitle.textContent = text;
             solidTitle.style.fontSize = `${fontSize}px`;
@@ -1366,7 +1758,7 @@
             // Calculate position using EXACT same logic as particles
             const lines = text.split('\n');
             const totalHeight = lines.length * fontSize * lineHeight;
-            const startY = h / 2 - totalHeight / 2 - 100;
+            const startY = customY !== null ? customY : (h / 2 - totalHeight / 2 - 100);
 
             // Detect iPad (portrait and landscape)
             // iPad portrait is often 768px, 810px, 820px, or 834px depending on model
@@ -1379,8 +1771,13 @@
             // Detect Android landscape - matches CSS media query exactly
             const isAndroidLandscape = !isIPad && w > h && w >= 600 && w <= 1024 && h <= 900;
 
-            // Debug logging
-            console.log(`showSolidTitle - text: ${text}, w: ${w}, h: ${h}, isIPad: ${isIPad}, isIPadPortrait: ${isIPadPortrait}, isIPadLandscape: ${isIPadLandscape}, isAndroidLandscape: ${isAndroidLandscape}`);
+            // Get text width from canvas measurement (same as particles)
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.font = `900 ${fontSize}px 'Syne', sans-serif`;
+
+            // For multi-line, use the FIRST line width (not max) to match particle logic
+            const firstLineWidth = tempCtx.measureText(lines[0]).width;
 
             // Apply the same left shift as particles
             // iPad needs specific positioning between mobile and desktop
@@ -1397,14 +1794,6 @@
                 leftShift = fontSize * 0.2; // Desktop
             }
 
-            // Get text width from canvas measurement (same as particles)
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.font = `900 ${fontSize}px 'Syne', sans-serif`;
-
-            // For multi-line, use the FIRST line width (not max) to match particle logic
-            const firstLineWidth = tempCtx.measureText(lines[0]).width;
-
             // Particles add 20px canvas offset, so we need to account for that
             // Particles use: x + w / 2 - textWidth / 2 - leftShift
             // But particles are drawn from canvas coordinates which add the canvas padding (20px)
@@ -1415,8 +1804,16 @@
             // Desktop: subtract pixels to move solid title up (8px)
             // iPad: separate values for portrait vs landscape
             // Mobile: lower by letter height, then raise by 1% (20 + fontSize - h * 0.01)
+            // EXCEPTION: For PLAY with customY, move solid slightly lower to align with particles
             let verticalOffset;
-            if (!isIPad && w <= 768) {
+            if (text === 'PLAY' && customY !== null) {
+                // Desktop: Move solid UP 5px; Mobile: standard alignment
+                if (w > 768) {
+                    verticalOffset = 25 - fontSize * 0.1; // Desktop: solid up 5px from base
+                } else {
+                    verticalOffset = 30 - fontSize * 0.1; // Mobile: standard
+                }
+            } else if (!isIPad && w <= 768) {
                 verticalOffset = 20 + fontSize - h * 0.01; // Mobile (but not iPad)
             } else if (isIPadPortrait) {
                 verticalOffset = 30; // iPad Portrait
@@ -1436,16 +1833,33 @@
             // Start showing solid title with overlap - particles will fade out gradually
             solidTitle.classList.add('visible');
 
+            // ===== PLAY: Disable pointer events so clicks pass through to shapes (MODIFIED) =====
+            if (text === 'PLAY') {
+                solidTitle.style.pointerEvents = 'none';
+            }
+
+            // ===== PLAY: Fade PLAY title particles like other sections (MODIFIED) =====
             // Start fading out particles gradually while solid title fades in (smooth crossfade)
             particles.forEach(p => {
-                p.fadingToSolid = true;
-                p.flashPhase = 0;  // Reset flash phase for new animation
+                // Only fade title particles (videoIndex -2 for PLAY title)
+                if (text === 'PLAY' && p.videoIndex === -2) {
+                    p.fadingToSolid = true;
+                    p.flashPhase = 0;
+                    // Let the natural fadingToSolid animation complete (~1.5s)
+                    // Particles will flash/vibrate and fade out gradually like other sections
+                } else if (text !== 'PLAY') {
+                    // For other sections, fade all forming particles
+                    p.fadingToSolid = true;
+                    p.flashPhase = 0;
+                }
             });
         }
 
         function hideSolidTitle() {
             const solidTitle = document.getElementById('solidTitle');
             solidTitle.classList.remove('visible');
+            // Reset pointer events to default (will be controlled by CSS class)
+            solidTitle.style.pointerEvents = '';
 
             // Show all particles again and reset ALL states completely
             particles.forEach(p => {
@@ -1616,12 +2030,724 @@
             return allPoints;
         }
 
+        // Shape generation functions for video formations
+        function createCirclePoints(centerX, centerY, radius, count) {
+            const points = [];
+            const rings = 3; // Number of concentric rings
+            const particlesPerRing = Math.floor(count / rings);
+
+            for (let ring = 0; ring < rings; ring++) {
+                const ringRadius = radius * (ring + 1) / rings;
+                const circumference = 2 * Math.PI * ringRadius;
+                const spacing = circumference / particlesPerRing;
+
+                for (let i = 0; i < particlesPerRing; i++) {
+                    const angle = (i / particlesPerRing) * Math.PI * 2;
+                    points.push({
+                        x: centerX + Math.cos(angle) * ringRadius,
+                        y: centerY + Math.sin(angle) * ringRadius
+                    });
+                }
+            }
+
+            return points;
+        }
+
+        function createSquarePoints(centerX, centerY, size, count) {
+            const points = [];
+            const layers = 3; // Multiple concentric squares like the circle
+            const particlesPerLayer = Math.floor(count / layers);
+
+            for (let layer = 0; layer < layers; layer++) {
+                const layerSize = size * (layer + 1) / layers;
+                const perimeter = layerSize * 4;
+                const spacing = perimeter / particlesPerLayer;
+
+                for (let i = 0; i < particlesPerLayer; i++) {
+                    const distance = i * spacing;
+                    let x, y;
+
+                    if (distance < layerSize) {
+                        // Top edge
+                        x = centerX - layerSize/2 + distance;
+                        y = centerY - layerSize/2;
+                    } else if (distance < layerSize * 2) {
+                        // Right edge
+                        x = centerX + layerSize/2;
+                        y = centerY - layerSize/2 + (distance - layerSize);
+                    } else if (distance < layerSize * 3) {
+                        // Bottom edge
+                        x = centerX + layerSize/2 - (distance - layerSize * 2);
+                        y = centerY + layerSize/2;
+                    } else {
+                        // Left edge
+                        x = centerX - layerSize/2;
+                        y = centerY + layerSize/2 - (distance - layerSize * 3);
+                    }
+
+                    points.push({ x, y });
+                }
+            }
+
+            return points;
+        }
+
+        function createTrianglePoints(centerX, centerY, size, count) {
+            const points = [];
+            const height = (Math.sqrt(3) / 2) * size;
+            // Increase row density for a more filled triangle
+            const rowCount = Math.floor(Math.sqrt(count * 2.5));
+
+            for (let row = 0; row < rowCount; row++) {
+                const y = centerY - height/2 + (row / rowCount) * height;
+                const rowWidth = size * (1 - row / rowCount);
+                // More particles per row for denser appearance
+                const particlesInRow = Math.max(2, Math.floor((row + 1) / rowCount * count / rowCount * 1.5));
+
+                for (let col = 0; col < particlesInRow; col++) {
+                    const x = centerX - rowWidth/2 + (col / Math.max(1, particlesInRow - 1)) * rowWidth;
+                    points.push({ x, y });
+                }
+            }
+
+            return points;
+        }
+
+        function createHexagonPoints(centerX, centerY, radius, count) {
+            const points = [];
+            const sides = 6;
+            const layers = 3; // Multiple concentric hexagons
+            const particlesPerLayer = Math.floor(count / layers);
+            const particlesPerSide = Math.floor(particlesPerLayer / sides);
+
+            for (let layer = 0; layer < layers; layer++) {
+                const layerRadius = radius * (layer + 1) / layers;
+
+                for (let side = 0; side < sides; side++) {
+                    const startAngle = (side / sides) * Math.PI * 2 - Math.PI / 2;
+                    const endAngle = ((side + 1) / sides) * Math.PI * 2 - Math.PI / 2;
+
+                    const startX = centerX + Math.cos(startAngle) * layerRadius;
+                    const startY = centerY + Math.sin(startAngle) * layerRadius;
+                    const endX = centerX + Math.cos(endAngle) * layerRadius;
+                    const endY = centerY + Math.sin(endAngle) * layerRadius;
+
+                    for (let i = 0; i < particlesPerSide; i++) {
+                        const t = i / particlesPerSide;
+                        points.push({
+                            x: startX + (endX - startX) * t,
+                            y: startY + (endY - startY) * t
+                        });
+                    }
+                }
+            }
+
+            return points;
+        }
+
+        function createPentagonPoints(centerX, centerY, radius, count) {
+            const points = [];
+            const sides = 5;
+            const layers = 3; // Multiple concentric pentagons
+            const particlesPerLayer = Math.floor(count / layers);
+            const particlesPerSide = Math.floor(particlesPerLayer / sides);
+
+            for (let layer = 0; layer < layers; layer++) {
+                const layerRadius = radius * (layer + 1) / layers;
+
+                for (let side = 0; side < sides; side++) {
+                    const startAngle = (side / sides) * Math.PI * 2 - Math.PI / 2;
+                    const endAngle = ((side + 1) / sides) * Math.PI * 2 - Math.PI / 2;
+
+                    const startX = centerX + Math.cos(startAngle) * layerRadius;
+                    const startY = centerY + Math.sin(startAngle) * layerRadius;
+                    const endX = centerX + Math.cos(endAngle) * layerRadius;
+                    const endY = centerY + Math.sin(endAngle) * layerRadius;
+
+                    for (let i = 0; i < particlesPerSide; i++) {
+                        const t = i / particlesPerSide;
+                        points.push({
+                            x: startX + (endX - startX) * t,
+                            y: startY + (endY - startY) * t
+                        });
+                    }
+                }
+            }
+
+            return points;
+        }
+
+        function createDiamondPoints(centerX, centerY, size, count) {
+            const points = [];
+            const layers = 3; // Multiple concentric diamonds
+            const particlesPerLayer = Math.floor(count / layers);
+
+            for (let layer = 0; layer < layers; layer++) {
+                const layerSize = size * (layer + 1) / layers;
+                const halfSize = layerSize / 2;
+                const perimeter = layerSize * 4;
+                const spacing = perimeter / particlesPerLayer;
+
+                for (let i = 0; i < particlesPerLayer; i++) {
+                    const distance = i * spacing;
+                    let x, y;
+
+                    if (distance < layerSize) {
+                        // Top-right edge
+                        const t = distance / layerSize;
+                        x = centerX + t * halfSize;
+                        y = centerY - halfSize + t * halfSize;
+                    } else if (distance < layerSize * 2) {
+                        // Bottom-right edge
+                        const t = (distance - layerSize) / layerSize;
+                        x = centerX + halfSize - t * halfSize;
+                        y = centerY + t * halfSize;
+                    } else if (distance < layerSize * 3) {
+                        // Bottom-left edge
+                        const t = (distance - layerSize * 2) / layerSize;
+                        x = centerX - t * halfSize;
+                        y = centerY + halfSize - t * halfSize;
+                    } else {
+                        // Top-left edge
+                        const t = (distance - layerSize * 3) / layerSize;
+                        x = centerX - halfSize + t * halfSize;
+                        y = centerY - halfSize + t * halfSize;
+                    }
+
+                    points.push({ x, y });
+                }
+            }
+
+            return points;
+        }
+
+        function calculateVideoFormationGrid(videoCount, canvasW, canvasH) {
+            let cols, shapeSize, spacingX, spacingY, particleCount;
+
+            // Mobile (<768px) - single column vertical layout - ONLY 4 SHAPES
+            if (canvasW <= 768) {
+                cols = 1;
+                videoCount = 4; // Mobile shows only first 4 shapes
+                shapeSize = 35; // Slightly smaller for better fit
+                spacingX = 120;
+                spacingY = 105; // Increased spacing for better click separation
+                particleCount = 90; // Slightly fewer particles for smaller shapes
+            }
+            // Tablet (768-1024px)
+            else if (canvasW <= 1024) {
+                cols = 2;
+                shapeSize = 60;
+                spacingX = 140;
+                spacingY = 180;
+                particleCount = 130;
+            }
+            // Desktop (>1024px)
+            else {
+                cols = 3;
+                shapeSize = 70;
+                spacingX = 180;
+                spacingY = 200;
+                particleCount = 150;
+            }
+
+            const rows = Math.ceil(videoCount / cols);
+            const gridWidth = cols * spacingX;
+            const gridHeight = rows * spacingY;
+            const startX = (canvasW - gridWidth) / 2 + spacingX / 2;
+
+            // Account for footer space and vertical spacing from navigation
+            let footerSpace, verticalOffset;
+            if (canvasW <= 768) {
+                // Mobile: Move entire page down 2x menu height, ensure bottom shape clickable
+                footerSpace = 200; // Much more space to ensure bottom shape is fully accessible
+                verticalOffset = 120; // 2x menu letter height - push entire page down
+            } else if (canvasW <= 1024) {
+                // Tablet/iPad: moderate spacing, safe for iPad landscape at 1024px
+                footerSpace = 80;
+                verticalOffset = 80;
+            } else {
+                // Desktop: much closer to PLAY, spread shapes evenly
+                // iPads larger than 1024px (1080, 1112, 1194) included here
+                footerSpace = 60;
+                verticalOffset = 60;
+            }
+
+            const startY = (canvasH - gridHeight - footerSpace) / 2 + spacingY / 2 + verticalOffset;
+
+            const formations = [];
+
+            for (let i = 0; i < videoCount; i++) {
+                const row = Math.floor(i / cols);
+                const col = i % cols;
+                const centerX = startX + col * spacingX;
+                const centerY = startY + row * spacingY;
+
+                const video = videos[i];
+                let points;
+
+                switch (video.shape) {
+                    case 'circle':
+                        points = createCirclePoints(centerX, centerY, shapeSize, particleCount);
+                        break;
+                    case 'square':
+                        points = createSquarePoints(centerX, centerY, shapeSize, particleCount);
+                        break;
+                    case 'triangle':
+                        points = createTrianglePoints(centerX, centerY, shapeSize, particleCount);
+                        break;
+                    case 'hexagon':
+                        points = createHexagonPoints(centerX, centerY, shapeSize, particleCount);
+                        break;
+                    case 'pentagon':
+                        points = createPentagonPoints(centerX, centerY, shapeSize, particleCount);
+                        break;
+                    case 'diamond':
+                        points = createDiamondPoints(centerX, centerY, shapeSize, particleCount);
+                        break;
+                    default:
+                        points = createCirclePoints(centerX, centerY, shapeSize, particleCount);
+                }
+
+                formations.push({
+                    videoIndex: i,
+                    centerX,
+                    centerY,
+                    radius: shapeSize,
+                    shape: video.shape,  // Add shape name for debugging
+                    points
+                });
+            }
+
+            return formations;
+        }
+
+        function formVideoFormations() {
+            // Calculate formations based on current canvas size
+            videoFormations = calculateVideoFormationGrid(videos.length, w, h);
+
+            // Assign particles to formations
+            let particleIndex = 0;
+            videoFormations.forEach(formation => {
+                formation.points.forEach(point => {
+                    if (particleIndex < particles.length) {
+                        const particle = particles[particleIndex];
+                        particle.targetX = point.x;
+                        particle.targetY = point.y;
+                        particle.forming = true;
+                        particle.bubbling = false;
+                        particle.settled = false;
+                        particle.fadingToSolid = false;
+                        particle.fadingOut = false;
+                        particle.spreading = false;
+                        particle.hidden = false;
+                        particle.videoIndex = formation.videoIndex;
+                        particle.bubblePhase = Math.random() * Math.PI * 2; // Random start phase
+                        particleIndex++;
+                    }
+                });
+            });
+
+            // Hide remaining particles
+            for (let i = particleIndex; i < particles.length; i++) {
+                particles[i].hidden = true;
+            }
+        }
+
+        function enableBubbling() {
+            particles.forEach(p => {
+                if (!p.hidden && p.videoIndex >= 0) {
+                    p.forming = false;
+                    p.bubbling = true;
+                }
+            });
+        }
+
+        function showVideoShowcase() {
+            // If already showing video showcase, do nothing (same as other sections)
+            if (isShowingVideoShowcase && currentSection === 'loglines') return;
+
+            // Track that we're showing video showcase
+            isShowingVideoShowcase = true;
+            isShowingContent = true;
+            currentSection = 'loglines';
+
+            // Enable canvas pointer events so shapes are clickable
+            canvas.style.pointerEvents = 'auto';
+
+            // Hide hero
+            document.getElementById('hero').classList.add('hidden');
+
+            // Show close button
+            document.querySelector('.close-btn').classList.add('active');
+
+            // IMPORTANT: Hide solid title immediately to prevent blocking X formation
+            hideSolidTitle();
+
+            // Hide content overlay (we're showing formations on canvas instead)
+            document.getElementById('contentOverlay').classList.remove('active');
+
+            // Always explode particles first for consistent transition
+            particles.forEach(p => p.explode());
+
+            setTimeout(() => {
+                formVideoShowcaseWithTitle();
+            }, 500);
+        }
+
+        function formVideoShowcaseWithTitle() {
+            // Reset all particles completely first
+            particles.forEach(p => {
+                p.forming = false;
+                p.settled = false;
+                p.bubbling = false;
+                p.fadingToSolid = false;
+                p.fadingOut = false;
+                p.spreading = false;
+                p.hidden = false;
+                p.videoIndex = -1;
+                p.opacity = 1;
+            });
+
+            const titleText = 'PLAY';
+            // Use appropriate font size for PLAY
+            let titleSize;
+            if (w <= 768) {
+                titleSize = 32; // Increased from 24 for better visibility on mobile
+            } else {
+                titleSize = Math.min(40, Math.max(28, w * 0.035));
+            }
+
+            // Calculate video grid first to position PLAY relative to shapes
+            const videoGrid = calculateVideoFormationGrid(videos.length, w, h);
+
+            // Find where shapes start (top-most Y position)
+            let minShapeY = Infinity;
+            videoGrid.forEach(formation => {
+                if (formation.centerY < minShapeY) minShapeY = formation.centerY;
+            });
+
+            // Position PLAY above the shapes with device-specific spacing
+            let titleY;
+            if (w <= 768) {
+                // Mobile: Balanced spacing between nav and shapes
+                titleY = minShapeY - 95; // Good balance between nav clearance and shape spacing
+            } else if (w <= 1024) {
+                // Tablet/iPad: Position PLAY above shapes
+                titleY = minShapeY - 120;
+            } else {
+                // Desktop: Position PLAY above shapes (particles moved down 5px)
+                titleY = h / 2 - 295; // Particles down 5px from original
+            }
+
+            // ===== Create PLAY title particles (unless user has played a video) =====
+            let titleParticleCount = 0;
+            if (!hasPlayedVideo) {
+                // Show particle PLAY → solid transition (first load or nav-to-nav)
+                const titlePoints = createTextPoints(titleText, titleSize, titleY);
+
+                titlePoints.forEach((point, i) => {
+                    if (particles[i]) {
+                        particles[i].targetX = point.x;
+                        particles[i].targetY = point.y;
+                        particles[i].forming = true;
+                        particles[i].settled = false;
+                        particles[i].hidden = false;
+                        particles[i].fadingToSolid = false;
+                        particles[i].bubbling = false;  // Title doesn't bubble
+                        particles[i].opacity = 1;
+                        particles[i].videoIndex = -2;  // -2 = PLAY title particle
+                    }
+                });
+                titleParticleCount = titlePoints.length;
+            } else {
+                // Show solid PLAY immediately (user has played a video)
+                showSolidTitle('PLAY', titleSize, titleY);
+            }
+
+            // Use the video formations we already calculated above
+            videoFormations = videoGrid;
+
+            // Assign particles to video formations (starting after title particles)
+            let particleIndex = titleParticleCount;
+
+            // Assign particles to video formations
+            videoFormations.forEach((formation, formIndex) => {
+                const startIndex = particleIndex;
+                const pointsNeeded = formation.points.length;
+                let pointsAssigned = 0;
+                formation.points.forEach(point => {
+                    if (particleIndex < particles.length) {
+                        const particle = particles[particleIndex];
+                        particle.targetX = point.x;
+                        particle.targetY = point.y;
+                        particle.forming = true;
+                        particle.bubbling = false;
+                        particle.settled = false;
+                        particle.fadingToSolid = false;
+                        particle.fadingOut = false;
+                        particle.spreading = false;
+                        particle.hidden = false;
+                        particle.videoIndex = formation.videoIndex;
+                        particle.bubblePhase = Math.random() * Math.PI * 2;
+                        particleIndex++;
+                        pointsAssigned++;
+                    }
+                });
+            });
+
+            // Keep remaining particles hidden until video plays
+            for (let i = particleIndex; i < particles.length; i++) {
+                particles[i].videoIndex = -1;
+                particles[i].forming = false;
+                particles[i].bubbling = false;
+                particles[i].hidden = true; // Hidden until video lightbox opens
+                particles[i].fadingOut = false;
+                particles[i].spreading = false;
+            }
+
+            // Show solid title at 1.5 seconds - SAME as other sections (LOGLINE, MINDMELD, etc.)
+            setTimeout(() => {
+                // Show solid PLAY (if not already showing from hasPlayedVideo)
+                if (!hasPlayedVideo) {
+                    showSolidTitle('PLAY', titleSize, titleY);
+                }
+
+                // Enable bubbling for video formation particles
+                particles.forEach(p => {
+                    if (p.videoIndex >= 0 && !p.hidden) {
+                        p.forming = false;
+                        p.settled = false;
+                        p.bubbling = true;
+                    }
+                });
+            }, 1500);
+        }
+
+        // Lightbox functions
+        function isPointInFormation(clickX, clickY, formation) {
+            const dx = clickX - formation.centerX;
+            const dy = clickY - formation.centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            // Bottom shape gets extra large hit area on mobile for consistent clickability
+            const isMobile = w <= 768;
+            const isBottomShape = formation.videoIndex === 3;
+            const hitMultiplier = (isMobile && isBottomShape) ? 1.6 : 1.3;
+            return distance <= formation.radius * hitMultiplier;
+        }
+
+        function expandToVideoLightbox(videoIndex) {
+            // Explode clicked formation, fade out others, hide title
+            // Background particles (videoIndex === -1) continue floating
+            particles.forEach(p => {
+                if (p.videoIndex === videoIndex) {
+                    // Explode clicked formation
+                    p.spread();
+                    p.bubbling = false;
+                } else if (p.videoIndex >= 0 && !p.hidden) {
+                    // Fade out other formations
+                    p.fadingOut = true;
+                    p.bubbling = false;
+                } else if (p.videoIndex === -2) {
+                    // X title particles already hidden, keep hidden
+                    p.hidden = true;
+                }
+                // videoIndex === -1 (background) untouched - they keep floating
+            });
+
+            // Hide solid title
+            hideSolidTitle();
+
+            // After animation, show lightbox
+            setTimeout(() => {
+                showVideoLightbox(videoIndex);
+            }, 300);
+        }
+
+        function showVideoLightbox(videoIndex) {
+            currentVideoIndex = videoIndex;
+            const video = videos[videoIndex];
+            const lightbox = document.getElementById('videoLightbox');
+            const iframe = document.getElementById('lightboxVideoEmbed');
+
+            // Mark that user has played a video (affects PLAY behavior)
+            hasPlayedVideo = true;
+
+
+            // Activate background particles to fly around like a storm during video
+            particles.forEach(p => {
+                if (p.videoIndex === -1) {
+                    p.hidden = false; // Show background particles
+                    p.spreading = false;
+                    p.forming = false;
+                    p.bubbling = false;
+                    p.fadingOut = false;
+                    // They'll float naturally in their default state
+                }
+            });
+
+            // Load video
+            iframe.src = video.embedUrl;
+
+            // Populate metadata
+            document.getElementById('lightboxLogline').textContent = video.logline;
+            document.getElementById('lightboxModels').textContent = video.models;
+            document.getElementById('lightboxPipeline').textContent = video.pipeline;
+
+            // Populate research link
+            const researchLink = document.getElementById('lightboxResearchLink');
+            const researchTitle = document.getElementById('lightboxResearchTitle');
+            if (video.researchLink && video.researchTitle) {
+                researchLink.href = video.researchLink;
+                researchTitle.textContent = video.researchTitle;
+                researchLink.style.display = 'inline';
+            } else {
+                researchLink.style.display = 'none';
+            }
+
+            // Initialize carousel indicators
+            const indicatorsContainer = document.getElementById('carouselIndicators');
+            indicatorsContainer.innerHTML = '';
+            videos.forEach((v, i) => {
+                const indicator = document.createElement('div');
+                indicator.className = 'carousel-indicator' + (i === videoIndex ? ' active' : '');
+                indicator.onclick = () => navigateToVideo(i);
+                indicatorsContainer.appendChild(indicator);
+            });
+
+            // Show lightbox
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('videoLightbox');
+            const iframe = document.getElementById('lightboxVideoEmbed');
+
+            // Stop video
+            iframe.src = '';
+
+            // Hide lightbox
+            lightbox.classList.remove('active');
+
+            // Ensure landscape blocker is back when lightbox closes
+            const rotateMessage = document.querySelector('.rotate-message');
+            if (rotateMessage) {
+                rotateMessage.style.display = '';
+            }
+
+            // Hide background particles again (stop the storm)
+            particles.forEach(p => {
+                if (p.videoIndex === -1) {
+                    p.hidden = true;
+                }
+            });
+
+            // After animation, reform formations with proper PLAY title
+            setTimeout(() => {
+                formVideoShowcaseWithTitle();
+            }, 200);
+        }
+
+        // Fullscreen detection for video player
+        function handleFullscreenChange() {
+            const rotateMessage = document.querySelector('.rotate-message');
+            if (!rotateMessage) return;
+
+            // Check if something is in fullscreen mode
+            const isFullscreen = !!(document.fullscreenElement ||
+                                    document.webkitFullscreenElement ||
+                                    document.mozFullScreenElement ||
+                                    document.msFullscreenElement);
+
+            if (isFullscreen) {
+                // Hide landscape blocker when video goes fullscreen
+                rotateMessage.style.display = 'none';
+            } else {
+                // Show landscape blocker when exiting fullscreen
+                rotateMessage.style.display = '';
+            }
+        }
+
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        function reformVideoFormations() {
+            // Reset all particles (video formations only, no title particles)
+            particles.forEach(p => {
+                if (p.videoIndex >= 0 && !p.hidden) {
+                    p.forming = true;
+                    p.fadingOut = false;
+                    p.spreading = false;
+                    p.bubbling = false;
+                    p.opacity = Math.random() * 0.5 + 0.3;
+                    p.size = 2; // Reset to default size
+                    p.fadingToSolid = false;
+                }
+            });
+
+            // Show solid PLAY title immediately
+            const titleSize = Math.min(56, Math.max(32, w * 0.05));
+
+            let titleYOffset;
+            if (w <= 768) {
+                titleYOffset = Math.min(280, h * 0.35); // Mobile (iOS/Android): very high to clear shapes
+            } else if (w <= 1024) {
+                titleYOffset = 240; // Tablet/iPad: higher
+            } else {
+                titleYOffset = 250; // Desktop: higher
+            }
+
+            const titleY = h / 2 - titleYOffset;
+            showSolidTitle('PLAY', titleSize, titleY);
+
+            // After formation completes, enable bubbling
+            setTimeout(() => {
+                // Enable bubbling for video formations
+                enableBubbling();
+            }, 1500);
+        }
+
+        function navigateToVideo(videoIndex) {
+            if (videoIndex === currentVideoIndex) return;
+            showVideoLightbox(videoIndex);
+        }
+
+        function previousVideo() {
+            const newIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
+            navigateToVideo(newIndex);
+        }
+
+        function nextVideo() {
+            const newIndex = (currentVideoIndex + 1) % videos.length;
+            navigateToVideo(newIndex);
+        }
+
+        // Keyboard shortcuts for lightbox
+        document.addEventListener('keydown', (e) => {
+            const lightbox = document.getElementById('videoLightbox');
+            if (lightbox.classList.contains('active')) {
+                if (e.key === 'Escape') {
+                    closeLightbox();
+                } else if (e.key === 'ArrowLeft') {
+                    previousVideo();
+                } else if (e.key === 'ArrowRight') {
+                    nextVideo();
+                }
+            }
+        });
+
         function goHome() {
             if (!isShowingContent) return;
 
             isShowingContent = false;
+            isShowingVideoShowcase = false;
             currentSection = null;
             document.querySelector('.close-btn').classList.remove('active');
+
+            // Disable canvas pointer events (back to background mode)
+            canvas.style.pointerEvents = 'none';
 
             // Hide solid title and show particles
             hideSolidTitle();
@@ -1639,6 +2765,8 @@
                 p.opacity = Math.random() * 0.5 + 0.3;
                 p.hidden = false;
                 p.settled = false;
+                p.bubbling = false;
+                p.videoIndex = -1;
                 // Trigger spread effect
                 p.spread();
             });
@@ -1677,9 +2805,90 @@
         // Add transition styles for tagline
         taglineEl.style.transition = 'opacity 0.3s';
 
+        // Canvas click detection for video formations
+        canvas.addEventListener('click', (event) => {
+            if (!isShowingVideoShowcase) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+
+            const clicked = videoFormations.find(f =>
+                isPointInFormation(clickX, clickY, f)
+            );
+
+            if (clicked) {
+                expandToVideoLightbox(clicked.videoIndex);
+            }
+        });
+
+        // Hover effects for formations (desktop)
+        let lastHoveredIndex = -1;
+        canvas.addEventListener('mousemove', (event) => {
+            if (!isShowingVideoShowcase) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const hovering = videoFormations.find(f =>
+                isPointInFormation(mouseX, mouseY, f)
+            );
+
+            if (hovering) {
+                canvas.style.cursor = 'pointer';
+
+                // Make hovered formation solid (stop bubbling, max opacity)
+                particles.forEach(p => {
+                    if (p.videoIndex === hovering.videoIndex && !p.hidden) {
+                        p.bubbling = false; // Stop bubbling
+                        p.opacity = 1; // Fully opaque
+                        p.size = 5; // Much larger size for solid appearance
+                    }
+                });
+
+                lastHoveredIndex = hovering.videoIndex;
+            } else {
+                canvas.style.cursor = 'default';
+
+                // Resume bubbling for previously hovered formation
+                if (lastHoveredIndex >= 0) {
+                    particles.forEach(p => {
+                        if (p.videoIndex === lastHoveredIndex && !p.hidden) {
+                            p.bubbling = true; // Resume bubbling
+                        }
+                    });
+                    lastHoveredIndex = -1;
+                }
+            }
+        });
+
+        // Touch support for mobile
+        canvas.addEventListener('touchend', (event) => {
+            if (!isShowingVideoShowcase) return;
+
+            event.preventDefault();
+            const touch = event.changedTouches[0];
+            const rect = canvas.getBoundingClientRect();
+            const touchX = touch.clientX - rect.left;
+            const touchY = touch.clientY - rect.top;
+
+            const tapped = videoFormations.find(f =>
+                isPointInFormation(touchX, touchY, f)
+            );
+
+            if (tapped) {
+                expandToVideoLightbox(tapped.videoIndex);
+            }
+        });
+
         // Click on solid title to hide it and reveal particles
         document.getElementById('solidTitle').addEventListener('click', () => {
-            hideSolidTitle();
+            // Don't hide solid PLAY when clicked - it should stay visible
+            const solidTitle = document.getElementById('solidTitle');
+            if (solidTitle.textContent !== 'PLAY') {
+                hideSolidTitle();
+            }
         });
 
         // Toggle card expansion
@@ -1698,19 +2907,16 @@
             }
         });
 
-        // Double tap anywhere to close on mobile
-        let lastTap = 0;
-        document.addEventListener('touchend', (e) => {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-            if (tapLength < 300 && tapLength > 0) {
-                // Double tap detected
-                if (isShowingContent) {
-                    goHome();
-                }
+        // REMOVED: Double tap to close - user wants ONLY X button to close
+        // Only X button, nav links, and logo should navigate
+
+        // FEATURE FLAG: Hide PLAY nav link when feature is disabled
+        if (!FEATURE_PLAY_ENABLED) {
+            const playNavLink = document.getElementById('playNavLink');
+            if (playNavLink) {
+                playNavLink.style.display = 'none';
             }
-            lastTap = currentTime;
-        });
+        }
     </script>
 </body>
 </html>
