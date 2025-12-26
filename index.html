@@ -2251,6 +2251,7 @@
 
         function calculateVideoFormationGrid(videoCount, canvasW, canvasH) {
             let cols, shapeSize, spacingX, spacingY, particleCount;
+            const isIPadPortrait = canvasH > canvasW && canvasW >= 768 && canvasW <= 834 && canvasH >= 1024;
 
             // Mobile (<768px) - single column vertical layout - ONLY 4 SHAPES
             if (canvasW <= 768) {
@@ -2260,6 +2261,14 @@
                 spacingX = 120;
                 spacingY = 105; // Increased spacing for better click separation
                 particleCount = 90; // Slightly fewer particles for smaller shapes
+            }
+            // iPad Portrait - spread shapes more across screen
+            else if (isIPadPortrait) {
+                cols = 2;
+                shapeSize = 60;
+                spacingX = 140;
+                spacingY = 280; // Much more spacing to fill vertical space
+                particleCount = 130;
             }
             // Tablet (768-1024px)
             else if (canvasW <= 1024) {
@@ -2485,6 +2494,7 @@
             // Position PLAY above the shapes with device-specific spacing
             let titleY;
             const isIPadLandscape = w > h && w >= 600 && w <= 1194 && h <= 900;
+            const isIPadPortrait = h > w && w >= 768 && w <= 834 && h >= 1024;
 
             if (w <= 768) {
                 // Mobile: Balanced spacing between nav and shapes
@@ -2492,8 +2502,11 @@
             } else if (isIPadLandscape) {
                 // iPad Landscape: Much higher to create breathing room between nav and shapes
                 titleY = minShapeY - 180; // More space for iPad landscape
+            } else if (isIPadPortrait) {
+                // iPad Portrait: Move PLAY much higher to reduce negative space
+                titleY = minShapeY - 200; // More space above shapes
             } else if (w <= 1024) {
-                // Tablet/iPad Portrait: Position PLAY above shapes
+                // Other tablets: Position PLAY above shapes
                 titleY = minShapeY - 120;
             } else {
                 // Desktop: Position PLAY above shapes (particles moved down 5px)
