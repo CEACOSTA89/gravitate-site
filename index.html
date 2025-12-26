@@ -2929,8 +2929,12 @@
             event.preventDefault();
             const touch = event.changedTouches[0];
             const rect = canvas.getBoundingClientRect();
-            const touchX = touch.clientX - rect.left;
-            const touchY = touch.clientY - rect.top;
+
+            // Scale touch coordinates to match canvas internal coordinates
+            const scaleX = w / rect.width;
+            const scaleY = h / rect.height;
+            const touchX = (touch.clientX - rect.left) * scaleX;
+            const touchY = (touch.clientY - rect.top) * scaleY;
 
             // DEBUG: Log touch coordinates and formation bounds
             console.log('=== ANDROID TOUCH DEBUG ===');
