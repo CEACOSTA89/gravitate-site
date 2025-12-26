@@ -894,12 +894,6 @@
                 min-width: max-content;
             }
 
-            /* Center PLAY between UNICORN and HISTORIAE for iPad landscape */
-            .nav-links a:nth-child(3) {
-                margin-left: 2.5rem;
-                margin-right: 2.5rem;
-            }
-
             /* Ensure content uses desktop-like layout, not mobile */
             .content-overlay {
                 padding-top: 50vh !important;
@@ -926,6 +920,14 @@
 
             .tagline {
                 font-size: 1.25rem !important;
+            }
+        }
+
+        /* iPad Landscape ONLY - Center PLAY in nav */
+        @media (orientation: landscape) and (min-width: 1024px) and (max-width: 1194px) and (min-height: 768px) and (max-height: 834px) {
+            .nav-links a:nth-child(3) {
+                margin-left: 1rem;
+                margin-right: 4rem;
             }
         }
 
