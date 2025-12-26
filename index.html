@@ -925,9 +925,11 @@
 
         /* iPad PORTRAIT ONLY - Center PLAY in nav */
         @media (orientation: portrait) and (min-width: 768px) and (max-width: 834px) and (min-height: 1024px) {
-            /* Add padding to nav to create space from X button */
+            /* Shift entire nav to the left to avoid X button */
             nav {
-                padding-right: 5rem;
+                justify-content: flex-start;
+                padding-left: 2rem;
+                padding-right: 2rem;
             }
 
             /* Move UNICORN NINJA ABILITIES to the right */
