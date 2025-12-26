@@ -923,28 +923,22 @@
             }
         }
 
-        /* iPad PORTRAIT ONLY - Center PLAY in nav */
+        /* iPad PORTRAIT ONLY - Use CSS Grid for precise nav control */
         @media (orientation: portrait) and (min-width: 768px) and (max-width: 834px) and (min-height: 1024px) {
-            /* Shift entire nav to the left to avoid X button */
             nav {
-                justify-content: flex-start;
                 padding-left: 2rem;
                 padding-right: 6rem;
             }
 
-            /* Move UNICORN NINJA ABILITIES to the right */
-            .nav-links a:nth-child(2) {
-                margin-left: 1.5rem;
-                text-align: center;
+            .nav-links {
+                display: grid;
+                grid-template-columns: auto auto auto auto auto;
+                gap: 1.2rem;
+                align-items: center;
             }
 
-            /* Center PLAY between UNICORN and HISTORIAE */
-            .nav-links a:nth-child(3) {
-                margin-left: 3.3rem;
-                margin-right: 4rem;
-            }
-
-            /* Center HISTORIAE SELECTAE text */
+            /* Center stacked text */
+            .nav-links a:nth-child(2),
             .nav-links a:nth-child(4) {
                 text-align: center;
             }
