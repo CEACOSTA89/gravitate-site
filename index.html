@@ -1622,6 +1622,9 @@
         }, 100);
 
         function drawConnections() {
+            // Disabled - no connection lines
+            return;
+
             particles.forEach((p1, i) => {
                 // Skip PLAY title particles (videoIndex -2) and video shape particles (videoIndex >= 0)
                 if (p1.videoIndex === -2 || p1.videoIndex >= 0) return;
@@ -2569,15 +2572,15 @@
                 });
             });
 
-            // Keep remaining particles floating in background with connection lines
+            // Keep remaining particles floating in background (invisible)
             for (let i = particleIndex; i < particles.length; i++) {
                 particles[i].videoIndex = -1; // Floating background particles
                 particles[i].forming = false;
                 particles[i].bubbling = false;
-                particles[i].hidden = false; // Keep visible for persistent floating effect
+                particles[i].hidden = false;
                 particles[i].fadingOut = false;
                 particles[i].spreading = false;
-                particles[i].opacity = Math.random() * 0.5 + 0.3; // Subtle opacity for background
+                particles[i].opacity = 0; // Invisible - no particles or connection lines in PLAY
             }
 
             // Show solid title at 1.5 seconds - SAME as other sections (LOGLINE, MINDMELD, etc.)
