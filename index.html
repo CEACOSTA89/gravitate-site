@@ -890,6 +890,13 @@
 
             .nav-links a {
                 font-size: 0.85rem;
+                text-align: center;
+                min-width: max-content;
+            }
+
+            /* Center PLAY between UNICORN and HISTORIAE */
+            .nav-links a:nth-child(3) {
+                margin: 0 0.5rem;
             }
 
             /* Ensure content uses desktop-like layout, not mobile */
@@ -1808,8 +1815,12 @@
             // EXCEPTION: For PLAY with customY, move solid slightly lower to align with particles
             let verticalOffset;
             if (text === 'PLAY' && customY !== null) {
-                // Desktop: Move solid UP 5px; Mobile: standard alignment
-                if (w > 768) {
+                // Detect iPad landscape for PLAY alignment
+                const isPlayIPadLandscape = w > h && w >= 600 && w <= 1194 && h <= 900;
+
+                if (isPlayIPadLandscape) {
+                    verticalOffset = 20; // iPad Landscape: align with particle PLAY
+                } else if (w > 768) {
                     verticalOffset = 25 - fontSize * 0.1; // Desktop: solid up 5px from base
                 } else {
                     verticalOffset = 30 - fontSize * 0.1; // Mobile: standard
@@ -2457,11 +2468,16 @@
 
             // Position PLAY above the shapes with device-specific spacing
             let titleY;
+            const isIPadLandscape = w > h && w >= 600 && w <= 1194 && h <= 900;
+
             if (w <= 768) {
                 // Mobile: Balanced spacing between nav and shapes
                 titleY = minShapeY - 95; // Good balance between nav clearance and shape spacing
+            } else if (isIPadLandscape) {
+                // iPad Landscape: Much higher to create breathing room between nav and shapes
+                titleY = minShapeY - 180; // More space for iPad landscape
             } else if (w <= 1024) {
-                // Tablet/iPad: Position PLAY above shapes
+                // Tablet/iPad Portrait: Position PLAY above shapes
                 titleY = minShapeY - 120;
             } else {
                 // Desktop: Position PLAY above shapes (particles moved down 5px)
