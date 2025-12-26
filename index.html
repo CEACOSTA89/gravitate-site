@@ -2283,7 +2283,7 @@
                 cols = 3;
                 shapeSize = 70;
                 spacingX = 180;
-                spacingY = 200;
+                spacingY = 320; // Increased spacing to fill vertical space better
                 particleCount = 150;
             }
 
@@ -2509,8 +2509,8 @@
                 // Other tablets: Position PLAY above shapes
                 titleY = minShapeY - 120;
             } else {
-                // Desktop: Position PLAY above shapes (particles moved down 5px)
-                titleY = h / 2 - 295; // Particles down 5px from original
+                // Desktop: Move PLAY much higher to reduce negative space
+                titleY = minShapeY - 220; // More space above shapes
             }
 
             // ===== Create PLAY title particles (unless user has played a video) =====
