@@ -1210,13 +1210,7 @@
 
         <div class="lightbox-content">
             <div class="lightbox-video-container" id="videoContainer">
-                <iframe id="lightboxVideoEmbed"
-                        frameborder="0"
-                        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                        allowfullscreen
-                        webkitallowfullscreen
-                        mozallowfullscreen
-                        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                <iframe id="lightboxVideoEmbed" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
             </div>
 
             <div class="lightbox-metadata">
@@ -1256,7 +1250,7 @@
 
     <script>
         // FEATURE FLAG: Set to true to enable PLAY section
-        const FEATURE_PLAY_ENABLED = true;
+        const FEATURE_PLAY_ENABLED = false;
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
