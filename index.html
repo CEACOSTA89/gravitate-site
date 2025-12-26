@@ -2326,6 +2326,20 @@
             // Calculate formations based on current canvas size
             videoFormations = calculateVideoFormationGrid(videos.length, w, h);
 
+            // DEBUG: Log formation positions
+            console.log('=== FORMATION POSITIONS DEBUG ===');
+            console.log('Canvas size:', { width: w, height: h });
+            videoFormations.forEach(f => {
+                console.log(`Shape ${f.videoIndex} (${f.shape}):`, {
+                    centerX: f.centerX.toFixed(1),
+                    centerY: f.centerY.toFixed(1),
+                    radius: f.radius,
+                    bottomEdge: (f.centerY + f.radius).toFixed(1)
+                });
+            });
+            console.log('Canvas bottom edge:', h);
+            console.log('=================================');
+
             // Assign particles to formations
             let particleIndex = 0;
             videoFormations.forEach(formation => {
