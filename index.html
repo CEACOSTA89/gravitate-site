@@ -1746,23 +1746,30 @@
                 allPoints = allPoints.concat(linePoints);
             });
 
-            // Adjust particle count
-            while (particles.length < allPoints.length) {
+            // Keep extra particles for floating background (200 extra for dynamic effect)
+            const minParticles = allPoints.length + 200;
+            while (particles.length < minParticles) {
                 particles.push(new Particle());
             }
-            while (particles.length > allPoints.length) {
-                particles.pop();
-            }
 
-            // Set new targets
+            // Set title particles to form text
             allPoints.forEach((point, i) => {
                 if (particles[i]) {
                     particles[i].targetX = point.x;
                     particles[i].targetY = point.y;
                     particles[i].forming = true;
                     particles[i].settled = false;
+                    particles[i].videoIndex = -3; // Title particles (distinct from floating)
                 }
             });
+
+            // Keep remaining particles floating in background
+            for (let i = allPoints.length; i < particles.length; i++) {
+                particles[i].forming = false;
+                particles[i].videoIndex = -1; // Floating background particles
+                particles[i].hidden = false;
+                particles[i].opacity = 0; // Invisible - only show connection lines, not particles
+            }
 
             // Show solid title at 1.5 seconds to sync with particle bubble animation
             setTimeout(() => {
@@ -1866,20 +1873,19 @@
                 solidTitle.style.pointerEvents = 'none';
             }
 
-            // ===== PLAY: Fade PLAY title particles like other sections (MODIFIED) =====
-            // Start fading out particles gradually while solid title fades in (smooth crossfade)
+            // ===== Fade title particles while keeping background particles floating =====
             particles.forEach(p => {
-                // Only fade title particles (videoIndex -2 for PLAY title)
+                // Only fade title particles (videoIndex -2 for PLAY, -3 for other sections)
                 if (text === 'PLAY' && p.videoIndex === -2) {
                     p.fadingToSolid = true;
                     p.flashPhase = 0;
-                    // Let the natural fadingToSolid animation complete (~1.5s)
-                    // Particles will flash/vibrate and fade out gradually like other sections
-                } else if (text !== 'PLAY') {
-                    // For other sections, fade all forming particles
+                } else if (text !== 'PLAY' && p.videoIndex === -3) {
+                    // For other sections, only fade title particles (-3)
+                    // Leave floating background particles (-1) alone
                     p.fadingToSolid = true;
                     p.flashPhase = 0;
                 }
+                // videoIndex === -1 (floating background) stays untouched
             });
         }
 
@@ -2513,30 +2519,24 @@
                 titleY = minShapeY - 220; // More space above shapes
             }
 
-            // ===== Create PLAY title particles (unless user has played a video) =====
-            let titleParticleCount = 0;
-            if (!hasPlayedVideo) {
-                // Show particle PLAY → solid transition (first load or nav-to-nav)
-                const titlePoints = createTextPoints(titleText, titleSize, titleY);
+            // ===== Create PLAY title particles (every time PLAY appears) =====
+            // Show particle PLAY → solid transition every time
+            const titlePoints = createTextPoints(titleText, titleSize, titleY);
 
-                titlePoints.forEach((point, i) => {
-                    if (particles[i]) {
-                        particles[i].targetX = point.x;
-                        particles[i].targetY = point.y;
-                        particles[i].forming = true;
-                        particles[i].settled = false;
-                        particles[i].hidden = false;
-                        particles[i].fadingToSolid = false;
-                        particles[i].bubbling = false;  // Title doesn't bubble
-                        particles[i].opacity = 1;
-                        particles[i].videoIndex = -2;  // -2 = PLAY title particle
-                    }
-                });
-                titleParticleCount = titlePoints.length;
-            } else {
-                // Show solid PLAY immediately (user has played a video)
-                showSolidTitle('PLAY', titleSize, titleY);
-            }
+            titlePoints.forEach((point, i) => {
+                if (particles[i]) {
+                    particles[i].targetX = point.x;
+                    particles[i].targetY = point.y;
+                    particles[i].forming = true;
+                    particles[i].settled = false;
+                    particles[i].hidden = false;
+                    particles[i].fadingToSolid = false;
+                    particles[i].bubbling = false;  // Title doesn't bubble
+                    particles[i].opacity = 1;
+                    particles[i].videoIndex = -2;  // -2 = PLAY title particle
+                }
+            });
+            const titleParticleCount = titlePoints.length;
 
             // Use the video formations we already calculated above
             videoFormations = videoGrid;
@@ -2569,22 +2569,21 @@
                 });
             });
 
-            // Keep remaining particles hidden until video plays
+            // Keep remaining particles floating in background with connection lines
             for (let i = particleIndex; i < particles.length; i++) {
-                particles[i].videoIndex = -1;
+                particles[i].videoIndex = -1; // Floating background particles
                 particles[i].forming = false;
                 particles[i].bubbling = false;
-                particles[i].hidden = true; // Hidden until video lightbox opens
+                particles[i].hidden = false; // Keep visible for persistent floating effect
                 particles[i].fadingOut = false;
                 particles[i].spreading = false;
+                particles[i].opacity = Math.random() * 0.5 + 0.3; // Subtle opacity for background
             }
 
             // Show solid title at 1.5 seconds - SAME as other sections (LOGLINE, MINDMELD, etc.)
             setTimeout(() => {
-                // Show solid PLAY (if not already showing from hasPlayedVideo)
-                if (!hasPlayedVideo) {
-                    showSolidTitle('PLAY', titleSize, titleY);
-                }
+                // Always show solid PLAY after particle formation
+                showSolidTitle('PLAY', titleSize, titleY);
 
                 // Enable bubbling for video formation particles
                 particles.forEach(p => {
