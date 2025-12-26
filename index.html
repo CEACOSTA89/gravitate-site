@@ -283,6 +283,7 @@
             height: 100vh;
             z-index: 100;
             pointer-events: none;
+            touch-action: none;
         }
 
         .solid-title {
@@ -1210,13 +1211,7 @@
 
         <div class="lightbox-content">
             <div class="lightbox-video-container" id="videoContainer">
-                <iframe id="lightboxVideoEmbed"
-                        frameborder="0"
-                        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                        allowfullscreen
-                        webkitallowfullscreen
-                        mozallowfullscreen
-                        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                <iframe id="lightboxVideoEmbed" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>
             </div>
 
             <div class="lightbox-metadata">
@@ -1256,7 +1251,7 @@
 
     <script>
         // FEATURE FLAG: Set to true to enable PLAY section
-        const FEATURE_PLAY_ENABLED = true;
+        const FEATURE_PLAY_ENABLED = false;
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -2870,6 +2865,12 @@
         });
 
         // Touch support for mobile
+        // Add touchstart handler to pair with touchend (prevents scroll/zoom interference)
+        canvas.addEventListener('touchstart', (event) => {
+            if (!isShowingVideoShowcase) return;
+            event.preventDefault(); // Prevent scroll/zoom interference
+        }, { passive: false });
+
         canvas.addEventListener('touchend', (event) => {
             if (!isShowingVideoShowcase) return;
 
@@ -2879,9 +2880,32 @@
             const touchX = touch.clientX - rect.left;
             const touchY = touch.clientY - rect.top;
 
+            // DEBUG: Log touch coordinates and formation bounds
+            console.log('=== ANDROID TOUCH DEBUG ===');
+            console.log('Touch coordinates:', { touchX, touchY });
+            console.log('Canvas dimensions:', { width: w, height: h });
+            console.log('Formations:', videoFormations.map(f => ({
+                idx: f.videoIndex,
+                shape: f.shape,
+                centerX: f.centerX.toFixed(1),
+                centerY: f.centerY.toFixed(1),
+                radius: f.radius,
+                hitRadius: f.radius * (w <= 768 && f.videoIndex === 3 ? 1.6 : 1.3)
+            })));
+
             const tapped = videoFormations.find(f =>
                 isPointInFormation(touchX, touchY, f)
             );
+
+            console.log('Tapped formation:', tapped ? {
+                idx: tapped.videoIndex,
+                shape: tapped.shape,
+                distance: Math.sqrt(
+                    Math.pow(touchX - tapped.centerX, 2) +
+                    Math.pow(touchY - tapped.centerY, 2)
+                ).toFixed(1)
+            } : 'NONE');
+            console.log('========================');
 
             if (tapped) {
                 expandToVideoLightbox(tapped.videoIndex);
