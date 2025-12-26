@@ -2867,11 +2867,18 @@
         // Touch support for mobile
         // Add touchstart handler to pair with touchend (prevents scroll/zoom interference)
         canvas.addEventListener('touchstart', (event) => {
+            console.log('[TOUCHSTART] Fired. Showcase active:', isShowingVideoShowcase);
             if (!isShowingVideoShowcase) return;
             event.preventDefault(); // Prevent scroll/zoom interference
+            const touch = event.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const touchX = touch.clientX - rect.left;
+            const touchY = touch.clientY - rect.top;
+            console.log('[TOUCHSTART] Touch at:', touchX, touchY, '| Canvas H:', h);
         }, { passive: false });
 
         canvas.addEventListener('touchend', (event) => {
+            console.log('[TOUCHEND] Fired. Showcase active:', isShowingVideoShowcase);
             if (!isShowingVideoShowcase) return;
 
             event.preventDefault();
