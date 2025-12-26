@@ -2905,6 +2905,23 @@
             console.log('[TOUCHSTART] Touch at:', touchX, touchY, '| Canvas H:', h);
         }, { passive: false });
 
+        // Global touch debug - fires on ANY touch on the page
+        document.addEventListener('touchend', (event) => {
+            const touch = event.changedTouches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            const rect = canvas.getBoundingClientRect();
+            console.log('[GLOBAL TOUCH]', {
+                pageX: touch.clientX,
+                pageY: touch.clientY,
+                canvasRect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+                canvasCoordX: touch.clientX - rect.left,
+                canvasCoordY: touch.clientY - rect.top,
+                element: element.tagName,
+                id: element.id,
+                classes: element.className
+            });
+        }, { passive: false });
+
         canvas.addEventListener('touchend', (event) => {
             console.log('[TOUCHEND] Fired. Showcase active:', isShowingVideoShowcase);
             if (!isShowingVideoShowcase) return;
