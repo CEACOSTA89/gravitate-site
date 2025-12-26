@@ -2497,8 +2497,8 @@
             const isIPadPortrait = h > w && w >= 768 && w <= 834 && h >= 1024;
 
             if (w <= 768) {
-                // Mobile: Balanced spacing between nav and shapes
-                titleY = minShapeY - 95; // Good balance between nav clearance and shape spacing
+                // Mobile: Move PLAY higher to center better and create space from top shape
+                titleY = minShapeY - 140; // More space between PLAY and shapes
             } else if (isIPadLandscape) {
                 // iPad Landscape: Much higher to create breathing room between nav and shapes
                 titleY = minShapeY - 180; // More space for iPad landscape
