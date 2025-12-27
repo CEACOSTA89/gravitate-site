@@ -2631,11 +2631,21 @@
                 particles.push(new Particle());
             }
 
+            // Detect if Android (not iPad) for particle positioning
+            const isIPadDevice = (w >= 768 && w <= 1194) && (h >= 700 && h <= 1668);
+            const isMobilePortraitDevice = h > w && w >= 768 && w <= 1440;
+            const isAndroidPortrait = !isIPadDevice && isMobilePortraitDevice;
+
             // Set title particles to form text
             allPoints.forEach((point, i) => {
                 if (particles[i]) {
                     particles[i].targetX = point.x;
-                    particles[i].targetY = point.y;
+                    // Android ONLY: Move particle formation 20% higher (NOT PLAY - this is for other sections)
+                    if (isAndroidPortrait) {
+                        particles[i].targetY = point.y - titleSize * 0.2; // 20% higher on Android
+                    } else {
+                        particles[i].targetY = point.y;
+                    }
                     particles[i].forming = true;
                     particles[i].settled = false;
                     particles[i].videoIndex = -3; // Title particles (distinct from floating)
@@ -2668,15 +2678,23 @@
             // Calculate position using EXACT same logic as particles
             const lines = text.split('\n');
             const totalHeight = lines.length * fontSize * lineHeight;
-            const startY = customY !== null ? customY : (h / 2 - totalHeight / 2 - 100);
+            let startY = customY !== null ? customY : (h / 2 - totalHeight / 2 - 100);
 
-            // Detect iPad (portrait and landscape)
-            // iPad portrait is often 768px, 810px, 820px, or 834px depending on model
-            // iPad landscape is 1024px, 1080px, 1112px, 1194px depending on model
-            // Height can be 760-1668 depending on browser chrome
+            // Detect mobile portrait devices (iPad AND Android phones like Motorola Edge)
+            const isMobilePortrait = h > w && w >= 768 && w <= 1440;
+            const isMobileLandscape = w > h && w >= 768 && w <= 1440;
+
+            // Keep iPad detection for backwards compatibility
             const isIPad = (w >= 768 && w <= 1194) && (h >= 700 && h <= 1668);
-            const isIPadPortrait = isIPad && h > w;
-            const isIPadLandscape = isIPad && w >= h;
+            const isIPadPortrait = isMobilePortrait; // Use same behavior
+            const isIPadLandscape = isMobileLandscape; // Use same behavior
+
+            // Android ONLY: For non-PLAY sections, adjust startY to match particle position (20% higher)
+            const isAndroidPortrait = !isIPad && isMobilePortrait;
+            if (customY === null && isAndroidPortrait) {
+                // Move solid base position 20% higher to match particle formation on Android
+                startY = startY - fontSize * 0.2;
+            }
 
             // Detect Android landscape - matches CSS media query exactly
             const isAndroidLandscape = !isIPad && w > h && w >= 600 && w <= 1024 && h <= 900;
@@ -2723,7 +2741,14 @@
                 if (isPlayIPadLandscape) {
                     verticalOffset = 20; // iPad Landscape: align with particle PLAY (PERFECT - NO CHANGE)
                 } else if (w > 768) {
-                    verticalOffset = 25 - fontSize * 0.1; // Desktop: solid up 5px from base
+                    // Check if it's Android portrait (not iPad)
+                    const isActualIPad = isIPad;
+                    if (!isActualIPad && isMobilePortrait) {
+                        // Android Portrait PLAY: Move down 10% to align with particles
+                        verticalOffset = 25 + fontSize * 0.1; // Desktop base + 10% down for Android
+                    } else {
+                        verticalOffset = 25 - fontSize * 0.1; // Desktop: solid up 5px from base
+                    }
                 } else {
                     // Mobile: Move solid down 50% from previous (was too high over particles)
                     verticalOffset = 20 - fontSize * 0.425; // Lower by 50% - align solid PLAY with particle PLAY
@@ -2732,8 +2757,15 @@
                 // Mobile non-PLAY: Move solid words down 50% from previous (was too high)
                 verticalOffset = 20 - fontSize * 0.5 - h * 0.01; // Lower by 50%
             } else if (isIPadPortrait) {
-                // iPad Portrait non-PLAY: Move up by 1/6 their length (was 1/3, now half that)
-                verticalOffset = 30 - fontSize / 6; // Lower by 50% from previous
+                // Check if it's Android (not actual iPad)
+                const isActualIPad = isIPad; // Original iPad detection
+                if (!isActualIPad && isMobilePortrait) {
+                    // Android Portrait: Move down 10% to align with particles
+                    verticalOffset = 30 - fontSize / 6 + fontSize * 0.1; // iPad base + 10% down for Android
+                } else {
+                    // iPad Portrait non-PLAY: Move up by 1/6 their length (was 1/3, now half that)
+                    verticalOffset = 30 - fontSize / 6; // Lower by 50% from previous
+                }
             } else if (isIPadLandscape) {
                 verticalOffset = 17; // iPad Landscape (blocked by overlay anyway)
             } else if (isAndroidLandscape) {
@@ -2751,8 +2783,6 @@
             // Set absolute position to match particles exactly
             solidTitle.style.left = `${safeX}px`;
             solidTitle.style.top = `${safeY}px`;
-            solidTitle.style.display = 'block'; // Ensure it's not hidden
-            solidTitle.style.visibility = 'visible'; // Ensure it's visible
 
             // Start showing solid title with overlap - particles will fade out gradually
             solidTitle.classList.add('visible');
