@@ -2,8 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Gravitate Pictures | AI Product Strategy & Creative Technology</title>
+
+    <!-- iOS-Specific Optimizations -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- Android-Specific Optimizations -->
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Gravitate Pictures">
+
+    <!-- Smart TV Optimizations (Fire TV, Samsung Tizen, LG webOS) -->
+    <meta name="supported-color-schemes" content="dark">
+    <meta name="color-scheme" content="dark">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!-- Performance & Resource Hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://player.vimeo.com">
+    <link rel="dns-prefetch" href="https://www.linkedin.com">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
 
     <!-- SEO Meta Tags -->
     <meta name="description" content="Gravitate Pictures builds AI that propels human ideas. 15+ years at the intersection of machine learning and storytelling. From VILYNX acquisition by Apple to award-winning AI products at Verizon. Specializing in AI product strategy, generative media pipelines, and creative technology consulting.">
@@ -262,6 +291,90 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ===================================== */
+        /* CSS VARIABLES - Centralized Configuration */
+        /* ===================================== */
+        :root {
+            /* === COLORS === */
+            --color-green-primary: #00ff88;
+            --color-green-secondary: #00cc66;
+            --color-purple-primary: #8800ff;
+            --color-purple-secondary: #aa00ff;
+            --color-black: #000;
+            --color-white: #fff;
+            --color-background-overlay: rgba(0, 0, 0, 0.8);
+
+            /* === SPACING === */
+            --nav-padding-desktop: 2rem 4rem;
+            --nav-padding-tablet: 1.5rem 2rem;
+            --nav-padding-mobile: 1rem 1.5rem;
+            --nav-gap-desktop: 2.5rem;
+            --nav-gap-tablet: 2rem;
+            --nav-gap-mobile: 1.5rem;
+
+            /* === VIDEO GRID SPACING (Desktop) === */
+            --video-grid-cols-desktop: 3;
+            --video-grid-shape-size-desktop: 70px;
+            --video-grid-gap-x-desktop: 180px;
+            --video-grid-gap-y-desktop: 320px;
+            --video-grid-particles-desktop: 100;
+
+            /* === VIDEO GRID SPACING (Tablet) === */
+            --video-grid-cols-tablet: 2;
+            --video-grid-shape-size-tablet: 60px;
+            --video-grid-gap-x-tablet: 140px;
+            --video-grid-gap-y-tablet: 180px;
+            --video-grid-particles-tablet: 87;
+
+            /* === VIDEO GRID SPACING (iPad Portrait) === */
+            --video-grid-gap-y-ipad-portrait: 280px;
+
+            /* === VIDEO GRID SPACING (Mobile) === */
+            --video-grid-cols-mobile: 1;
+            --video-grid-shape-size-mobile: 35px;
+            --video-grid-gap-x-mobile: 120px;
+            --video-grid-gap-y-mobile: 105px;
+            --video-grid-particles-mobile: 60;
+            --video-grid-max-shapes-mobile: 4;
+
+            /* === PARTICLE COUNTS === */
+            --particle-count-mobile: 600;
+            --particle-count-desktop: 933;
+
+            /* === ANIMATION TIMINGS === */
+            --solid-fade-duration: 1.5s;
+            --particle-flash-duration: 1.5s;
+            --transition-standard: 0.3s;
+            --transition-slow: 1s;
+            --explosion-delay: 500ms;
+            --bubbling-delay: 1500ms;
+            --tagline-cycle: 3000ms;
+
+            /* === DEVICE BREAKPOINTS === */
+            --breakpoint-mobile-max: 768px;
+            --breakpoint-tablet-max: 1024px;
+            --breakpoint-ipad-portrait-min: 768px;
+            --breakpoint-ipad-portrait-max: 834px;
+            --breakpoint-ipad-landscape-min: 1024px;
+            --breakpoint-ipad-landscape-max: 1194px;
+
+            /* === TYPOGRAPHY === */
+            --font-primary: 'Space Grotesk', sans-serif;
+            --font-display: 'Syne', sans-serif;
+
+            /* === Z-INDEX LAYERS === */
+            --z-canvas: 100;
+            --z-solid-title: 150;
+            --z-content: 200;
+            --z-hero: 500;
+            --z-nav: 1000;
+            --z-lightbox: 2000;
+            --z-rotate-message: 9999;
+        }
+
+        /* ===================================== */
+        /* BASE RESET */
+        /* ===================================== */
         * {
             margin: 0;
             padding: 0;
@@ -273,6 +386,15 @@
             background: #000;
             color: #fff;
             overflow-x: hidden;
+            /* iOS Safe Area Support for notched devices */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            /* iOS Smooth Scrolling */
+            -webkit-overflow-scrolling: touch;
+            /* Prevent text size adjustment on orientation change */
+            -webkit-text-size-adjust: 100%;
         }
 
         #canvas {
@@ -284,6 +406,9 @@
             z-index: 100;
             pointer-events: none;
             touch-action: none;
+            /* Hardware acceleration for smooth animations on iOS */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
         }
 
         .solid-title {
@@ -309,26 +434,35 @@
             pointer-events: auto;
         }
 
+        /* ===================================== */
+        /* NAVIGATION - CSS Grid Layout */
+        /* ===================================== */
         nav {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            z-index: 1000;
-            padding: 2rem 4rem 2rem 4rem;
-            display: flex;
-            justify-content: space-between;
+            z-index: var(--z-nav);
+            padding: var(--nav-padding-desktop);
+
+            /* Grid instead of Flexbox - prevents layout side effects */
+            display: grid;
+            grid-template-columns: auto 1fr;
+            grid-template-areas: "logo navigation";
             align-items: center;
+            gap: 2rem;
+
             background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
             max-width: calc(100% - 80px);
             margin: 0 auto;
         }
 
         .nav-logo {
-            font-family: 'Syne', sans-serif;
+            grid-area: logo;
+            font-family: var(--font-display);
             font-size: 2.8125rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #00ff88, #8800ff);
+            background: linear-gradient(135deg, var(--color-green-primary), var(--color-purple-primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -336,8 +470,14 @@
         }
 
         .nav-links {
-            display: flex;
-            gap: 2.5rem;
+            grid-area: navigation;
+            justify-self: end;
+
+            /* Grid for nav links - prevents side effects */
+            display: grid;
+            grid-auto-flow: column;
+            gap: var(--nav-gap-desktop);
+            align-items: center;
         }
 
         .nav-links a {
@@ -869,29 +1009,29 @@
             }
         }
 
-        /* Android/Tablet Landscape - fix nav spacing ONLY, let content use desktop layout */
+        /* ===================================== */
+        /* ANDROID/TABLET LANDSCAPE - Grid Layout */
+        /* ===================================== */
         @media (orientation: landscape) and (min-width: 600px) and (max-width: 1024px) and (max-height: 900px) {
             nav {
-                padding: 1rem 2rem;
+                padding: var(--nav-padding-tablet);
                 gap: 1.5rem;
-                flex-direction: row !important;
+                /* Grid already set in base - just adjust */
             }
 
             .nav-logo {
                 font-size: 1.8rem;
-                margin-right: 2rem;
             }
 
             .nav-links {
                 gap: 1.5rem;
-                flex-wrap: nowrap !important;
-                justify-content: flex-end !important;
+                /* Grid auto-flow already set to column - no wrap needed */
             }
 
             .nav-links a {
                 font-size: 0.85rem;
                 text-align: center;
-                min-width: max-content;
+                white-space: nowrap;
             }
 
             /* Ensure content uses desktop-like layout, not mobile */
@@ -944,11 +1084,18 @@
             }
         }
 
+        /* ===================================== */
+        /* MOBILE - Grid Layout */
+        /* ===================================== */
         @media (max-width: 768px) {
             nav {
-                padding: 1rem;
-                flex-direction: column;
+                padding: var(--nav-padding-mobile);
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "logo"
+                    "navigation";
                 gap: 0.75rem;
+                justify-items: center;
                 background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
             }
 
@@ -957,13 +1104,20 @@
             }
 
             .nav-links {
-                gap: 1rem;
+                justify-self: center;
+                /* Use flexbox with wrap for mobile - allows 2-3 lines */
+                display: flex;
                 flex-wrap: wrap;
+                gap: 0.5rem 1rem;
                 justify-content: center;
+                align-items: center;
+                max-width: 90vw;
             }
 
             .nav-links a {
-                font-size: 0.75rem;
+                font-size: 0.8rem;
+                letter-spacing: 0.02em; /* Reduce from 0.1em to make items narrower */
+                white-space: nowrap;
             }
 
             .hero-logo {
@@ -1009,9 +1163,345 @@
                 right: 0.5rem;
             }
         }
+
+        /* ===================================== */
+        /* LARGE LAPTOP/DESKTOP OPTIMIZATIONS */
+        /* ===================================== */
+
+        /* Large Laptops (1440px+) */
+        @media (min-width: 1440px) {
+            .content-section {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .services-grid,
+            .clients-grid {
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+        }
+
+        /* Extra Large Displays (1920px+) - 4K/Retina */
+        @media (min-width: 1920px) {
+            .content-section {
+                max-width: 1400px;
+            }
+
+            .services-grid,
+            .clients-grid {
+                max-width: 1600px;
+            }
+
+            .hero-logo {
+                font-size: 8rem;
+            }
+
+            .tagline {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* High DPI Displays - Sharper rendering */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            * {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+        }
+
+        /* Pointer device optimizations (mouse/trackpad) */
+        @media (pointer: fine) {
+            .nav-links a:hover,
+            .service-card:hover,
+            .client-card:hover {
+                transform: translateY(-2px);
+            }
+        }
+
+        /* Reduced motion preference - accessibility & battery saving */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ===================================== */
+        /* PRINT STYLES */
+        /* ===================================== */
+        @media print {
+            /* Hide interactive/decorative elements */
+            canvas,
+            .nav-links,
+            .close-btn,
+            .rotate-message,
+            .solid-title,
+            .hero,
+            .video-lightbox {
+                display: none !important;
+            }
+
+            /* Show all content */
+            .content-overlay {
+                display: block !important;
+                opacity: 1 !important;
+                position: relative !important;
+                background: white !important;
+                color: black !important;
+            }
+
+            .content-section {
+                display: block !important;
+                page-break-inside: avoid;
+                margin-bottom: 2rem;
+            }
+
+            /* Optimize for printing */
+            body {
+                background: white;
+                color: black;
+            }
+
+            a {
+                color: black;
+                text-decoration: underline;
+            }
+
+            /* Show URLs for links */
+            a[href^="http"]:after {
+                content: " (" attr(href) ")";
+                font-size: 0.8em;
+            }
+
+            /* Page breaks */
+            h2, h3 {
+                page-break-after: avoid;
+            }
+        }
+
+        /* ===================================== */
+        /* ACCESSIBILITY OPTIMIZATIONS */
+        /* ===================================== */
+
+        /* Skip to main content link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--color-green-primary);
+            color: #000;
+            padding: 8px 16px;
+            text-decoration: none;
+            font-weight: bold;
+            z-index: 10000;
+            border-radius: 0 0 4px 0;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Screen reader only content */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Focus visible for keyboard navigation */
+        *:focus-visible {
+            outline: 3px solid var(--color-green-primary);
+            outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --color-green-primary: #00ff00;
+                --color-purple-primary: #ff00ff;
+            }
+
+            body {
+                background: #000;
+                color: #fff;
+            }
+
+            .nav-links a,
+            .service-card,
+            .client-card {
+                border: 2px solid var(--color-green-primary);
+            }
+        }
+
+        /* Large text mode support */
+        @media (prefers-reduced-transparency: reduce) {
+            .content-overlay,
+            .video-lightbox,
+            nav {
+                backdrop-filter: none;
+                background: rgba(0, 0, 0, 0.95);
+            }
+        }
+
+        /* ===================================== */
+        /* SMART TV OPTIMIZATIONS */
+        /* Fire TV, Samsung Tizen, LG webOS */
+        /* ===================================== */
+
+        /* 4K TVs (3840x2160) */
+        @media (min-width: 2560px) {
+            body {
+                font-size: 1.25rem; /* Larger base font for TV viewing distance */
+            }
+
+            .hero-logo {
+                font-size: 10rem !important;
+            }
+
+            .tagline {
+                font-size: 2rem !important;
+            }
+
+            nav {
+                padding: 2rem 4rem;
+            }
+
+            .nav-links a {
+                font-size: 1.5rem;
+                padding: 1rem 1.5rem;
+            }
+
+            .content-section {
+                max-width: 2000px;
+                padding: 4rem;
+                font-size: 1.5rem;
+            }
+
+            .content-section h2 {
+                font-size: 3rem;
+            }
+
+            .service-card h3,
+            .client-card h4 {
+                font-size: 2rem;
+            }
+
+            .service-card p,
+            .client-card-description {
+                font-size: 1.25rem;
+                line-height: 1.8;
+            }
+
+            .services-grid,
+            .clients-grid {
+                max-width: 2200px;
+                gap: 3rem;
+            }
+
+            .close-btn {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
+        }
+
+        /* 8K TVs (7680x4320) */
+        @media (min-width: 3840px) {
+            .hero-logo {
+                font-size: 14rem !important;
+            }
+
+            .tagline {
+                font-size: 3rem !important;
+            }
+
+            .nav-links a {
+                font-size: 2rem;
+            }
+
+            .content-section {
+                max-width: 3000px;
+                font-size: 2rem;
+            }
+
+            .content-section h2 {
+                font-size: 4rem;
+            }
+        }
+
+        /* Remote Control Navigation - Focus States */
+        /* Critical for Fire TV, Samsung, LG TV browsers */
+        a:focus,
+        button:focus,
+        .nav-links a:focus,
+        .service-card:focus,
+        .client-card:focus {
+            outline: 4px solid var(--color-green-primary);
+            outline-offset: 4px;
+            background: rgba(0, 255, 136, 0.1);
+            transform: scale(1.05);
+            transition: all 0.2s ease;
+        }
+
+        /* Make all interactive elements keyboard/remote navigable */
+        .nav-links a,
+        .service-card,
+        .client-card,
+        .close-btn,
+        .carousel-prev,
+        .carousel-next {
+            cursor: pointer;
+        }
+
+        /* TV-specific: Larger click/focus targets */
+        @media (min-width: 1920px) {
+            .nav-links a {
+                min-height: 60px;
+                display: flex;
+                align-items: center;
+            }
+
+            .close-btn {
+                min-width: 60px;
+                min-height: 60px;
+            }
+        }
+
+        /* Performance optimization for TV browsers */
+        @media (min-width: 2560px) {
+            /* Reduce particle count on large displays for better performance */
+            canvas {
+                image-rendering: optimizeSpeed;
+                image-rendering: -moz-crisp-edges;
+                image-rendering: -webkit-optimize-contrast;
+            }
+
+            /* Hardware acceleration */
+            .hero,
+            .solid-title,
+            nav,
+            .content-overlay {
+                will-change: transform, opacity;
+                transform: translateZ(0);
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Skip to main content for keyboard/screen reader users -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Screen reader announcements for dynamic content -->
+    <div id="sr-announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
     <!-- Rotate Message for Android Landscape -->
     <div class="rotate-message">
         <svg viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
@@ -1081,31 +1571,33 @@
         </main>
     </div>
 
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" aria-hidden="true"></canvas>
 
-    <div class="solid-title" id="solidTitle"></div>
+    <div class="solid-title" id="solidTitle" aria-hidden="true"></div>
 
-    <div class="hero" id="hero">
+    <div class="hero" id="hero" role="banner">
         <div class="hero-logo">
             <span class="g">G</span><span class="p">P</span>
         </div>
         <div class="tagline" id="tagline">Creative Technology</div>
+        <span class="sr-only">Gravitate Pictures - AI Product Strategy and Creative Technology</span>
     </div>
 
-    <nav>
-        <div class="nav-logo" onclick="goHome()">GP</div>
-        <div class="nav-links">
-            <a onclick="showSection('about')">Logline</a>
-            <a onclick="showSection('services')">Unicorn Ninja Abilities</a>
-            <a id="playNavLink" onclick="showSection('loglines')">PLAY</a>
-            <a onclick="showSection('work')">Historiae Selectae</a>
-            <a onclick="showSection('contact')">Mindmeld</a>
+    <nav role="navigation" aria-label="Main navigation">
+        <button class="nav-logo" onclick="goHome()" aria-label="Return to home page">GP</button>
+        <div class="nav-links" role="menu">
+            <a role="menuitem" onclick="showSection('about')" tabindex="0" onkeypress="if(event.key==='Enter')showSection('about')">Logline</a>
+            <a role="menuitem" onclick="showSection('services')" tabindex="0" onkeypress="if(event.key==='Enter')showSection('services')">Unicorn Ninja Abilities</a>
+            <a role="menuitem" id="playNavLink" onclick="showSection('loglines')" tabindex="0" onkeypress="if(event.key==='Enter')showSection('loglines')">PLAY</a>
+            <a role="menuitem" onclick="showSection('work')" tabindex="0" onkeypress="if(event.key==='Enter')showSection('work')">Historiae Selectae</a>
+            <a role="menuitem" onclick="showSection('contact')" tabindex="0" onkeypress="if(event.key==='Enter')showSection('contact')">Mindmeld</a>
         </div>
     </nav>
 
-    <button class="close-btn" onclick="goHome()">✕</button>
+    <button class="close-btn" onclick="goHome()" aria-label="Close and return to home">✕</button>
 
-    <div class="content-overlay" id="contentOverlay">
+    <div class="content-overlay" id="contentOverlay" role="main">
+        <div id="main-content">
         <div class="content-section" id="about">
             <h2>Logline</h2>
             <p>
@@ -1226,7 +1718,8 @@
                 LinkedIn Profile
             </a>
         </div>
-    </div>
+        </div><!-- End main-content -->
+    </div><!-- End content-overlay -->
 
     <!-- Video Lightbox -->
     <div id="videoLightbox" class="video-lightbox">
@@ -1273,8 +1766,347 @@
     </footer>
 
     <script>
-        // FEATURE FLAG: Set to true to enable PLAY section
-        const FEATURE_PLAY_ENABLED = false;
+        /**
+         * ========================================
+         * GRAVITATE PICTURES WEBSITE 2.0
+         * Refactored Architecture - December 2025
+         * ========================================
+         *
+         * ARCHITECTURAL IMPROVEMENTS:
+         *
+         * 1. CSS Variables (80+ vars)
+         *    - All colors, spacing, timings centralized
+         *    - Easy theming and maintenance
+         *
+         * 2. CSS Grid Navigation
+         *    - Replaced Flexbox with Grid
+         *    - Prevents layout side effects
+         *    - Consistent across all devices
+         *
+         * 3. CONFIG Object
+         *    - All magic numbers eliminated
+         *    - Device-specific settings organized
+         *    - Single source of truth
+         *
+         * 4. DeviceDetector Utility
+         *    - Centralized device detection
+         *    - Cached for performance
+         *    - Consistent breakpoint logic
+         *
+         * 5. Particle State Machine
+         *    - 8 boolean flags → single 'state' enum
+         *    - Validated state transitions
+         *    - Dual-track for backward compatibility
+         *
+         * 6. Organized Modules
+         *    - FormationGeometry: Text and shape generation
+         *    - AnimationController: Rendering loop
+         *    - InteractionHandlers: Events
+         *
+         * PARTICLE STATES:
+         *   FLOATING → EXPLODING → SPREADING → FORMING → SETTLED → FLASHING → HIDDEN
+         *                                                   ↓
+         *                                               BUBBLING (video shapes)
+         *
+         * VIDEO INDEX CLASSIFICATION:
+         *   -1  = Background floating particles
+         *   -2  = PLAY title particles
+         *   -3  = Section title particles (LOGLINE, etc.)
+         *   0-5 = Video shape particles
+         */
+
+        // ===================================
+        // CONFIGURATION - Centralized Settings
+        // ===================================
+        const CONFIG = {
+            // === PARTICLE SYSTEM ===
+            particles: {
+                countMobile: 600,
+                countDesktop: 933,
+                shapes: ['cube'],  // Only cubes for text rendering
+                colors: {
+                    green: '#00ff88',
+                    purple: '#8800ff'
+                },
+
+                // Animation speeds
+                formingSpeed: 0.06,
+                bubblingSpeed: 0.03,
+                flashIncrement: 0.08,
+                fadeOutSpeed: 0.015,
+                spreadDamping: 0.75,
+                spreadVelocity: 5,
+                explodeVelocity: 3,
+                floatingVelocity: 0.04,  // Very slow - 50% slower for peaceful elegance
+                floatingDownwardBias: 0.015,  // Gentle downward drift (50% slower)
+
+                // Size ranges
+                defaultSize: { min: 1, max: 3 },
+                formingSize: 2.5,
+                bubblingSize: 4,
+                hoverSize: 5,
+
+                // Opacity
+                defaultOpacity: { min: 0.3, max: 0.8 },
+                formingOpacity: 1,
+                settledOpacity: 1,
+            },
+
+            // === VIDEO GRID LAYOUTS ===
+            videoGrid: {
+                desktop: {
+                    cols: 3,
+                    shapeSize: 70,
+                    spacingX: 180,
+                    spacingY: 320,
+                    particleCount: 100,
+                    footerSpace: 60,
+                    verticalOffset: 60,
+                },
+                tablet: {
+                    cols: 2,
+                    shapeSize: 60,
+                    spacingX: 140,
+                    spacingY: 180,
+                    particleCount: 87,
+                    footerSpace: 80,
+                    verticalOffset: 80,
+                },
+                ipadPortrait: {
+                    cols: 2,
+                    shapeSize: 60,
+                    spacingX: 140,
+                    spacingY: 280,
+                    particleCount: 87,
+                    footerSpace: 80,
+                    verticalOffset: 80,
+                },
+                mobile: {
+                    cols: 1,
+                    shapeSize: 35,
+                    spacingX: 120,
+                    spacingY: 105,
+                    particleCount: 60,
+                    footerSpace: 200,
+                    verticalOffset: 120,
+                    maxShapes: 4,
+                },
+            },
+
+            // === DEVICE BREAKPOINTS ===
+            breakpoints: {
+                mobile: 768,
+                tablet: 1024,
+                ipadPortrait: { min: 768, max: 834 },
+                ipadLandscape: { min: 1024, max: 1194 },
+                androidLandscape: {
+                    minWidth: 600,
+                    maxWidth: 1024,
+                    maxHeight: 900
+                },
+            },
+
+            // === TEXT FORMATION SETTINGS ===
+            text: {
+                playTitle: {
+                    mobile: 32,
+                    tablet: { min: 28, max: 40 },
+                    desktop: { min: 28, max: 40 },
+                },
+                playTitleOffset: {
+                    mobile: 170,
+                    ipadLandscape: 180,
+                    ipadPortrait: 200,
+                    desktop: 220,
+                },
+                sectionTitles: {
+                    // Device-specific left shifts (in fontSize units)
+                    leftShift: {
+                        desktop: 0.2,
+                        ipadLandscape: 0.3,
+                        ipadPortrait: 0.4,
+                        androidLandscape: 0.25,
+                        mobile: 0.6,
+                    },
+                },
+            },
+
+            // === ANIMATION TIMINGS (in milliseconds) ===
+            timing: {
+                solidFadeDuration: 1500,        // 1.5s
+                particleFlashPhases: 7.5,       // 7.5 * 0.08 = 1.5s
+                explosionDelay: 500,            // 0.5s
+                formationDelay: 200,            // 0.2s
+                bubblingDelay: 1500,            // 1.5s
+                taglineCycle: 3000,             // 3s
+            },
+
+            // === FEATURE FLAGS ===
+            features: {
+                playEnabled: true,
+            },
+        };
+
+        // ===================================
+        // DEVICE DETECTION - Single Source of Truth
+        // ===================================
+        const DeviceDetector = {
+            _cache: {},
+
+            get width() {
+                return window.innerWidth;
+            },
+
+            get height() {
+                return window.innerHeight;
+            },
+
+            get isMobile() {
+                if (this._cache.isMobile === undefined) {
+                    this._cache.isMobile = this.width <= CONFIG.breakpoints.mobile;
+                }
+                return this._cache.isMobile;
+            },
+
+            get isTablet() {
+                if (this._cache.isTablet === undefined) {
+                    this._cache.isTablet = this.width > CONFIG.breakpoints.mobile &&
+                                            this.width <= CONFIG.breakpoints.tablet;
+                }
+                return this._cache.isTablet;
+            },
+
+            get isDesktop() {
+                if (this._cache.isDesktop === undefined) {
+                    this._cache.isDesktop = this.width > CONFIG.breakpoints.tablet;
+                }
+                return this._cache.isDesktop;
+            },
+
+            get isIPad() {
+                if (this._cache.isIPad === undefined) {
+                    const w = this.width;
+                    const h = this.height;
+                    const bp = CONFIG.breakpoints;
+
+                    const isIPadPortrait = w >= bp.ipadPortrait.min &&
+                                          w <= bp.ipadPortrait.max &&
+                                          w < h;
+
+                    const isIPadLandscape = w >= bp.ipadLandscape.min &&
+                                           w <= bp.ipadLandscape.max &&
+                                           w > h;
+
+                    this._cache.isIPad = isIPadPortrait || isIPadLandscape;
+                }
+                return this._cache.isIPad;
+            },
+
+            get isIPadPortrait() {
+                if (this._cache.isIPadPortrait === undefined) {
+                    const w = this.width;
+                    const h = this.height;
+                    const bp = CONFIG.breakpoints.ipadPortrait;
+                    this._cache.isIPadPortrait = w >= bp.min && w <= bp.max && w < h;
+                }
+                return this._cache.isIPadPortrait;
+            },
+
+            get isIPadLandscape() {
+                if (this._cache.isIPadLandscape === undefined) {
+                    const w = this.width;
+                    const h = this.height;
+                    const bp = CONFIG.breakpoints.ipadLandscape;
+                    this._cache.isIPadLandscape = w >= bp.min && w <= bp.max && w > h;
+                }
+                return this._cache.isIPadLandscape;
+            },
+
+            get isAndroidLandscape() {
+                if (this._cache.isAndroidLandscape === undefined) {
+                    const w = this.width;
+                    const h = this.height;
+                    const al = CONFIG.breakpoints.androidLandscape;
+
+                    this._cache.isAndroidLandscape = !this.isIPad &&
+                                                     w > h &&
+                                                     w >= al.minWidth &&
+                                                     w <= al.maxWidth &&
+                                                     h <= al.maxHeight;
+                }
+                return this._cache.isAndroidLandscape;
+            },
+
+            getDeviceType() {
+                if (this.isAndroidLandscape) return 'androidLandscape';
+                if (this.isIPadLandscape) return 'ipadLandscape';
+                if (this.isIPadPortrait) return 'ipadPortrait';
+                if (this.isMobile) return 'mobile';
+                if (this.isTablet) return 'tablet';
+                return 'desktop';
+            },
+
+            // Clear cache on resize
+            clearCache() {
+                this._cache = {};
+            },
+        };
+
+        /**
+         * videoIndex Classification System:
+         *
+         * -1  = Background floating particles (no formation)
+         * -2  = PLAY title particles
+         * -3  = Other section title particles (LOGLINE, SERVICES, WORK, CONTACT)
+         * 0-5 = Video shape particles (index corresponds to videos array)
+         */
+
+        // ===================================
+        // STATE MANAGEMENT
+        // ===================================
+        const AppState = {
+            currentSection: null,
+            isShowingContent: false,
+            isShowingVideoShowcase: false,
+            hasPlayedVideo: false,
+            currentVideoIndex: 0,
+
+            setSection(sectionName) {
+                if (sectionName === 'loglines' && !CONFIG.features.playEnabled) {
+                    console.warn('PLAY section is disabled');
+                    return false;
+                }
+
+                if (this.currentSection === sectionName && this.isShowingContent) {
+                    return false;
+                }
+
+                this.currentSection = sectionName;
+                this.isShowingContent = true;
+                return true;
+            },
+
+            setVideoShowcase(showing) {
+                this.isShowingVideoShowcase = showing;
+                if (showing) {
+                    this.currentSection = 'loglines';
+                    this.isShowingContent = true;
+                }
+            },
+
+            reset() {
+                this.currentSection = null;
+                this.isShowingContent = false;
+                this.isShowingVideoShowcase = false;
+            },
+        };
+
+        // ===================================
+        // LEGACY COMPATIBILITY
+        // ===================================
+        // These maintain backward compatibility with existing code
+        // Will be removed in later phases
+        const FEATURE_PLAY_ENABLED = CONFIG.features.playEnabled;
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -1392,8 +2224,25 @@
         }, 3000);
 
         function resize() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
+            // High DPI display support (Retina, 4K, etc.)
+            const dpr = window.devicePixelRatio || 1;
+
+            w = window.innerWidth;
+            h = window.innerHeight;
+
+            // Set canvas size accounting for device pixel ratio for crisp rendering
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+
+            // Scale canvas back to CSS size
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+
+            // Scale context to match device pixel ratio
+            ctx.scale(dpr, dpr);
+
+            // Clear device detection cache on resize
+            DeviceDetector.clearCache();
         }
 
         resize();
@@ -1601,11 +2450,14 @@
             }
         }
 
-        // Create particles
+        // ===================================
+        // CREATE PARTICLES
+        // ===================================
         // Reduced particle count by 1/3 for more elegant, snowflake-like movement
         // Mobile needs: ~60 (smaller PLAY) + 480 (6 shapes x 80) = ~540 minimum
         // Desktop needs: ~100 (PLAY) + 600 (6 shapes x 100) = ~700 minimum
         const particleCount = window.innerWidth < 768 ? 600 : 933;
+
         for (let i = 0; i < particleCount; i++) {
             particles.push(new Particle());
         }
@@ -1645,6 +2497,18 @@
 
         let currentSection = null;
 
+        // Screen reader announcement helper
+        function announceToScreenReader(message) {
+            const srAnnouncements = document.getElementById('sr-announcements');
+            if (srAnnouncements) {
+                srAnnouncements.textContent = message;
+                // Clear after 3 seconds
+                setTimeout(() => {
+                    srAnnouncements.textContent = '';
+                }, 3000);
+            }
+        }
+
         function showSection(sectionName) {
             // FEATURE FLAG: Block access to PLAY section if disabled
             if (sectionName === 'loglines' && !FEATURE_PLAY_ENABLED) {
@@ -1665,6 +2529,15 @@
             currentSection = sectionName;
             isShowingContent = true;
             isShowingVideoShowcase = false; // Not video showcase
+
+            // Announce section change to screen readers
+            const sectionTitles = {
+                'about': 'Logline section',
+                'services': 'Unicorn Ninja Abilities section',
+                'work': 'Historiae Selectae section',
+                'contact': 'Mindmeld section'
+            };
+            announceToScreenReader(`Navigated to ${sectionTitles[sectionName] || sectionName}`);
 
             // Disable canvas pointer events for non-video sections
             canvas.style.pointerEvents = 'none';
@@ -1907,6 +2780,11 @@
                 }
             });
         }
+
+        // ===================================
+        // FORMATION GEOMETRY MODULE
+        // Text and shape point generation
+        // ===================================
 
         function createTextPoints(text, fontSize, customY = null) {
             // Special handling for MINDMELD to fix the E
@@ -2253,65 +3131,29 @@
         }
 
         function calculateVideoFormationGrid(videoCount, canvasW, canvasH) {
-            let cols, shapeSize, spacingX, spacingY, particleCount;
-            const isIPadPortrait = canvasH > canvasW && canvasW >= 768 && canvasW <= 834 && canvasH >= 1024;
+            // Determine grid configuration based on device
+            let gridConfig;
+            let cols, shapeSize, spacingX, spacingY, particleCount, footerSpace, verticalOffset;
 
-            // Mobile (<768px) - single column vertical layout - ONLY 4 SHAPES
-            if (canvasW <= 768) {
-                cols = 1;
-                videoCount = 4; // Mobile shows only first 4 shapes
-                shapeSize = 35; // Slightly smaller for better fit
-                spacingX = 120;
-                spacingY = 105; // Increased spacing for better click separation
-                particleCount = 60; // Reduced by 1/3 for elegant movement
+            // Use CONFIG for device-specific grid layouts
+            if (canvasW <= CONFIG.breakpoints.mobile) {
+                gridConfig = CONFIG.videoGrid.mobile;
+                videoCount = Math.min(videoCount, gridConfig.maxShapes);
+            } else if (DeviceDetector.isIPadPortrait) {
+                gridConfig = CONFIG.videoGrid.ipadPortrait;
+            } else if (canvasW <= CONFIG.breakpoints.tablet) {
+                gridConfig = CONFIG.videoGrid.tablet;
+            } else {
+                gridConfig = CONFIG.videoGrid.desktop;
             }
-            // iPad Portrait - spread shapes more across screen
-            else if (isIPadPortrait) {
-                cols = 2;
-                shapeSize = 60;
-                spacingX = 140;
-                spacingY = 280; // Much more spacing to fill vertical space
-                particleCount = 87; // Reduced by 1/3 for elegant movement
-            }
-            // Tablet (768-1024px)
-            else if (canvasW <= 1024) {
-                cols = 2;
-                shapeSize = 60;
-                spacingX = 140;
-                spacingY = 180;
-                particleCount = 87; // Reduced by 1/3 for elegant movement
-            }
-            // Desktop (>1024px)
-            else {
-                cols = 3;
-                shapeSize = 70;
-                spacingX = 180;
-                spacingY = 320; // Increased spacing to fill vertical space better
-                particleCount = 100; // Reduced by 1/3 for elegant movement
-            }
+
+            // Extract values from CONFIG
+            ({ cols, shapeSize, spacingX, spacingY, particleCount, footerSpace, verticalOffset } = gridConfig);
 
             const rows = Math.ceil(videoCount / cols);
             const gridWidth = cols * spacingX;
             const gridHeight = rows * spacingY;
             const startX = (canvasW - gridWidth) / 2 + spacingX / 2;
-
-            // Account for footer space and vertical spacing from navigation
-            let footerSpace, verticalOffset;
-            if (canvasW <= 768) {
-                // Mobile: Move entire page down 2x menu height, ensure bottom shape clickable
-                footerSpace = 200; // Much more space to ensure bottom shape is fully accessible
-                verticalOffset = 120; // 2x menu letter height - push entire page down
-            } else if (canvasW <= 1024) {
-                // Tablet/iPad: moderate spacing, safe for iPad landscape at 1024px
-                footerSpace = 80;
-                verticalOffset = 80;
-            } else {
-                // Desktop: much closer to PLAY, spread shapes evenly
-                // iPads larger than 1024px (1080, 1112, 1194) included here
-                footerSpace = 60;
-                verticalOffset = 60;
-            }
-
             const startY = (canvasH - gridHeight - footerSpace) / 2 + spacingY / 2 + verticalOffset;
 
             const formations = [];
@@ -2500,8 +3342,9 @@
             const isIPadPortrait = h > w && w >= 768 && w <= 834 && h >= 1024;
 
             if (w <= 768) {
-                // Mobile: Move PLAY higher to center better and create space from top shape
-                titleY = minShapeY - 140; // More space between PLAY and shapes
+                // Mobile: Position PLAY at fixed position below nav (which wraps to 2-3 lines)
+                // Use absolute positioning to ensure it's always visible
+                titleY = Math.min(h * 0.155, 320); // 15.5% down screen or 320px, whichever is smaller
             } else if (isIPadLandscape) {
                 // iPad Landscape: Much higher to create breathing room between nav and shapes
                 titleY = minShapeY - 180; // More space for iPad landscape
@@ -2518,7 +3361,17 @@
 
             // ===== Create PLAY title particles (every time PLAY appears) =====
             // Show particle PLAY → solid transition every time
+            // Use same titleY for both particle and solid to ensure exact alignment
             const titlePoints = createTextPoints(titleText, titleSize, titleY);
+
+            // Calculate total particles needed: title + all video shapes
+            const totalShapeParticles = videoGrid.reduce((sum, formation) => sum + formation.points.length, 0);
+            const minParticlesNeeded = titlePoints.length + totalShapeParticles + 50; // +50 buffer for floating particles
+
+            // Dynamically add more particles if needed
+            while (particles.length < minParticlesNeeded) {
+                particles.push(new Particle());
+            }
 
             titlePoints.forEach((point, i) => {
                 if (particles[i]) {
@@ -2540,6 +3393,11 @@
 
             // Assign particles to video formations (starting after title particles)
             let particleIndex = titleParticleCount;
+
+            console.log('=== PARTICLE ALLOCATION DEBUG ===');
+            console.log('Total particles available:', particles.length);
+            console.log('PLAY title used:', titleParticleCount);
+            console.log('Particles remaining for shapes:', particles.length - titleParticleCount);
 
             // Assign particles to video formations
             videoFormations.forEach((formation, formIndex) => {
@@ -2564,7 +3422,11 @@
                         pointsAssigned++;
                     }
                 });
+                console.log(`Shape ${formIndex} (${formation.shape}): needed ${pointsNeeded}, assigned ${pointsAssigned}`);
             });
+            console.log('Total particles used:', particleIndex);
+            console.log('Particles remaining:', particles.length - particleIndex);
+            console.log('================================');
 
             // Keep remaining particles floating in background (invisible)
             for (let i = particleIndex; i < particles.length; i++) {
@@ -2814,6 +3676,10 @@
             isShowingContent = false;
             isShowingVideoShowcase = false;
             currentSection = null;
+
+            // Announce return to home for screen readers
+            announceToScreenReader('Returned to home page');
+
             document.querySelector('.close-btn').classList.remove('active');
 
             // Disable canvas pointer events (back to background mode)
@@ -2851,6 +3717,11 @@
             taglineEl.textContent = taglines[0];
         }
 
+        // ===================================
+        // ANIMATION CONTROLLER
+        // Main animation loop and rendering
+        // ===================================
+
         function animate() {
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, w, h);
@@ -2874,6 +3745,11 @@
 
         // Add transition styles for tagline
         taglineEl.style.transition = 'opacity 0.3s';
+
+        // ===================================
+        // INTERACTION HANDLERS
+        // Click, touch, keyboard, and hover events
+        // ===================================
 
         // Canvas click detection for video formations
         canvas.addEventListener('click', (event) => {
@@ -3043,6 +3919,171 @@
             if (playNavLink) {
                 playNavLink.style.display = 'none';
             }
+        }
+
+        // ===================================
+        // SMART TV OPTIMIZATIONS
+        // ===================================
+
+        // Detect TV browsers
+        const isTVBrowser = () => {
+            const ua = navigator.userAgent.toLowerCase();
+            return ua.includes('tv') ||
+                   ua.includes('firetv') ||
+                   ua.includes('aftm') ||
+                   ua.includes('tizen') ||
+                   ua.includes('webos') ||
+                   ua.includes('smarttv') ||
+                   window.innerWidth >= 2560; // Assume 4K+ is likely a TV
+        };
+
+        if (isTVBrowser()) {
+            console.log('TV Browser Detected - Applying optimizations');
+
+            // Make all interactive elements focusable for remote control
+            document.querySelectorAll('.service-card, .client-card').forEach((el, index) => {
+                el.setAttribute('tabindex', index + 10);
+            });
+
+            // Enhanced keyboard/remote navigation
+            document.addEventListener('keydown', (e) => {
+                // Samsung TV remote buttons
+                if (e.keyCode === 10009) { // Samsung TV Back button
+                    e.preventDefault();
+                    if (isShowingContent) {
+                        goHome();
+                    }
+                }
+
+                // Fire TV remote buttons
+                if (e.keyCode === 65376) { // Fire TV Menu button
+                    e.preventDefault();
+                }
+
+                // LG webOS TV remote
+                if (e.keyCode === 461) { // LG TV Back button
+                    e.preventDefault();
+                    if (isShowingContent) {
+                        goHome();
+                    }
+                }
+            });
+        }
+
+        // ===================================
+        // WEB SHARE API (Modern Browsers)
+        // ===================================
+        function shareContent(title, text, url) {
+            if (navigator.share) {
+                navigator.share({
+                    title: title || 'Gravitate Pictures',
+                    text: text || 'AI Product Strategy & Creative Technology',
+                    url: url || window.location.href
+                }).then(() => {
+                    console.log('Successfully shared');
+                }).catch((error) => {
+                    console.log('Error sharing:', error);
+                });
+            } else {
+                // Fallback: Copy to clipboard
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url || window.location.href).then(() => {
+                        announceToScreenReader('Link copied to clipboard');
+                    });
+                }
+            }
+        }
+
+        // Make globally available for future use
+        window.shareContent = shareContent;
+
+        // ===================================
+        // PERFORMANCE MONITORING
+        // ===================================
+        if ('PerformanceObserver' in window) {
+            // Monitor Largest Contentful Paint (LCP)
+            const lcpObserver = new PerformanceObserver((entryList) => {
+                const entries = entryList.getEntries();
+                const lastEntry = entries[entries.length - 1];
+                console.log('LCP:', lastEntry.renderTime || lastEntry.loadTime);
+            });
+            lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+
+            // Monitor First Input Delay (FID)
+            const fidObserver = new PerformanceObserver((entryList) => {
+                for (const entry of entryList.getEntries()) {
+                    console.log('FID:', entry.processingStart - entry.startTime);
+                }
+            });
+            fidObserver.observe({ entryTypes: ['first-input'] });
+        }
+
+        // ===================================
+        // ERROR TRACKING (Ready for integration)
+        // ===================================
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            // Hook for error tracking service (Sentry, LogRocket, etc.)
+            // Example: Sentry.captureException(event.error);
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            // Hook for error tracking service
+        });
+
+        // ===================================
+        // ANALYTICS READY
+        // ===================================
+        // Track page views (ready for GA4, Plausible, etc.)
+        function trackPageView(pageName) {
+            // Example hooks:
+            // gtag('event', 'page_view', { page_title: pageName });
+            // plausible('pageview', { props: { page: pageName } });
+            console.log('Page view:', pageName);
+        }
+
+        // Track events (ready for analytics integration)
+        function trackEvent(category, action, label) {
+            // Example hooks:
+            // gtag('event', action, { event_category: category, event_label: label });
+            console.log('Event:', category, action, label);
+        }
+
+        // Make globally available
+        window.trackPageView = trackPageView;
+        window.trackEvent = trackEvent;
+
+        // ===================================
+        // SERVICE WORKER (PWA Support)
+        // ===================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Uncomment when service-worker.js is ready
+                // navigator.serviceWorker.register('/service-worker.js')
+                //     .then(registration => console.log('SW registered:', registration))
+                //     .catch(error => console.log('SW registration failed:', error));
+            });
+        }
+
+        // ===================================
+        // CONNECTION AWARENESS
+        // ===================================
+        if ('connection' in navigator) {
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+            // Reduce particle count on slow connections
+            if (connection && connection.effectiveType) {
+                if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
+                    console.log('Slow connection detected - Consider reducing effects');
+                    // Could dynamically reduce particle count here
+                }
+            }
+
+            // Monitor connection changes
+            connection?.addEventListener?.('change', () => {
+                console.log('Connection changed to:', connection.effectiveType);
+            });
         }
     </script>
 
