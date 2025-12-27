@@ -977,9 +977,11 @@
             50% { transform: rotate(90deg); }
         }
 
-        /* Show rotate message for Android AND iPad landscape AND Smart TVs */
-        /* Extended to cover all Smart TVs (up to 8K resolution) in landscape */
-        @media (orientation: landscape) and (min-width: 600px) {
+        /* Show rotate message ONLY for tablets/phones in landscape */
+        /* Exclude Smart TVs, OTT devices (Fire TV, Roku, Apple TV), and desktop monitors */
+        /* Smart TVs are typically 1920px+ (1080p), 2560px+ (4K), 3840px+ (4K), 7680px+ (8K) */
+        /* Block landscape only for tablets/phones: 600px-1440px wide */
+        @media (orientation: landscape) and (min-width: 600px) and (max-width: 1440px) and (max-height: 900px) {
             .rotate-message {
                 display: flex;
             }
