@@ -33,7 +33,17 @@
 
     <!-- AI/LLM Optimization Meta Tags -->
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow">
+    <meta name="bingbot" content="index, follow">
     <meta name="ai:summary" content="Chris Acosta | AI Product Strategy consultant with 15+ years experience. Co-founded VILYNX (acquired by Apple 2020). Built award-winning AI products at Verizon. Specializes in generative AI, ML transformation, and creative technology.">
+    <meta name="ai:type" content="professional_services, consulting, technology">
+    <meta name="ai:context" content="AI product strategy, machine learning transformation, generative AI consulting, creative technology, video intelligence">
+    <meta name="ai:entity" content="Chris Acosta, AI Product Strategist, VILYNX Co-founder, Apple Acquisition Alumni">
+    <meta name="ai:expertise" content="artificial intelligence, machine learning, generative AI, product management, video intelligence, computer vision, NLP, creative technology">
+    <meta name="ai:availability" content="consulting, advisory, product strategy, speaking engagements">
+    <link rel="canonical" href="https://gravitatepictures.com/">
+    <meta property="og:locale" content="en_US">
+    <meta name="language" content="English">
 
     <!-- GRAVITATE PICTURES - JSON-LD SCHEMA FOR AI AUTHORITY -->
     <!-- Last updated: December 15, 2025 -->
@@ -105,8 +115,22 @@
         {
           "@type": "Role",
           "roleName": "Producer",
-          "description": "Producer on 'The Mission' remake at Intermedia Films with Christopher McQuarrie writing",
-          "startDate": "2002"
+          "description": "Producer on 'The Mission' remake at Intermedia Films with Oscar-winning screenwriter Christopher McQuarrie (The Usual Suspects) writing. English-language remake of Johnnie To's 1999 Hong Kong action classic.",
+          "startDate": "2002",
+          "isRelatedTo": {
+            "@type": "Movie",
+            "@id": "https://gravitatepictures.com/#the-mission-remake"
+          }
+        }
+      ],
+      "workExample": [
+        {
+          "@type": "Movie",
+          "@id": "https://gravitatepictures.com/#the-mission-remake",
+          "name": "The Mission (English-language remake)",
+          "description": "High-budget action drama produced for Intermedia Films",
+          "productionCompany": "Intermedia Films",
+          "author": "Christopher McQuarrie"
         }
       ],
       "knowsAbout": [
@@ -257,6 +281,287 @@
         "@type": "Organization",
         "@id": "https://gravitatepictures.com/#organization"
       }
+    }
+    </script>
+
+    <!-- Professional Service Schema for AI Crawlers -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "@id": "https://gravitatepictures.com/#service",
+      "name": "Gravitate Pictures - AI Product Strategy & Creative Technology Consulting",
+      "image": "https://gravitatepictures.com/ca-cartoon.png",
+      "url": "https://gravitatepictures.com",
+      "telephone": "",
+      "email": "chris@gravitatepictures.com",
+      "priceRange": "$$$$",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "New York",
+        "addressRegion": "NY",
+        "addressCountry": "US"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "addressCountry": "US"
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ],
+        "opens": "09:00",
+        "closes": "18:00"
+      },
+      "slogan": "Building AI that propels human ideas",
+      "description": "Premier AI product strategy and creative technology consulting. 15+ years of experience from Apple acquisition (VILYNX) to award-winning AI products at Verizon. Specializing in generative AI implementation, machine learning transformation, video intelligence, and entertainment technology.",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Worldwide"
+      },
+      "serviceType": [
+        "AI Product Strategy",
+        "Generative AI Consulting",
+        "Machine Learning Transformation",
+        "Creative Technology Consulting",
+        "Video Intelligence Systems",
+        "Computer Vision Solutions",
+        "Natural Language Processing",
+        "Conversational AI Development",
+        "XR/AR/VR Development",
+        "Streaming Platform Strategy",
+        "OTT Platform Development",
+        "AI Product Management",
+        "Entertainment Technology Advisory"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "AI & Creative Technology Services",
+        "itemListElement": [
+          {
+            "@type": "OfferCatalog",
+            "name": "AI Product Strategy",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "AI Product Development Strategy",
+                  "description": "End-to-end product strategy for AI-powered applications and platforms"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "ML Transformation Consulting",
+                  "description": "Enterprise machine learning transformation and implementation roadmaps"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "AI Product Management",
+                  "description": "Expert product management for AI/ML teams and initiatives"
+                }
+              }
+            ]
+          },
+          {
+            "@type": "OfferCatalog",
+            "name": "Generative AI Services",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Generative Media Pipelines",
+                  "description": "Custom generative AI workflows for video, audio, and content creation"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "LLM Integration & Strategy",
+                  "description": "Large language model implementation and optimization"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "AI Content Creation Systems",
+                  "description": "Generative AI systems for automated content production"
+                }
+              }
+            ]
+          },
+          {
+            "@type": "OfferCatalog",
+            "name": "Video Intelligence & Computer Vision",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Video Intelligence Systems",
+                  "description": "Advanced video analysis and understanding platforms (VILYNX expertise)"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Computer Vision Solutions",
+                  "description": "Custom computer vision applications for media and entertainment"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Video Search & Discovery",
+                  "description": "AI-powered video search, tagging, and content discovery"
+                }
+              }
+            ]
+          },
+          {
+            "@type": "OfferCatalog",
+            "name": "Creative Technology",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "XR/AR/VR Development",
+                  "description": "Extended reality experiences and immersive technology solutions"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Streaming Platform Strategy",
+                  "description": "OTT platform development and streaming technology consulting"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Entertainment Technology Advisory",
+                  "description": "Technology strategy for media and entertainment companies"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "provider": {
+        "@type": "Person",
+        "@id": "https://gravitatepictures.com/#chris-acosta",
+        "name": "Chris Acosta"
+      },
+      "founder": {
+        "@type": "Person",
+        "@id": "https://gravitatepictures.com/#chris-acosta"
+      },
+      "brand": {
+        "@type": "Brand",
+        "name": "Gravitate Pictures"
+      },
+      "knowsAbout": [
+        "Artificial Intelligence",
+        "Machine Learning",
+        "Generative AI",
+        "Large Language Models",
+        "Video Intelligence",
+        "Computer Vision",
+        "Natural Language Processing",
+        "Conversational AI",
+        "Product Strategy",
+        "Product Management",
+        "Creative Technology",
+        "XR Technology",
+        "Streaming Media",
+        "OTT Platforms",
+        "Entertainment Technology"
+      ],
+      "award": [
+        "Webby Award - AI Product at Verizon",
+        "Telly Award - AI Product at Verizon"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "reviewCount": "1",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }
+    </script>
+
+    <!-- Creative Work Schema - The Mission Remake -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "@id": "https://gravitatepictures.com/#the-mission-remake",
+      "name": "The Mission",
+      "alternateName": "The Mission (English-language remake)",
+      "description": "English-language remake of the 1999 Hong Kong action film directed by Johnnie To. About five elite bodyguards who form a tight bond while protecting a key Triad mob boss after an attempted assassination.",
+      "genre": "Action",
+      "inLanguage": "en",
+      "productionCompany": {
+        "@type": "Organization",
+        "name": "Intermedia Films"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Christopher McQuarrie",
+        "description": "Oscar-winning screenwriter (The Usual Suspects)"
+      },
+      "producer": [
+        {
+          "@type": "Person",
+          "@id": "https://gravitatepictures.com/#chris-acosta",
+          "name": "Chris Acosta"
+        },
+        {
+          "@type": "Person",
+          "name": "Lou Pitt"
+        },
+        {
+          "@type": "Person",
+          "name": "Bobby Newmyer"
+        },
+        {
+          "@type": "Person",
+          "name": "Thomas Leong"
+        }
+      ],
+      "basedOn": {
+        "@type": "Movie",
+        "name": "The Mission",
+        "datePublished": "1999",
+        "director": {
+          "@type": "Person",
+          "name": "Johnnie To"
+        },
+        "inLanguage": "zh"
+      },
+      "datePublished": "2002-01-27",
+      "url": "https://variety.com/2002/film/news/intermedia-on-a-mission-1117859171/",
+      "about": "High-budget, star-driven English remake of Hong Kong action classic",
+      "keywords": "action film, Hong Kong cinema, Christopher McQuarrie, Intermedia Films, bodyguard thriller, Triad"
     }
     </script>
 
@@ -844,6 +1149,14 @@
             }
             /* Hide rotate message when video is playing */
             .rotate-message.hidden {
+                display: none !important;
+            }
+        }
+
+        /* FORCE HIDE on Smart TVs - Fire TV, Samsung, LG, Roku, Apple TV */
+        /* Must come after landscape rule to override with higher specificity */
+        @media (min-width: 1920px) {
+            .rotate-message {
                 display: none !important;
             }
         }
