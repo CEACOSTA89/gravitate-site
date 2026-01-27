@@ -1,0 +1,32 @@
+# Allow all crawlers including AI/LLM bots
+User-agent: *
+Allow: /
+
+# OpenAI GPT crawler
+User-agent: GPTBot
+Allow: /
+
+# ChatGPT user agent
+User-agent: ChatGPT-User
+Allow: /
+
+# Common Crawl (used by many AI models)
+User-agent: CCBot
+Allow: /
+
+# Anthropic Claude crawler
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# Google Bard/Gemini
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://gravitatepictures.com/sitemap.xml
