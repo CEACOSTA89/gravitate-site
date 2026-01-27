@@ -2102,28 +2102,35 @@
             const totalHeight = lines.length * fontSize * lineHeight;
             const startY = customY !== null ? customY : (h / 2 - totalHeight / 2 - 100);
 
-            // Precise iPad detection - excludes Chrome/Windows laptops
+            // Precise iPad detection - excludes Chrome/Windows/Linux laptops
             const userAgent = navigator.userAgent;
             const hasIPadUA = /iPad/.test(userAgent);
-            const isMacLike = /Macintosh/.test(userAgent) && navigator.maxTouchPoints > 1;
             const isAppleVendor = (navigator.vendor || '') === 'Apple Computer, Inc.';
             
-            // Chrome/Windows/ChromeOS laptops are NOT iPads
+            // Exclude all desktop OSes - Chrome/Edge/Firefox on desktop are NOT iPads
             const isChromeOS = /CrOS/.test(userAgent);
             const isWindows = /Windows/.test(userAgent);
+            const isLinux = /Linux/.test(userAgent) && !/Android/.test(userAgent);
+            const isChrome = /Chrome/.test(userAgent) && !/Chromium/.test(userAgent);
+            const isEdge = /Edg/.test(userAgent);
             
-            const isIPad = !isChromeOS && !isWindows && (hasIPadUA || (isMacLike && isAppleVendor));
+            // ONLY iPad if it has iPad in UA string
+            // OR is a Mac with proper Apple signature (NOT Chrome on Mac)
+            const isMacOS = /Macintosh/.test(userAgent);
+            const isDesktopBrowser = isChrome || isEdge || /Firefox/.test(userAgent);
+            
+            const isIPad = hasIPadUA && (isAppleVendor || hasIPadUA);
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
 
-            // Detect touch capability properly (excluding desktop touchscreens)
-            const isTouchDevice = (isIPad || isMacLike) && navigator.maxTouchPoints > 0;
+            // Detect touch capability (real touch devices only, excluding desktop touchscreens)
+            const isTouchDevice = isIPad && navigator.maxTouchPoints > 0;
 
-            // Detect Smart TVs (very large screens, non-iPad, non-touch)
-            const isSmartTV = !isIPad && !isTouchDevice && (w >= 1200 || h >= 1200);
+            // Detect Smart TVs (very large screens, non-iPad, non-touch, non-desktop)
+            const isSmartTV = !isIPad && !isTouchDevice && !isDesktopBrowser && (w >= 1200 || h >= 1200);
 
             // Detect Android landscape - matches CSS media query exactly
-            const isAndroidLandscape = !isIPad && !isSmartTV && w > h && w >= 600 && w <= 1024 && h <= 900;
+            const isAndroidLandscape = !isIPad && !isSmartTV && /Android/.test(userAgent) && w > h && w >= 600 && w <= 1024 && h <= 900;
 
             // Get text width from canvas measurement (same as particles)
             const tempCanvas = document.createElement('canvas');
@@ -2263,25 +2270,32 @@
 
             // Tighter spacing for pixel-like text with more particles - 2px spacing
             const spacing = 2;
-            // Precise iPad detection - excludes Chrome/Windows laptops
+            // Precise iPad detection - excludes Chrome/Windows/Linux laptops
             const userAgent = navigator.userAgent;
             const hasIPadUA = /iPad/.test(userAgent);
-            const isMacLike = /Macintosh/.test(userAgent) && navigator.maxTouchPoints > 1;
             const isAppleVendor = (navigator.vendor || '') === 'Apple Computer, Inc.';
             
-            // Chrome/Windows/ChromeOS laptops are NOT iPads
+            // Exclude all desktop OSes - Chrome/Edge/Firefox on desktop are NOT iPads
             const isChromeOS = /CrOS/.test(userAgent);
             const isWindows = /Windows/.test(userAgent);
+            const isLinux = /Linux/.test(userAgent) && !/Android/.test(userAgent);
+            const isChrome = /Chrome/.test(userAgent) && !/Chromium/.test(userAgent);
+            const isEdge = /Edg/.test(userAgent);
             
-            const isIPad = !isChromeOS && !isWindows && (hasIPadUA || (isMacLike && isAppleVendor));
+            // ONLY iPad if it has iPad in UA string
+            // OR is a Mac with proper Apple signature (NOT Chrome on Mac)
+            const isMacOS = /Macintosh/.test(userAgent);
+            const isDesktopBrowser = isChrome || isEdge || /Firefox/.test(userAgent);
+            
+            const isIPad = hasIPadUA && (isAppleVendor || hasIPadUA);
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
 
-            // Detect touch capability properly (excluding desktop touchscreens)
-            const isTouchDevice = (isIPad || isMacLike) && navigator.maxTouchPoints > 0;
+            // Detect touch capability (real touch devices only, excluding desktop touchscreens)
+            const isTouchDevice = isIPad && navigator.maxTouchPoints > 0;
 
-            // Detect Smart TVs (very large screens, non-iPad, non-touch)
-            const isSmartTV = !isIPad && !isTouchDevice && (w >= 1200 || h >= 1200);
+            // Detect Smart TVs (very large screens, non-iPad, non-touch, non-desktop)
+            const isSmartTV = !isIPad && !isTouchDevice && !isDesktopBrowser && (w >= 1200 || h >= 1200);
             // Detect Android landscape - matches CSS media query exactly
             const isAndroidLandscape = !isIPad && !isSmartTV && w > h && w >= 600 && w <= 1024 && h <= 900;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
