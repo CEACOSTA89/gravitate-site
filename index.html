@@ -2102,18 +2102,25 @@
             const totalHeight = lines.length * fontSize * lineHeight;
             const startY = customY !== null ? customY : (h / 2 - totalHeight / 2 - 100);
 
-            // Detect iPad (portrait and landscape)
-            // Use maxTouchPoints to identify touch devices, combined with user agent detection
-            const isTouchDevice = navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-            const isIPadUA = /iPad/.test(navigator.userAgent) || (navigator.vendor === 'Apple Computer, Inc.' && isTouchDevice);
-            // For non-iPad detection: check if it's a tablet-like size with touch capability
-            const isTabletSize = w >= 600 && w <= 1200 && h >= 600;
-            const isIPad = isIPadUA || (isTouchDevice && isTabletSize);
+            // Precise iPad detection - excludes Chrome/Windows laptops
+            const userAgent = navigator.userAgent;
+            const hasIPadUA = /iPad/.test(userAgent);
+            const isMacLike = /Macintosh/.test(userAgent) && navigator.maxTouchPoints > 1;
+            const isAppleVendor = (navigator.vendor || '') === 'Apple Computer, Inc.';
+            
+            // Chrome/Windows/ChromeOS laptops are NOT iPads
+            const isChromeOS = /CrOS/.test(userAgent);
+            const isWindows = /Windows/.test(userAgent);
+            
+            const isIPad = !isChromeOS && !isWindows && (hasIPadUA || (isMacLike && isAppleVendor));
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
 
-            // Detect Smart TVs (very large screens without touch capability, typically > 1200px wide)
-            const isSmartTV = !isTouchDevice && (w >= 1200 || h >= 1200);
+            // Detect touch capability properly (excluding desktop touchscreens)
+            const isTouchDevice = (isIPad || isMacLike) && navigator.maxTouchPoints > 0;
+
+            // Detect Smart TVs (very large screens, non-iPad, non-touch)
+            const isSmartTV = !isIPad && !isTouchDevice && (w >= 1200 || h >= 1200);
 
             // Detect Android landscape - matches CSS media query exactly
             const isAndroidLandscape = !isIPad && !isSmartTV && w > h && w >= 600 && w <= 1024 && h <= 900;
@@ -2256,17 +2263,25 @@
 
             // Tighter spacing for pixel-like text with more particles - 2px spacing
             const spacing = 2;
-            // Detect iPad (portrait and landscape)
-            // Use maxTouchPoints to identify touch devices, combined with user agent detection
-            const isTouchDevice = navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-            const isIPadUA = /iPad/.test(navigator.userAgent) || (navigator.vendor === 'Apple Computer, Inc.' && isTouchDevice);
-            // For non-iPad detection: check if it's a tablet-like size with touch capability
-            const isTabletSize = w >= 600 && w <= 1200 && h >= 600;
-            const isIPad = isIPadUA || (isTouchDevice && isTabletSize);
+            // Precise iPad detection - excludes Chrome/Windows laptops
+            const userAgent = navigator.userAgent;
+            const hasIPadUA = /iPad/.test(userAgent);
+            const isMacLike = /Macintosh/.test(userAgent) && navigator.maxTouchPoints > 1;
+            const isAppleVendor = (navigator.vendor || '') === 'Apple Computer, Inc.';
+            
+            // Chrome/Windows/ChromeOS laptops are NOT iPads
+            const isChromeOS = /CrOS/.test(userAgent);
+            const isWindows = /Windows/.test(userAgent);
+            
+            const isIPad = !isChromeOS && !isWindows && (hasIPadUA || (isMacLike && isAppleVendor));
             const isIPadPortrait = isIPad && h > w;
             const isIPadLandscape = isIPad && w >= h;
-            // Detect Smart TVs (very large screens without touch capability, typically > 1200px wide)
-            const isSmartTV = !isTouchDevice && (w >= 1200 || h >= 1200);
+
+            // Detect touch capability properly (excluding desktop touchscreens)
+            const isTouchDevice = (isIPad || isMacLike) && navigator.maxTouchPoints > 0;
+
+            // Detect Smart TVs (very large screens, non-iPad, non-touch)
+            const isSmartTV = !isIPad && !isTouchDevice && (w >= 1200 || h >= 1200);
             // Detect Android landscape - matches CSS media query exactly
             const isAndroidLandscape = !isIPad && !isSmartTV && w > h && w >= 600 && w <= 1024 && h <= 900;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
