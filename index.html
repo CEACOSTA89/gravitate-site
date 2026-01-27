@@ -2102,20 +2102,11 @@
             const totalHeight = lines.length * fontSize * lineHeight;
             const startY = customY !== null ? customY : (h / 2 - totalHeight / 2 - 100);
 
-            // Robust iPad detection: only true for real iPads, never Chrome/Edge/Firefox or desktop
+            // Detect Smart TVs (very large screens, non-touch)
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            const isIPad = /iPad/.test(userAgent) && !/Chrome/.test(userAgent) && !/CriOS/.test(userAgent) && !/FxiOS/.test(userAgent) && !/EdgiOS/.test(userAgent);
-            const isIPadPortrait = isIPad && h > w;
-            const isIPadLandscape = isIPad && w >= h;
-
-            // Detect touch capability (real touch devices only, excluding desktop touchscreens)
-            const isTouchDevice = isIPad && navigator.maxTouchPoints > 0;
-
-            // Detect Smart TVs (very large screens, non-iPad, non-touch, non-desktop)
-            const isSmartTV = !isIPad && !isTouchDevice && (w >= 1200 || h >= 1200);
-
+            const isSmartTV = (w >= 1200 || h >= 1200);
             // Detect Android landscape - matches CSS media query exactly
-            const isAndroidLandscape = !isIPad && !isSmartTV && /Android/.test(userAgent) && w > h && w >= 600 && w <= 1024 && h <= 900;
+            const isAndroidLandscape = !isSmartTV && /Android/.test(userAgent) && w > h && w >= 600 && w <= 1024 && h <= 900;
 
             // Get text width from canvas measurement (same as particles)
             const tempCanvas = document.createElement('canvas');
@@ -2255,17 +2246,8 @@
 
             // Tighter spacing for pixel-like text with more particles - 2px spacing
             const spacing = 2;
-            // Robust iPad detection: only true for real iPads, never Chrome/Edge/Firefox or desktop
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            const isIPad = /iPad/.test(userAgent) && !/Chrome/.test(userAgent) && !/CriOS/.test(userAgent) && !/FxiOS/.test(userAgent) && !/EdgiOS/.test(userAgent);
-            const isIPadPortrait = isIPad && h > w;
-            const isIPadLandscape = isIPad && w >= h;
-
-            // Detect touch capability (real touch devices only, excluding desktop touchscreens)
-            const isTouchDevice = isIPad && navigator.maxTouchPoints > 0;
-
-            // Detect Smart TVs (very large screens, non-iPad, non-touch, non-desktop)
-            const isSmartTV = !isIPad && !isTouchDevice && (w >= 1200 || h >= 1200);
+            const isSmartTV = (w >= 1200 || h >= 1200);
             // Detect Android landscape - matches CSS media query exactly
             const isAndroidLandscape = !isIPad && !isSmartTV && w > h && w >= 600 && w <= 1024 && h <= 900;
             const centerY = customY !== null ? customY : h / 2 - textHeight / 2;
