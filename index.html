@@ -1080,6 +1080,40 @@
             },
         };
 
+        // ── Extended device detection ────────────────────────────
+        const isSafari   = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isChrome   = /chrome/i.test(navigator.userAgent) && !/edge|edg/i.test(navigator.userAgent);
+        const isEdge     = /edge|edg/i.test(navigator.userAgent);
+        const isTizen    = /Tizen/i.test(navigator.userAgent);
+        const isFireTV   = /AFT/i.test(navigator.userAgent);
+        const isTVDevice = isTizen || isFireTV || window.innerWidth >= 1800;
+        // Pointer capability: coarse = touch, none = remote (TV)
+        const isPointerCoarse = window.matchMedia('(pointer: coarse)').matches;
+        const isPointerNone   = window.matchMedia('(pointer: none)').matches;
+        // TV remotes have a cursor (pointer: coarse) but should NOT be treated as touch-only.
+        const isTouchOnly     = (isPointerCoarse || isPointerNone) && !isTVDevice;
+        const _vmGl = document.createElement('canvas').getContext('webgl');
+        const _vmDbg = _vmGl && _vmGl.getExtension('WEBGL_debug_renderer_info');
+        const _vmRdr = _vmDbg ? _vmGl.getParameter(_vmDbg.UNMASKED_RENDERER_WEBGL) : '';
+        const isVirtualizedGPU = /parallels|vmware|virtualbox|mesa|llvmpipe|swrast/i.test(_vmRdr);
+
+        // Parallax state
+        let mouseX = 0, mouseY = 0;
+        let parallaxX = 0, parallaxY = 0;
+        let targetPX = 0, targetPY = 0;
+
+        // Touch swipe state
+        let touchStartX = 0, touchStartY = 0;
+        const SECTIONS_ORDER = ['about', 'loglines', 'services', 'work', 'contact'];
+
+        // Cursor trail
+        const TRAIL = 14;
+        const trailDots = [], trailPos = Array(TRAIL).fill(null).map(() => ({x:-100,y:-100}));
+        let curX=-100, curY=-100;
+
+        // D-pad focus for TV
+        let focusedFormationIndex = -1;
+
         // ===================================
         // PARTICLE STATE MACHINE
         // ===================================
@@ -1096,7 +1130,7 @@
 
         // Valid state transitions
         const STATE_TRANSITIONS = {
-            [ParticleState.FLOATING]: [ParticleState.EXPLODING, ParticleState.FORMING],
+            [ParticleState.FLOATING]: [ParticleState.EXPLODING, ParticleState.FORMING, ParticleState.SPREADING],
             [ParticleState.EXPLODING]: [ParticleState.SPREADING, ParticleState.FORMING],
             [ParticleState.SPREADING]: [ParticleState.FLOATING, ParticleState.FORMING],
             [ParticleState.FORMING]: [ParticleState.SETTLED, ParticleState.BUBBLING, ParticleState.EXPLODING],
@@ -2859,21 +2893,42 @@
         // ===================================
 
         function animate() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, w, h);
-
-            // Always draw connections when not forming
-            if (!isShowingContent || particles.some(p => !p.forming)) {
-                drawConnections();
-            }
-
-            // Always update and draw all particles
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-
             requestAnimationFrame(animate);
+            ctx.fillStyle = '#000510';
+            ctx.fillRect(0, 0, w, h);
+            parallaxX += (targetPX - parallaxX) * 0.06;
+            parallaxY += (targetPY - parallaxY) * 0.06;
+            // Hero logo 3D tilt (pointer devices only)
+            if (!isTouchOnly) {
+                const heroLogo = document.getElementById('heroLogo');
+                if (heroLogo && !isShowingContent) {
+                    const rx = -(mouseY / h - 0.5) * 12;
+                    const ry =  (mouseX / w - 0.5) * 12;
+                    heroLogo.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+                }
+            }
+            if (isChrome && !isTouchOnly) particles.sort((a, b) => a.z - b.z);
+            particles.forEach(p => { p.update(); p.draw(); });
+            if (!isTouchOnly) updateTrail();
+        }
+
+        // ── CURSOR TRAIL (pointer devices only) ──────────────────
+        if (!isTouchOnly) {
+            for (let i=0; i<TRAIL; i++) {
+                const d = document.createElement('div');
+                d.className='cursor-dot'; document.body.appendChild(d); trailDots.push(d);
+            }
+        }
+        function updateTrail() {
+            if (!trailDots.length) return;
+            for (let i=TRAIL-1;i>0;i--) { trailPos[i].x=trailPos[i-1].x; trailPos[i].y=trailPos[i-1].y; }
+            trailPos[0].x=curX; trailPos[0].y=curY;
+            trailDots.forEach((d,i) => {
+                const s=1-i/TRAIL;
+                d.style.transform=`translate(${trailPos[i].x-2.5}px,${trailPos[i].y-2.5}px) scale(${s})`;
+                d.style.opacity=String(s*0.4);
+                d.style.background = i<5?'#00ff88':i<10?'#9900ff':'#00d4ff';
+            });
         }
 
         // Start animation
@@ -3054,6 +3109,110 @@
                 playNavLink.style.display = 'none';
             }
         }
+
+        // ── GLOBAL MOUSE EVENTS (parallax + cursor trail) ────────
+        document.addEventListener('mousemove', e => {
+            curX=e.clientX; curY=e.clientY;
+            mouseX=e.clientX; mouseY=e.clientY;
+            if (!isShowingVideoShowcase) {
+                targetPX = (e.clientX/w - 0.5) * 22;
+                targetPY = (e.clientY/h - 0.5) * 14;
+            } else {
+                targetPX=0; targetPY=0;
+            }
+        });
+
+        // ── TOUCH SWIPE NAVIGATION ───────────────────────────────
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            const lb = document.getElementById('videoLightbox');
+            if (lb && lb.classList.contains('active')) return;
+
+            // Never fire canvas interactions while the nav menu is open
+            if (document.getElementById('navLinks').classList.contains('open')) return;
+
+            // Swipe to navigate sections
+            if (isShowingContent && currentSection) {
+                const t = e.changedTouches[0];
+                const dx = t.clientX - touchStartX;
+                const dy = t.clientY - touchStartY;
+                if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) {
+                    const idx = SECTIONS_ORDER.indexOf(currentSection);
+                    if (dx < 0 && idx < SECTIONS_ORDER.length - 1) {
+                        navClick(SECTIONS_ORDER[idx + 1]);
+                    } else if (dx > 0 && idx > 0) {
+                        navClick(SECTIONS_ORDER[idx - 1]);
+                    }
+                }
+            }
+        }, { passive: false });
+
+        // ── KEYBOARD / D-PAD (TV, Accessibility) ──────────────────
+        document.addEventListener('keydown', e => {
+            const lb = document.getElementById('videoLightbox');
+
+            // Lightbox open: arrow nav + escape
+            if (lb && lb.classList.contains('active')) {
+                if (e.key==='Escape')                          { closeLightbox(); return; }
+                if (e.key==='ArrowLeft'||e.key==='MediaTrackPrevious')  { previousVideo(); return; }
+                if (e.key==='ArrowRight'||e.key==='MediaTrackNext')     { nextVideo(); return; }
+                return;
+            }
+
+            // D-pad navigation in PLAY / video showcase
+            if (isShowingVideoShowcase && videoFormations.length > 0) {
+                const cols = w <= 768 ? 1 : w <= 1024 ? 2 : 3;
+                if (focusedFormationIndex === -1) focusedFormationIndex = 0;
+
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const r = Math.floor(focusedFormationIndex / cols);
+                    const next = focusedFormationIndex + 1;
+                    if (next < videoFormations.length && Math.floor(next / cols) === r) {
+                        focusedFormationIndex = next;
+                        playCardHover();
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    const r = Math.floor(focusedFormationIndex / cols);
+                    const prev = focusedFormationIndex - 1;
+                    if (prev >= 0 && Math.floor(prev / cols) === r) {
+                        focusedFormationIndex = prev;
+                        playCardHover();
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const next = focusedFormationIndex + cols;
+                    if (next < videoFormations.length) { focusedFormationIndex = next; playCardHover(); }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prev = focusedFormationIndex - cols;
+                    if (prev >= 0) { focusedFormationIndex = prev; playCardHover(); }
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (focusedFormationIndex >= 0) { playUIClick(); expandToVideoLightbox(focusedFormationIndex); }
+                }
+                return;
+            }
+
+            // Global escape
+            if (e.key==='Escape' && isShowingContent) { goHome(); return; }
+
+            // Nav shortcuts (number keys 1-5)
+            const sectionKeys = { '1':'about', '2':'loglines', '3':'services', '4':'work', '5':'contact' };
+            if (sectionKeys[e.key] && !e.ctrlKey && !e.metaKey) navClick(sectionKeys[e.key]);
+        });
+
+// ── NAV CLICK ───────────────────────────────────────────
+function navClick(sectionName) {
+    playUIClick();
+    playWhoosh();
+    showSection(sectionName);
+}
 
 // ── HAMBURGER / MOBILE MENU ─────────────────────────────
 function toggleMenu() {
