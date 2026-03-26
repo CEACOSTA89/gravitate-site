@@ -2391,9 +2391,9 @@
                 const rawTitle = videos[f.videoIndex].title;
                 // On desktop wrap long titles; on mobile keep single line (space-constrained)
                 el.textContent = w > 1024 ? (titleWraps[rawTitle] || rawTitle) : rawTitle;
-                // Mobile needs large offset — particles spread ~60px from center during formation
-                const labelMult = w <= 768 ? 3.5 : w <= 1024 ? 1.5 : 1.25;
-                const labelY = f.centerY + f.radius * labelMult;
+                // Fixed pixel gap below the shape edge — prevents overlap with next shape
+                const labelGap = w <= 768 ? 10 : w <= 1024 ? 18 : 22;
+                const labelY = f.centerY + f.radius + labelGap;
                 el.style.left = `${f.centerX}px`;
                 el.style.top  = `${labelY}px`;
                 el.style.transform = 'translateX(-50%)';
@@ -2438,18 +2438,12 @@
             });
             hideSolidTitle();
             updateSectionDots('loglines');
-            if (hasPlayedVideo) {
-                // Give particles a beat to stop spreading before re-forming
-                setTimeout(() => formVideoShowcaseWithTitle(), 300);
-            } else {
-                particles.forEach(p => p.explode());
-                // Wait for Syne font AND the explode animation — whichever takes longer.
-                // Prevents canvas sampling the fallback system font on slow connections.
-                Promise.all([
-                    document.fonts.ready,
-                    new Promise(resolve => setTimeout(resolve, 600))
-                ]).then(() => formVideoShowcaseWithTitle());
-            }
+            // Always form directly — skip explosion so initial PLAY looks identical
+            // to every subsequent visit. Font guard prevents wrong-font canvas sampling.
+            Promise.all([
+                document.fonts.ready,
+                new Promise(resolve => setTimeout(resolve, 300))
+            ]).then(() => formVideoShowcaseWithTitle());
         }
 
         function formVideoShowcaseWithTitle() {
