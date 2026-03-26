@@ -1518,14 +1518,23 @@ function formTitleParticles(sectionName) {
     lines.forEach((line, li) => {
         allPts = allPts.concat(createTextPoints(line, titleSize, startY + li * lh));
     });
-    while (particles.length < allPts.length) particles.push(new Particle());
-    while (particles.length > allPts.length) particles.pop();
+    // Keep 200 extra particles floating in background for dynamic effect (critical for mobile)
+    const minParticles = allPts.length + 200;
+    while (particles.length < minParticles) particles.push(new Particle());
     allPts.forEach((pt, i) => {
         if (particles[i]) {
             particles[i].targetX=pt.x; particles[i].targetY=pt.y;
             particles[i].forming=true; particles[i].settled=false;
+            particles[i].videoIndex=-3; // Title particles (distinct from floating)
         }
     });
+    // Keep remaining particles floating in background
+    for (let i = allPts.length; i < particles.length; i++) {
+        particles[i].forming = false;
+        particles[i].videoIndex = -1;
+        particles[i].hidden = false;
+        particles[i].opacity = 0;
+    }
     setTimeout(() => showSolidTitle(titleText, titleSize), 1500);
 }
 
