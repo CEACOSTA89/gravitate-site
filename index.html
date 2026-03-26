@@ -2075,7 +2075,9 @@
             });
 
             // Keep extra particles for floating background (200 extra for dynamic effect)
-            const minParticles = allPoints.length + 200;
+            // Cap total particles on mobile to prevent performance issues
+            const maxParticles = w <= 768 ? 800 : 2000;
+            const minParticles = Math.min(allPoints.length + 200, maxParticles);
             while (particles.length < minParticles) {
                 particles.push(new Particle());
             }
@@ -2271,8 +2273,9 @@
             const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
             const points = [];
 
-            // Tighter spacing for pixel-like text with more particles - 2px spacing
-            const spacing = 2;
+            // Tighter spacing for pixel-like text - wider on mobile to reduce particle count
+            const isMobileSpacing = w <= 768;
+            const spacing = isMobileSpacing ? 4 : 2;
             // Detect iPad (portrait and landscape)
             // Use maxTouchPoints to identify touch devices, combined with user agent detection
             const isTouchDevice = navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
@@ -2350,7 +2353,8 @@
 
                 const imageData = letterCtx.getImageData(0, 0, letterCanvas.width, letterCanvas.height);
 
-                const spacing = 2;
+                const isMobileSpacing = w <= 768;
+                const spacing = isMobileSpacing ? 4 : 2;
                 const isIPad = (w >= 768 && w <= 1194) && (h >= 700 && h <= 1668);
                 const isIPadPortrait = isIPad && h > w;
                 const isIPadLandscape = isIPad && w >= h;
