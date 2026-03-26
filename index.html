@@ -1478,7 +1478,7 @@ function showSolidTitle(text, fontSize, customY = null) {
     if (text === 'PLAY') st.style.pointerEvents = 'none';
     particles.forEach(p => {
         if (text==='PLAY' && p.videoIndex===-2) { p.fadingToSolid=true; p.flashPhase=0; }
-        else if (text!=='PLAY')                 { p.fadingToSolid=true; p.flashPhase=0; }
+        else if (text!=='PLAY' && p.videoIndex===-3) { p.fadingToSolid=true; p.flashPhase=0; }
     });
 }
 function hideSolidTitle() {
