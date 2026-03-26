@@ -1312,14 +1312,28 @@
 
 
         function resize() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
+            w = window.innerWidth;
+            // visualViewport.height excludes Android browser chrome (address bar, nav bar)
+            // and gives a stable measurement regardless of scroll position.
+            // Falls back to window.innerHeight on browsers that don't support it.
+            h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            // Sync both the drawing buffer AND the CSS display size so particles
+            // land exactly where they're calculated — avoids stretch/mismatch on
+            // Android when the browser address bar appears or disappears mid-animation.
+            canvas.width = w;
+            canvas.height = h;
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
             // Clear device detection cache on resize
             DeviceDetector.clearCache();
         }
 
         resize();
         window.addEventListener('resize', resize);
+        // Android dynamic viewport: recalculate when browser chrome appears/disappears
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', resize);
+        }
 
         class Particle {
             constructor() {
@@ -2453,7 +2467,7 @@
             // NOTE: createTextPoints adds 40px canvas padding, so actual text bottom = titleY + titleSize + 40.
             // gapBelowTitle must absorb that 40px + desired visual gap to avoid overlap.
             const firstShape = videoFormations[0];
-            const gapBelowTitle = w <= 768 ? 72 : w <= 1024 ? 72 : 85;
+            const gapBelowTitle = w <= 768 ? 95 : w <= 1024 ? 72 : 85;
             const navClearance  = w <= 768 ? 90 : 130;
             const titleY = Math.max(navClearance, firstShape.centerY - firstShape.radius - gapBelowTitle - titleSize);
             const titlePts = createTextPoints('PLAY', titleSize, titleY);
@@ -2573,7 +2587,9 @@
             });
 
             // After animation, reform formations with proper PLAY title
-            hideFormationLabels();
+            // Do NOT call hideFormationLabels() here — its 700ms async innerHTML clear
+            // races with the new labels created by formVideoShowcaseWithTitle at 200ms,
+            // destroying them before they become visible.
             setTimeout(() => {
                 formVideoShowcaseWithTitle();
             }, 200);
