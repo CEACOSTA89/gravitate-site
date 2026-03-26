@@ -665,7 +665,7 @@
             </div>
             <div class="service-card" tabindex="0" role="article">
                 <h3>Enterprise LLM Platforms</h3>
-                <p>End-to-end LLM platform builds for regulated industries where accuracy, auditability, and compliance aren't optional. Full lifecycle: discovery, roadmap, sprint delivery, pilot launch, and real adoption. Deployed. Not piloted.</p>
+                <p>End-to-end LLM platform builds for regulated industries where accuracy, auditability, and compliance aren't optional. Claude Enterprise Architect. Full lifecycle: discovery, roadmap, sprint delivery, pilot launch, and real adoption. Deployed. Not piloted.</p>
             </div>
             <div class="service-card" tabindex="0" role="article">
                 <h3>Data &amp; Analytics</h3>
@@ -673,7 +673,7 @@
             </div>
             <div class="service-card" tabindex="0" role="article">
                 <h3>GTM &amp; Strategic Partnerships</h3>
-                <p>Closed enterprise deals across broadcast, studios, live entertainment, and regulated industries. Claude Enterprise Architect. IP packaging, content automation partnerships, and strategic advisory for ventures where the product and the deal have to move at the same time.</p>
+                <p>Closed enterprise deals across broadcast, studios, live entertainment, and regulated industries. IP packaging, content automation partnerships, and strategic advisory for ventures where the product and the deal have to move at the same time.</p>
             </div>
         </div>
     </div>
@@ -2309,10 +2309,10 @@
 
             if (cw <= 768) {
                 cols = 1; videoCount = 4; shapeSize = 32; spacingX = 120; particleCount = 90;
-                // Adaptive spacingY: viewport minus nav(75) + PLAY title area(75) + bottom chrome(55)
-                const usable = ch - 75 - 75 - 55;
-                spacingY = Math.min(145, Math.max(105, Math.floor(usable / videoCount)));
-                footerSpace = 50; vertOff = 80;
+                // Adaptive spacingY: viewport minus nav(75) + PLAY title area(75) + bottom chrome(80)
+                const usable = ch - 75 - 75 - 80;
+                spacingY = Math.min(135, Math.max(95, Math.floor(usable / videoCount)));
+                footerSpace = 90; vertOff = 55;
             } else if (cw <= 1024) {
                 cols=2; shapeSize=60; spacingX=140; spacingY=200; particleCount=130;
                 footerSpace=80; vertOff=80;
@@ -2418,6 +2418,8 @@
             if (isShowingVideoShowcase && currentSection === 'loglines') return;
             isShowingVideoShowcase=true; isShowingContent=true; currentSection='loglines';
             focusedFormationIndex = -1;
+            // Re-enable canvas clicks — other sections set pointer-events:none
+            canvas.style.pointerEvents = 'auto';
             document.getElementById('hero').classList.add('hidden');
             document.querySelector('.close-btn').classList.add('active');
             document.getElementById('contentOverlay').classList.remove('active');
