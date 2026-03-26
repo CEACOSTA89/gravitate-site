@@ -632,7 +632,7 @@
     </button>
     <div class="nav-links" id="navLinks" role="menubar">
         <a onclick="navClick('about');closeMenu();" tabindex="0" role="menuitem">Logline</a>
-        <a onclick="navClick('loglines');closeMenu();" tabindex="0" role="menuitem">PLAY</a>
+        <!-- <a onclick="navClick('loglines');closeMenu();" tabindex="0" role="menuitem">PLAY</a> -->
         <a onclick="navClick('services');closeMenu();" tabindex="0" role="menuitem">Unicorn Ninja Abilities</a>
         <a onclick="navClick('work');closeMenu();" tabindex="0" role="menuitem">Historiae Selectae</a>
         <a onclick="navClick('contact');closeMenu();" tabindex="0" role="menuitem">Mindmeld</a>
@@ -2391,9 +2391,9 @@
                 const rawTitle = videos[f.videoIndex].title;
                 // On desktop wrap long titles; on mobile keep single line (space-constrained)
                 el.textContent = w > 1024 ? (titleWraps[rawTitle] || rawTitle) : rawTitle;
-                // Fixed pixel gap below the shape edge — prevents overlap with next shape
-                const labelGap = w <= 768 ? 10 : w <= 1024 ? 18 : 22;
-                const labelY = f.centerY + f.radius + labelGap;
+                // Mobile needs large offset — particles spread ~60px from center during formation
+                const labelMult = w <= 768 ? 2.0 : w <= 1024 ? 1.5 : 1.25;
+                const labelY = f.centerY + f.radius * labelMult;
                 el.style.left = `${f.centerX}px`;
                 el.style.top  = `${labelY}px`;
                 el.style.transform = 'translateX(-50%)';
@@ -2438,12 +2438,18 @@
             });
             hideSolidTitle();
             updateSectionDots('loglines');
-            // Always form directly — skip explosion so initial PLAY looks identical
-            // to every subsequent visit. Font guard prevents wrong-font canvas sampling.
-            Promise.all([
-                document.fonts.ready,
-                new Promise(resolve => setTimeout(resolve, 300))
-            ]).then(() => formVideoShowcaseWithTitle());
+            if (hasPlayedVideo) {
+                // Give particles a beat to stop spreading before re-forming
+                setTimeout(() => formVideoShowcaseWithTitle(), 300);
+            } else {
+                particles.forEach(p => p.explode());
+                // Wait for Syne font AND the explode animation — whichever takes longer.
+                // Prevents canvas sampling the fallback system font on slow connections.
+                Promise.all([
+                    document.fonts.ready,
+                    new Promise(resolve => setTimeout(resolve, 600))
+                ]).then(() => formVideoShowcaseWithTitle());
+            }
         }
 
         function formVideoShowcaseWithTitle() {
