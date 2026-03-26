@@ -2430,7 +2430,8 @@
             hideSolidTitle();
             updateSectionDots('loglines');
             if (hasPlayedVideo) {
-                formVideoShowcaseWithTitle();
+                // Give particles a beat to stop spreading before re-forming
+                setTimeout(() => formVideoShowcaseWithTitle(), 300);
             } else {
                 particles.forEach(p => p.explode());
                 // Wait for Syne font AND the explode animation — whichever takes longer.
@@ -2678,8 +2679,9 @@
             // Disable canvas pointer events (back to background mode)
             canvas.style.pointerEvents = 'none';
 
-            // Hide solid title and show particles
+            // Hide solid title, formation labels, and show particles
             hideSolidTitle();
+            hideFormationLabels();
 
             // Hide content overlay
             document.getElementById('contentOverlay').classList.remove('active');
