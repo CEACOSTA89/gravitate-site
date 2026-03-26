@@ -1160,18 +1160,8 @@ class Particle {
     }
 }
 
-// Particle count scaled to device capability
-function getParticleCount() {
-    const cores = navigator.hardwareConcurrency || 2;
-    if (isVirtualizedGPU)                       return 400;
-    if (isTizen)                                return w < 1920 ? 400 : 600;
-    if (isFireTV)                               return 600;
-    if (isIOS || (isAndroid && isPointerCoarse)) return w < 768 ? 400 : 600;
-    if (isSafari)                               return w < 768 ? 500 : 800;
-    if (isChrome && cores >= 4)                 return w < 768 ? 900 : 1400;
-    return w < 768 ? 400 : 700;
-}
-const PARTICLE_COUNT = getParticleCount();
+// Particle count — 600 mobile / 933 desktop (matches working backup)
+const PARTICLE_COUNT = w <= 768 ? 600 : 933;
 for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
 setTimeout(() => particles.forEach(p => p.spread()), 100);
 
