@@ -2391,8 +2391,8 @@
                 const rawTitle = videos[f.videoIndex].title;
                 // On desktop wrap long titles; on mobile keep single line (space-constrained)
                 el.textContent = w > 1024 ? (titleWraps[rawTitle] || rawTitle) : rawTitle;
-                // Mobile needs large offset — blobby/unsettled particles extend well past radius
-                const labelMult = w <= 768 ? 2.5 : w <= 1024 ? 1.5 : 1.25;
+                // Mobile needs large offset — particles spread ~60px from center during formation
+                const labelMult = w <= 768 ? 3.5 : w <= 1024 ? 1.5 : 1.25;
                 const labelY = f.centerY + f.radius * labelMult;
                 el.style.left = `${f.centerX}px`;
                 el.style.top  = `${labelY}px`;
