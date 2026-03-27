@@ -1104,7 +1104,7 @@
 
         // Touch swipe state
         let touchStartX = 0, touchStartY = 0;
-        const SECTIONS_ORDER = ['about', 'loglines', 'services', 'work', 'contact'];
+        const SECTIONS_ORDER = ['about', 'services', 'work', 'contact'];
 
         // Cursor trail
         const TRAIL = 14;
@@ -3043,7 +3043,7 @@
             if (e.key==='Escape' && isShowingContent) { goHome(); return; }
 
             // Nav shortcuts (number keys 1-5)
-            const sectionKeys = { '1':'about', '2':'loglines', '3':'services', '4':'work', '5':'contact' };
+            const sectionKeys = { '1':'about', '3':'services', '4':'work', '5':'contact' };
             if (sectionKeys[e.key] && !e.ctrlKey && !e.metaKey) navClick(sectionKeys[e.key]);
         });
 
