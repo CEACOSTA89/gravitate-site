@@ -1873,7 +1873,10 @@
             // Height can be 760-1668 depending on browser chrome
             const isIPad = (w >= 768 && w <= 1194) && (h >= 700 && h <= 1668);
             const isIPadPortrait = isIPad && h > w;
-            const isIPadLandscape = isIPad && w >= h;
+            // Extended landscape: catches iPads whose portrait width > 1194 when rotated (e.g. 970x1257 → 1257x970).
+            // Uses isTouchOnly to exclude desktops that might share similar dimensions.
+            const isIPadLandscape = (isIPad && w >= h) ||
+                (!isIPad && w > h && (h >= 768 && h <= 1194) && w <= 1668 && isTouchOnly);
 
             // Detect Android landscape - matches CSS media query exactly
             const isAndroidLandscape = !isIPad && w > h && w >= 600 && w <= 1024 && h <= 900;
