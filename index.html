@@ -1926,23 +1926,44 @@
                 }
             } else if (!isIPad && w <= 768) {
                 verticalOffset = 20 + fontSize - h * 0.01; // Mobile (but not iPad)
-            } else if (isIPadPortrait) {
-                verticalOffset = Math.round(20 - fontSize * 0.15); // derived formula — eliminates ghost title (was 30, off by ~16px)
-            } else if (isIPadLandscape) {
-                verticalOffset = Math.round(20 - fontSize * 0.15); // same formula (was 17, off by ~5px)
+            } else if (isIPadPortrait || isIPadLandscape) {
+                // Pixel-accurate: scan canvas exactly as createTextPoints does to find the real
+                // vertical center of the particle glyphs, then compute CSS 'top' to match it.
+                const _sc = document.createElement('canvas');
+                const _sx = _sc.getContext('2d');
+                _sc.width = Math.ceil(firstLineWidth) + 40;
+                _sc.height = Math.ceil(fontSize) + 40;
+                _sx.font = `800 ${fontSize}px 'Syne', system-ui`;
+                _sx.fillStyle = 'white';
+                _sx.textBaseline = 'middle';
+                _sx.fillText(lines[0], 20, fontSize / 2 + 20);
+                const _sd = _sx.getImageData(0, 0, _sc.width, _sc.height);
+                let _yMin = Infinity, _yMax = -Infinity;
+                for (let _y = 0; _y < _sc.height; _y++) {
+                    for (let _x = 0; _x < _sc.width; _x++) {
+                        if (_sd.data[(_y * _sc.width + _x) * 4 + 3] > 128) {
+                            if (_y < _yMin) _yMin = _y;
+                            if (_y > _yMax) _yMax = _y;
+                        }
+                    }
+                }
+                const _pCtr = (_yMin + _yMax) / 2; // center of visible pixel rows on canvas
+                // Compute where CSS renders the text center relative to element 'top'
+                const _m = tempCtx.measureText(lines[0]);
+                const _fbAsc = _m.fontBoundingBoxAscent  || fontSize * 0.83;
+                const _fbDsc = _m.fontBoundingBoxDescent || fontSize * 0.23;
+                const _abAsc = _m.actualBoundingBoxAscent  || fontSize * 0.72;
+                const _abDsc = Math.max(0, _m.actualBoundingBoxDescent || 0);
+                const _hl  = Math.max(0, lineHeight * fontSize - (_fbAsc + _fbDsc)) / 2;
+                const _bl  = _hl + _fbAsc; // baseline from element top
+                const _cOff = _bl - (_abAsc - _abDsc) / 2; // visual center of glyphs from element top
+                verticalOffset = _pCtr - _cOff;
             } else if (isAndroidLandscape) {
                 verticalOffset = 12; // Android Landscape (blocked by overlay anyway)
             } else {
                 verticalOffset = 8; // Desktop
             }
             const adjustedY = startY + verticalOffset;
-
-            // === DEBUG OVERLAY (remove after diagnosis) ===
-            let dbg = document.getElementById('_dbg');
-            if (!dbg) { dbg = document.createElement('div'); dbg.id = '_dbg'; dbg.style.cssText = 'position:fixed;bottom:10px;left:10px;background:rgba(0,0,0,0.85);color:#0f6;font:12px monospace;padding:8px;z-index:9999;white-space:pre;pointer-events:none;'; document.body.appendChild(dbg); }
-            const branch = !isIPad && w <= 768 ? 'MOBILE' : isIPadPortrait ? 'iPAD-PORT' : isIPadLandscape ? 'iPAD-LAND' : isAndroidLandscape ? 'ANDROID-LAND' : 'DESKTOP';
-            dbg.textContent = `w=${w} h=${h}\nisIPad=${isIPad} branch=${branch}\nfontSize=${fontSize} vOff=${verticalOffset}\nstartY=${startY} adjY=${adjustedY}`;
-            // === END DEBUG ===
 
             // Set absolute position to match particles exactly
             solidTitle.style.left = `${startX}px`;
