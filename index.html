@@ -1957,7 +1957,19 @@
                 const _hl  = Math.max(0, lineHeight * fontSize - (_fbAsc + _fbDsc)) / 2;
                 const _bl  = _hl + _fbAsc; // baseline from element top
                 const _cOff = _bl - (_abAsc - _abDsc) / 2; // visual center of glyphs from element top
-                verticalOffset = _pCtr - _cOff;
+                // Account for iOS Safari: canvas CSS height:100vh can exceed window.innerHeight,
+                // causing canvas y-coords to map to larger screen y than position:fixed CSS coords.
+                // scaleY>1 means particles appear lower on screen than their canvas coords suggest.
+                const _canvasEl = document.getElementById('canvas');
+                const _canvasH = _canvasEl ? _canvasEl.getBoundingClientRect().height : h;
+                const _scaleY = h > 0 ? _canvasH / h : 1;
+                verticalOffset = _pCtr * _scaleY + startY * (_scaleY - 1) - _cOff;
+                // DEBUG — remove after confirming fix
+                (function() {
+                    let dbg = document.getElementById('_ipad_dbg');
+                    if (!dbg) { dbg = document.createElement('div'); dbg.id = '_ipad_dbg'; dbg.style.cssText = 'position:fixed;top:10px;left:10px;background:rgba(0,0,0,0.85);color:#0f0;font:13px monospace;padding:8px 12px;z-index:99999;border-radius:6px;pointer-events:none;'; document.body.appendChild(dbg); }
+                    dbg.innerHTML = `w=${w}, h=${h}<br>branch=iPAD-${isIPadPortrait?'PORT':'LAND'}<br>canvasH=${Math.round(_canvasH)}, scaleY=${_scaleY.toFixed(4)}<br>_pCtr=${_pCtr.toFixed(2)}, _cOff=${_cOff.toFixed(2)}<br>vOff=${verticalOffset.toFixed(2)}, startY=${startY.toFixed(3)}<br>adjY=${(startY+verticalOffset).toFixed(3)}`;
+                })();
             } else if (isAndroidLandscape) {
                 verticalOffset = 12; // Android Landscape (blocked by overlay anyway)
             } else {
