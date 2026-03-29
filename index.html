@@ -1937,6 +1937,13 @@
             }
             const adjustedY = startY + verticalOffset;
 
+            // === DEBUG OVERLAY (remove after diagnosis) ===
+            let dbg = document.getElementById('_dbg');
+            if (!dbg) { dbg = document.createElement('div'); dbg.id = '_dbg'; dbg.style.cssText = 'position:fixed;bottom:10px;left:10px;background:rgba(0,0,0,0.85);color:#0f6;font:12px monospace;padding:8px;z-index:9999;white-space:pre;pointer-events:none;'; document.body.appendChild(dbg); }
+            const branch = !isIPad && w <= 768 ? 'MOBILE' : isIPadPortrait ? 'iPAD-PORT' : isIPadLandscape ? 'iPAD-LAND' : isAndroidLandscape ? 'ANDROID-LAND' : 'DESKTOP';
+            dbg.textContent = `w=${w} h=${h}\nisIPad=${isIPad} branch=${branch}\nfontSize=${fontSize} vOff=${verticalOffset}\nstartY=${startY} adjY=${adjustedY}`;
+            // === END DEBUG ===
+
             // Set absolute position to match particles exactly
             solidTitle.style.left = `${startX}px`;
             solidTitle.style.top = `${adjustedY}px`;
