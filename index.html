@@ -1220,6 +1220,7 @@
         let w, h;
         let particles = [];
         let isShowingContent = false;
+        let sectionTimers = []; // Tracks pending showSection timers so goHome() can cancel them
 
         // ========================================
         // MONTHLY UPDATE SECTION - Video Showcase
@@ -1741,6 +1742,9 @@
             currentSection = sectionName;
             isShowingContent = true;
             isShowingVideoShowcase = false; // Not video showcase
+            // Cancel any in-flight timers from a previous nav click
+            sectionTimers.forEach(id => clearTimeout(id));
+            sectionTimers = [];
             // Clear any stale section content upfront to prevent double-render on rapid nav
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             hideFormationLabels();
@@ -1768,34 +1772,34 @@
                 document.getElementById('contentOverlay').classList.remove('active');
 
                 // Morph particles to new title (no scatter)
-                setTimeout(() => {
+                sectionTimers.push(setTimeout(() => {
                     formTitleParticles(sectionName);
 
                     // Show cards in sync with solid words appearing at 1.5 seconds
-                    setTimeout(() => {
+                    sectionTimers.push(setTimeout(() => {
                         document.querySelectorAll('.content-section').forEach(section => {
                             section.classList.remove('active');
                         });
                         document.getElementById(sectionName).classList.add('active');
                         document.getElementById('contentOverlay').classList.add('active');
-                    }, 1500);
-                }, 300);
+                    }, 1500));
+                }, 300));
             } else {
                 // First time - scatter then form
                 particles.forEach(p => p.explode());
 
-                setTimeout(() => {
+                sectionTimers.push(setTimeout(() => {
                     formTitleParticles(sectionName);
 
                     // Show cards in sync with solid words appearing at 1.5 seconds (first time)
-                    setTimeout(() => {
+                    sectionTimers.push(setTimeout(() => {
                         document.querySelectorAll('.content-section').forEach(section => {
                             section.classList.remove('active');
                         });
                         document.getElementById(sectionName).classList.add('active');
                         document.getElementById('contentOverlay').classList.add('active');
-                    }, 1500);
-                }, 500);
+                    }, 1500));
+                }, 500));
             }
         }
 
@@ -2758,6 +2762,10 @@
 
         function goHome() {
             if (!isShowingContent) return;
+
+            // Cancel any pending showSection timers so they can't re-show content after goHome
+            sectionTimers.forEach(id => clearTimeout(id));
+            sectionTimers = [];
 
             isShowingContent = false;
             isShowingVideoShowcase = false;
