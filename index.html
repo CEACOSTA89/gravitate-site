@@ -2472,8 +2472,8 @@
                 const rawTitle = videos[f.videoIndex].title;
                 // On desktop wrap long titles; on mobile keep single line (space-constrained)
                 el.textContent = w > 1024 ? (titleWraps[rawTitle] || rawTitle) : rawTitle;
-                // Anchor label to spacingY so it never collides with the shape above or below
-                const labelY = f.centerY + f.labelOffsetY;
+                // Anchor label to spacingY; on mobile shift down an extra 25px
+                const labelY = f.centerY + f.labelOffsetY + (w <= 768 ? 25 : 0);
                 el.style.left = `${f.centerX}px`;
                 el.style.top  = `${labelY}px`;
                 el.style.transform = 'translateX(-50%)';
