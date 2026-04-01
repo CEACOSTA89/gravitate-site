@@ -1860,7 +1860,7 @@
                 }
 
                 // Show solid title at 1.5 seconds to sync with particle bubble animation
-                setTimeout(() => showSolidTitle(titleText, titleSize), 1500);
+                sectionTimers.push(setTimeout(() => showSolidTitle(titleText, titleSize), 1500));
             });
         }
 
