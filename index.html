@@ -2435,6 +2435,11 @@
                 }
                 formations.push({ videoIndex:i, centerX:cx, centerY:cy, radius:shapeSize, shape:video.shape, points:pts, labelOffsetY: Math.max(spacingY * 0.45, shapeSize * 2.2) });
             }
+            // On mobile, nudge the last two shapes up by 10px so they clear the bottom edge
+            if (cw <= 768 && formations.length >= 2) {
+                formations[formations.length - 2].centerY -= 10;
+                formations[formations.length - 1].centerY -= 10;
+            }
             return formations;
         }
 
