@@ -2396,12 +2396,13 @@
             let cols, shapeSize, spacingX, spacingY, particleCount, footerSpace, vertOff;
 
             if (cw <= 768) {
-                cols = 1; videoCount = 4; shapeSize = 32; spacingX = 120; particleCount = 90;
-                // Reserve 120px for PLAY title area (was 75 — too small, caused title/shape overlap).
-                // vertOff=90 pushes the entire grid down so the first shape clears the PLAY title.
-                const usable = ch - 75 - 120 - 80;
-                spacingY = Math.min(135, Math.max(90, Math.floor(usable / videoCount)));
-                footerSpace = 160; vertOff = 90;
+                cols = 2; shapeSize = 36; spacingX = Math.floor(cw / 2); particleCount = 80;
+                // 2-column layout shows all 6 videos and gives enough vertical room for labels.
+                // spacingY is derived from usable height / 3 rows so labels never collide with shapes.
+                const rows = Math.ceil(videoCount / cols);
+                const usable = ch - 120 - 80;
+                spacingY = Math.min(195, Math.max(155, Math.floor(usable / rows)));
+                footerSpace = 60; vertOff = 60;
             } else if (cw <= 1024) {
                 cols=2; shapeSize=60; spacingX=140; spacingY=200; particleCount=130;
                 footerSpace=80; vertOff=80;
@@ -2432,7 +2433,7 @@
                     case 'diamond':  pts = createDiamondPoints(cx,cy,shapeSize,particleCount); break;
                     default:         pts = createCirclePoints(cx,cy,shapeSize,particleCount);
                 }
-                formations.push({ videoIndex:i, centerX:cx, centerY:cy, radius:shapeSize, shape:video.shape, points:pts });
+                formations.push({ videoIndex:i, centerX:cx, centerY:cy, radius:shapeSize, shape:video.shape, points:pts, labelOffsetY: spacingY * 0.45 });
             }
             return formations;
         }
@@ -2473,9 +2474,8 @@
                 const rawTitle = videos[f.videoIndex].title;
                 // On desktop wrap long titles; on mobile keep single line (space-constrained)
                 el.textContent = w > 1024 ? (titleWraps[rawTitle] || rawTitle) : rawTitle;
-                // Mobile needs large offset — particles spread ~60px from center during formation
-                const labelMult = w <= 768 ? 2.0 : w <= 1024 ? 1.5 : 1.25;
-                const labelY = f.centerY + f.radius * labelMult;
+                // Anchor label to spacingY so it never collides with the shape above or below
+                const labelY = f.centerY + f.labelOffsetY;
                 el.style.left = `${f.centerX}px`;
                 el.style.top  = `${labelY}px`;
                 el.style.transform = 'translateX(-50%)';
