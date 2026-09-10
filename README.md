@@ -24,4 +24,4 @@ Gravitate Pictures builds AI that propels human ideas. 15+ years at the intersec
 
 ---
 
-© 2025 Gravitate Pictures, LLC
+© 2026 Gravitate Pictures, LLC
