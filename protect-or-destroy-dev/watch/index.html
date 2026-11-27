@@ -551,6 +551,27 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// ---------- keeping the screen awake during play ----------
+// Asks the browser not to dim or lock the screen. The browser drops the request whenever the page is
+// hidden, so it is asked again each time the page comes back.
+let wakeLock = null, wantAwake = false;
+async function keepAwake() {
+  wantAwake = true;
+  if (wakeLock || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return !!wakeLock;
+  try {
+    const lock = await navigator.wakeLock.request('screen');
+    wakeLock = lock;
+    lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; });
+  } catch (e) { /* refused, for example in low power mode */ }
+  return !!wakeLock;
+}
+document.addEventListener('visibilitychange', () => { if (wantAwake && document.visibilityState === 'visible') keepAwake(); });
+function warnIfNotAwake(ok) {
+  if (ok) return;
+  const hint = $('hint');
+  if (hint) hint.textContent = 'This browser will not keep the screen awake. Set Auto-Lock to Never while you play. ' + hint.textContent;
+}
+
 // ---------- loading the peer-to-peer library ----------
 let peerLoading = null;
 function loadPeer() {
@@ -637,6 +658,8 @@ function appTick(dt, now) {
 }
 function appLabel() { return null; }
 
+keepAwake();
+window.addEventListener('pointerdown', () => { keepAwake(); });   // some browsers only allow it after a tap
 showViewName();
 if (!watchCode) statusEl.textContent = 'This link is missing its match code. Ask the host to send it again.';
 loadArena();
