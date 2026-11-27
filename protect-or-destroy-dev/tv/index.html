@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[DEV] Protect or Destroy: TV</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  html, body { margin: 0; height: 100%; background: #0d1117; color: #e6edf3; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #cam { position: fixed; right: 12px; bottom: 12px; width: min(160px, 26vw); border-radius: 8px;
+    transform: scaleX(-1); opacity: 0.85; border: 1px solid #30363d; background: #000; z-index: 3; }
+  #hud { position: fixed; left: 12px; top: 12px; right: 12px; display: flex; gap: 8px; align-items: center;
+    flex-wrap: wrap; z-index: 3; }
+  #status, #arena, #score, #net { background: rgba(13,17,23,0.8); border: 1px solid #30363d; border-radius: 8px;
+    padding: 8px 12px; font-size: 14px; }
+  #arena, #net { flex-basis: 100%; width: fit-content; max-width: 80vw; font-size: 12px; color: #9da7b3; }
+  #net { color: #7ee787; }
+  #arena:empty { display: none; }
+  #action { position: fixed; left: 0; right: 0; top: 34%; text-align: center; font-size: 42px; font-weight: 800;
+    letter-spacing: 0.04em; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.8); pointer-events: none; z-index: 3;
+    padding: 0 12px; }
+  #action.guard { color: #66e0ff; font-size: 28px; }
+  #action.result { color: #ffd866; font-size: 30px; }
+  #hint { position: fixed; left: 12px; bottom: 12px; max-width: 60vw; font-size: 13px; color: #c9d1d9;
+    background: rgba(13,17,23,0.7); border-radius: 8px; padding: 8px 12px; z-index: 3; }
+  .bar { position: fixed; left: 0; right: 0; height: 0; background: #000; transition: height 0.25s ease; z-index: 2; }
+  #barTop { top: 0; } #barBottom { bottom: 0; }
+  body.cut .bar { height: 11vh; }
+  button { background: #1f6feb; color: #fff; border: 0; border-radius: 8px; padding: 8px 14px;
+    font-size: 14px; cursor: pointer; }
+  button.secondary { background: #21262d; border: 1px solid #30363d; }
+  [hidden] { display: none !important; }
+  #start { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 14px; background: rgba(13,17,23,0.92); text-align: center; padding: 24px; z-index: 5; }
+  #start h1 { margin: 0; font-size: 26px; }
+  #start p { margin: 0; max-width: 460px; line-height: 1.5; color: #9da7b3; font-size: 15px; }
+  #start button { font-size: 17px; padding: 12px 22px; }
+  #roles { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  #roles button { background: #21262d; border: 2px solid #30363d; font-size: 15px; padding: 10px 14px; }
+  #roles button.on { border-color: #58a6ff; background: #16304f; }
+  body.guest #roles, body.guest #rolesNote { display: none; }
+  #err { color: #ff7b72; white-space: pre-wrap; }
+  #panel { position: fixed; left: 12px; right: 12px; top: 20%; margin: 0 auto; max-width: 440px; background: #161b22;
+    border: 1px solid #30363d; border-radius: 12px; padding: 16px; z-index: 6; display: flex; flex-direction: column; gap: 8px; }
+  #panel h2 { margin: 0 0 4px; font-size: 18px; }
+  #panel label { font-size: 13px; color: #9da7b3; }
+  #panel .row { display: flex; gap: 8px; }
+  #panel input { flex: 1; min-width: 0; font-size: 13px; padding: 8px; border-radius: 6px; border: 1px solid #30363d;
+    background: #0d1117; color: #e6edf3; }
+  #dock { position: fixed; left: 12px; bottom: 12px; right: calc(min(160px, 26vw) + 24px); display: flex; flex-direction: column;
+    gap: 6px; z-index: 3; }
+  #dock #hint { position: static; max-width: none; }
+  #moves { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  #moves button { background: #21262d; border: 2px solid #30363d; font-size: 13px; padding: 10px 6px; font-weight: 700; }
+  #moves button.on { border-color: #f0883e; }
+  #moves button.wait { opacity: 0.45; }
+  #movesNote { grid-column: 1 / -1; font-size: 12px; color: #c9d1d9; background: rgba(13,17,23,0.7); border-radius: 8px; padding: 6px 10px; }
+  .sheet { position: fixed; left: 12px; right: 12px; top: 18%; margin: 0 auto; max-width: 440px; background: #161b22;
+    border: 1px solid #30363d; border-radius: 12px; padding: 16px; z-index: 6; display: flex; flex-direction: column; gap: 8px; }
+  .sheet h2 { margin: 0 0 4px; font-size: 18px; }
+  .sheet label, .sheet p { font-size: 13px; color: #9da7b3; margin: 0; }
+  .sheet .row { display: flex; gap: 8px; align-items: center; justify-content: space-between; font-size: 14px; }
+  .sheet input { flex: 1; min-width: 0; font-size: 20px; letter-spacing: 0.2em; text-transform: uppercase; padding: 8px;
+    border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; text-align: center; }
+  #pair { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2.2vh; background: rgba(13,17,23,0.94); text-align: center; padding: 3vh 4vw; z-index: 5; }
+  #pair h1 { margin: 0; font-size: 5vh; }
+  #pair p { margin: 0; font-size: 2.6vh; color: #c9d1d9; max-width: 60em; line-height: 1.4; }
+  #pair canvas { width: 30vh; height: 30vh; border-radius: 1vh; background: #fff; }
+  #tvCodeText { font-size: 11vh; font-weight: 800; letter-spacing: 0.25em; color: #7ee787; }
+  body.tv #action { font-size: 7vw; top: 30%; }
+  body.tv #action.guard, body.tv #action.result { font-size: 5vw; }
+
+</style>
+</head>
+<body class="tv">
+<canvas id="scene"></canvas>
+<div id="barTop" class="bar"></div>
+<div id="barBottom" class="bar"></div>
+
+<div id="hud">
+  <div id="status" style="border-color:#d29922">DEV · Starting...</div>
+  <div id="score">Buildings down: 0</div>
+  <button id="view" class="secondary">Camera: Side</button>
+  <button id="retry" class="secondary" hidden>Retry map</button>
+  <div id="arena"></div>
+</div>
+<div id="action"></div>
+
+<div id="pair">
+  <h1>Protect or Destroy</h1>
+  <p>This screen shows a player's view. The phone stays the camera.</p>
+  <canvas id="qr" width="10" height="10" hidden></canvas>
+  <div id="tvCodeText">----</div>
+  <p><b>Already playing on your phone?</b> Tap TV at the top of the game and enter this code.</p>
+  <p id="qrNote"><b>Not started yet?</b> Scan the code with your phone's camera. It opens the game already paired to this screen.</p>
+</div>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+// ===================== shared by the play page and the watch page =====================
+const PEERJS_URL = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+const QR_URL = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+const PEER_PREFIX = 'gp-pod-dev-';
+const $ = id => document.getElementById(id);
+const statusEl = $('status'), scoreEl = $('score'), actionEl = $('action'), arenaEl = $('arena');
+const viewBtn = $('view'), retryBtn = $('retry');
+
+let S = 51;                              // 1 metre of a player = S metres of giant; set from the Flatiron's height
+const mechaHeight = () => S * 1.7;
+// The fight runs along a straight line (the "rail"): scene z, which is uptown along the avenues.
+const rail = { x: 0, tipZ: -60, ready: false };
+// Distances are in units of giant height so a round plays the same at any scale.
+const REACH = 0.78, CONTACT = 0.45, KNOCK = 0.32, STRIDE = 0.26;
+
+// What every screen shows. A = the mecha (protector): stands downtown of B and faces uptown.
+// B = the monster (destroyer): faces downtown, toward the Flatiron.
+const world = { zA: 0, zB: 0, phase: 'wait', winner: '', down: [], evs: [], hostRole: 'A', players: 1,
+  mv: null,                    // the special move being played: { id, by, kind, start, gap }
+  cd: { A: 0, B: 0 } };        // ms until each side's next special is ready
+const disp = { zA: 0, zB: 0 };
+let myRole = 'A';                        // 'A' mecha, 'B' monster, 'W' watching
+const toU = z => (z - rail.tipZ) / mechaHeight();
+const fromU = u => rail.tipZ + u * mechaHeight();
+const startZ = () => ({ a: fromU(0.9), b: fromU(1.8) });
+
+// ---------- scene ----------
+const canvas = $('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9fb8cf);
+scene.fog = new THREE.Fog(0x9fb8cf, 350, 1100);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.5, 2000);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x556070, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+sun.position.set(120, 220, 160);
+scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshStandardMaterial({ color: 0x3b4450 }));
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+
+// ---------- arena: real building footprints from OpenStreetMap ----------
+const ARENA = {
+  name: 'Flatiron / Madison Square Park',
+  lat: 40.74225, lon: -73.98800,
+  bbox: [40.7393, -73.9928, 40.7452, -73.9848],        // south, west, north, east
+};
+const GRID = 29 * Math.PI / 180;   // Manhattan's avenues run about 29 degrees east of true north
+const OVERPASS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+];
+const city = new THREE.Group();
+scene.add(city);
+const buildingMats = [0xc9c2b8, 0xb5b0a8, 0xd6cfc4, 0xa9adb3].map(
+  c => new THREE.MeshStandardMaterial({ color: c, flatShading: true }));
+const landmarkMat = new THREE.MeshStandardMaterial({ color: 0xe3b341, flatShading: true });
+const rubbleMat = new THREE.MeshStandardMaterial({ color: 0x4a4541, flatShading: true });
+const parkMat = new THREE.MeshStandardMaterial({ color: 0x4f7a4a });
+const byKey = new Map();            // building key -> mesh, the same key on every device
+
+// lat/lon -> scene [x, z], turned so the avenues run along z. +z is uptown, +x is the west side.
+function project(lat, lon) {
+  const east = (lon - ARENA.lon) * 111320 * Math.cos(ARENA.lat * Math.PI / 180);
+  const north = (lat - ARENA.lat) * 111132;
+  const across = east * Math.cos(GRID) - north * Math.sin(GRID);
+  const uptown = east * Math.sin(GRID) + north * Math.cos(GRID);
+  return [-across, uptown];
+}
+function closedRing(g) {
+  if (!g || g.length < 4) return false;
+  const a = g[0], b = g[g.length - 1];
+  return a.lat === b.lat && a.lon === b.lon;
+}
+function ringsOf(el) {
+  if (el.type === 'way') return closedRing(el.geometry) ? [el.geometry] : [];
+  if (el.type === 'relation' && el.members) {
+    return el.members
+      .filter(m => m.type === 'way' && m.role !== 'inner' && closedRing(m.geometry))
+      .map(m => m.geometry);
+  }
+  return [];
+}
+function buildingHeight(tags) {
+  let h = parseFloat(tags.height);
+  if (!isFinite(h)) {
+    const levels = parseFloat(tags['building:levels']);
+    h = isFinite(levels) ? levels * 3.4 : 14;
+  }
+  return Math.min(Math.max(h, 3), 450);
+}
+function footprint(pts) {
+  let cx = 0, cz = 0, minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  for (const [x, z] of pts) {
+    cx += x; cz += z;
+    minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+    minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
+  }
+  return { pts, cx: cx / pts.length, cz: cz / pts.length, minX, maxX, minZ, maxZ };
+}
+function addBuilding(mesh, key, pts, extra) {
+  mesh.userData = Object.assign(footprint(pts), { building: true, key, mat: mesh.material, destroyed: false, cleared: false }, extra);
+  byKey.set(key, mesh);
+  city.add(mesh);
+}
+function buildArena(data) {
+  let count = 0, landmark = null;
+  for (const el of data.elements || []) {
+    const tags = el.tags || {};
+    ringsOf(el).forEach((ring, ri) => {
+      const pts = ring.map(p => project(p.lat, p.lon));
+      // Shape is drawn as (x, -z) so that rotating it flat puts it back at scene (x, z).
+      const shape = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z)));
+      if (tags.building) {
+        const h = buildingHeight(tags);
+        const geo = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false });
+        geo.rotateX(-Math.PI / 2);
+        const isLandmark = /flatiron/i.test(tags.name || '');
+        const mesh = new THREE.Mesh(geo, isLandmark ? landmarkMat : buildingMats[count % buildingMats.length]);
+        addBuilding(mesh, el.type[0] + el.id + '.' + ri, pts, { landmark: isLandmark, height: h, sy: 1 });
+        if (isLandmark && (!landmark || h > landmark.height)) landmark = mesh.userData;
+        count++;
+      } else if (tags.leisure === 'park') {
+        const geo = new THREE.ShapeGeometry(shape);
+        geo.rotateX(-Math.PI / 2);
+        const mesh = new THREE.Mesh(geo, parkMat);
+        mesh.position.y = 0.05;
+        city.add(mesh);
+      }
+    });
+  }
+  setRail(landmark);
+  return count;
+}
+function buildPlaceholderCity() {
+  // Same blocks on every device (fixed seed), so a match still lines up if the map fails to load.
+  let seed = 12345;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  const geo = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
+  const step = 34;
+  for (let gx = -9; gx <= 9; gx++) {
+    for (let gz = -12; gz <= 9; gz++) {
+      const x = gx * step, z = gz * step;
+      const w = 16 + rnd() * 10, d = 16 + rnd() * 10, h = 8 + rnd() * 34;
+      if (z > -75 && Math.abs(x) < 50) continue;        // open ground where the fight runs
+      const b = new THREE.Mesh(geo, buildingMats[(gx + gz + 40) % buildingMats.length]);
+      b.scale.set(w, h, d);
+      b.position.set(x, 0, z);
+      const pts = [[x - w / 2, z - d / 2], [x + w / 2, z - d / 2], [x + w / 2, z + d / 2], [x - w / 2, z + d / 2]];
+      addBuilding(b, 'p' + gx + '_' + gz, pts, { landmark: false, height: h, sy: h });
+    }
+  }
+}
+// The rail runs uptown from the Flatiron's tip, through the building's centre line.
+function setRail(landmark) {
+  if (landmark && landmark.height >= 40) {
+    rail.x = landmark.cx;
+    rail.tipZ = landmark.maxZ;
+    S = landmark.height / 1.7;
+  } else {
+    rail.x = 0; rail.tipZ = -60; S = 51;
+  }
+  rail.ready = true;
+  const z = startZ();
+  world.zA = disp.zA = z.a;
+  world.zB = disp.zB = z.b;
+  // Clear small structures (kiosks, statues) from the ground the fighters use.
+  for (const m of city.children) {
+    const u = m.userData;
+    if (u && u.building && !u.landmark && u.cz > rail.tipZ && u.cz < fromU(3.4) && Math.abs(u.cx - rail.x) < 40) {
+      m.visible = false;
+      u.cleared = true;
+    }
+  }
+  appArenaReady();
+}
+async function fetchArena() {
+  const key = 'arena2:' + ARENA.bbox.join(',');
+  try {
+    const cached = localStorage.getItem(key);
+    if (cached) return JSON.parse(cached);
+  } catch (e) { /* storage unavailable */ }
+  const b = ARENA.bbox.join(',');
+  const query = `[out:json][timeout:25];(way["building"](${b});relation["building"](${b});` +
+    `way["leisure"="park"](${b}););out geom;`;
+  const errors = [];
+  for (const url of OVERPASS) {
+    const host = new URL(url).host;
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 30000);
+    try {
+      arenaEl.textContent = `Arena: loading ${ARENA.name} from ${host}...`;
+      const res = await fetch(url + '?data=' + encodeURIComponent(query), { signal: ctl.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (!data.elements || !data.elements.length) throw new Error('empty result');
+      try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { /* too large or unavailable */ }
+      return data;
+    } catch (e) {
+      errors.push(host + ': ' + (e.name === 'AbortError' ? 'timed out' : e.message));
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw new Error(errors.join('; '));
+}
+let arenaLoading = false;
+async function loadArena() {
+  if (arenaLoading) return;
+  arenaLoading = true;
+  retryBtn.hidden = true;
+  const reset = () => { city.clear(); byKey.clear(); localDown.clear(); collapsing.length = 0; };
+  try {
+    const data = await fetchArena();
+    reset();
+    const count = buildArena(data);
+    if (!count) throw new Error('no buildings in the map data');
+    arenaEl.textContent = `Arena: ${ARENA.name} (${count} buildings) · giants ${Math.round(mechaHeight())} m tall · © OpenStreetMap contributors`;
+  } catch (e) {
+    console.error(e);
+    reset();
+    buildPlaceholderCity();
+    setRail(null);
+    arenaEl.textContent = 'Arena: map data did not load. Showing placeholder blocks. [' + (e && e.message ? e.message : e) + ']';
+    retryBtn.hidden = false;
+  } finally {
+    arenaLoading = false;
+  }
+}
+retryBtn.addEventListener('click', loadArena);
+
+// ---------- collapses, cut scene, on-screen labels ----------
+const localDown = new Map();        // key -> mesh, buildings this screen shows as fallen
+const collapsing = [];
+const cut = { until: 0, x: 0, z: 0, played: false };
+const flashState = { text: '', until: 0 };
+let lastEvId = 0;
+function flash(text, ms) {
+  flashState.text = text;
+  flashState.until = performance.now() + (ms || 700);
+}
+function inside(pts, x, z) {
+  let hit = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const xi = pts[i][0], zi = pts[i][1], xj = pts[j][0], zj = pts[j][1];
+    if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) hit = !hit;
+  }
+  return hit;
+}
+// Buildings standing where a giant of radius r at (x, z) is.
+function buildingsAt(x, z, r) {
+  const out = [];
+  for (const m of city.children) {
+    const u = m.userData;
+    if (!u || !u.building || u.destroyed || u.cleared) continue;
+    if (x + r < u.minX || x - r > u.maxX || z + r < u.minZ || z - r > u.maxZ) continue;
+    if (inside(u.pts, x, z) || inside(u.pts, x - r, z) || inside(u.pts, x + r, z) ||
+        inside(u.pts, x, z - r) || inside(u.pts, x, z + r)) out.push(m);
+  }
+  return out;
+}
+function collapseLocal(mesh, now) {
+  const u = mesh.userData;
+  if (u.destroyed) return;
+  u.destroyed = true;
+  u.t0 = now;
+  collapsing.push(mesh);
+  localDown.set(u.key, mesh);
+  if (u.landmark || !cut.played) {            // a short wide shot for the first collapse and for the Flatiron
+    cut.played = true;
+    cut.until = now + 2400;
+    cut.x = u.cx; cut.z = u.cz;
+    document.body.classList.add('cut');
+  }
+}
+function restoreLocal(mesh) {
+  const u = mesh.userData;
+  u.destroyed = false;
+  mesh.scale.y = u.sy;
+  mesh.material = u.mat;
+  localDown.delete(u.key);
+  const i = collapsing.indexOf(mesh);
+  if (i >= 0) collapsing.splice(i, 1);
+}
+// Make this screen's fallen buildings match the list of keys.
+function syncDown(keys, now) {
+  const want = new Set(keys);
+  for (const k of want) { const m = byKey.get(k); if (m && !localDown.has(k)) collapseLocal(m, now); }
+  for (const [k, m] of [...localDown]) if (!want.has(k)) restoreLocal(m);
+  if (!localDown.size) cut.played = false;
+  scoreEl.textContent = 'Buildings down: ' + localDown.size;
+}
+function animateCollapses(now) {
+  for (let i = collapsing.length - 1; i >= 0; i--) {
+    const m = collapsing[i], u = m.userData;
+    const k = Math.min((now - u.t0) / 900, 1);
+    const e = k * k * (3 - 2 * k);
+    m.scale.y = u.sy * (1 - 0.94 * e);
+    if (k >= 1) { m.material = rubbleMat; collapsing.splice(i, 1); }
+  }
+  if (now >= cut.until) document.body.classList.remove('cut');
+}
+function showEvents(evs) {
+  for (const e of evs || []) {
+    if (e.id <= lastEvId) continue;
+    lastEvId = e.id;
+    if (e.to === 'all' || e.to === myRole) flash(e.text, e.ms || 700);
+  }
+}
+
+// ---------- the two giants: block rigs driven by 33 body landmarks ----------
+// A pose is "canonical": metres, hips at the origin, x to the player's right, y up, -z the way the player faces.
+const UP = new THREE.Vector3(0, 1, 0);
+const unitBox = new THREE.BoxGeometry(1, 1, 1);
+const SEGMENTS = [
+  [11, 13, 0.13, 'body'], [13, 15, 0.11, 'dark'],     // left arm
+  [12, 14, 0.13, 'body'], [14, 16, 0.11, 'dark'],     // right arm
+  [23, 25, 0.17, 'body'], [25, 27, 0.14, 'dark'],     // left leg
+  [24, 26, 0.17, 'body'], [26, 28, 0.14, 'dark'],     // right leg
+  [15, 19, 0.14, 'accent'], [16, 20, 0.14, 'accent'], // fists
+  [27, 31, 0.13, 'accent'], [28, 32, 0.13, 'accent'], // feet
+];
+const JOINTS = [11, 12, 13, 14, 25, 26];
+function mid(a, b) { return new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5); }
+function basisQuat(xAxis, yAxis, forwardHint) {
+  const y = yAxis.clone().normalize();
+  let z = new THREE.Vector3().crossVectors(xAxis, y).normalize();
+  if (z.dot(forwardHint) < 0) z.negate();
+  const x = new THREE.Vector3().crossVectors(y, z).normalize();
+  return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
+}
+class Rig {
+  constructor(pal, isMonster) {
+    this.group = new THREE.Group();
+    this.group.visible = false;
+    scene.add(this.group);
+    const mk = c => new THREE.MeshStandardMaterial({
+      color: c, metalness: isMonster ? 0.05 : 0.4, roughness: isMonster ? 0.85 : 0.5, flatShading: true });
+    const mats = { body: mk(pal.body), dark: mk(pal.dark), accent: mk(pal.accent) };
+    const glow = new THREE.MeshStandardMaterial({ color: pal.glow, emissive: pal.glow, emissiveIntensity: 1.5 });
+    const part = mat => { const m = new THREE.Mesh(unitBox, mat); this.group.add(m); return m; };
+    const child = (parent, mat, sx, sy, sz, x, y, z) => {
+      const m = new THREE.Mesh(unitBox, mat);
+      m.scale.set(sx, sy, sz); m.position.set(x, y, z); parent.add(m);
+    };
+    this.seg = SEGMENTS.map(s => part(mats[s[3]]));
+    this.joints = JOINTS.map(() => part(mats.accent));
+    this.torso = part(mats.body);
+    this.pelvis = part(mats.dark);
+    this.head = part(mats.dark);
+    child(this.head, glow, 0.8, 0.22, 0.12, 0, 0.1, 0.5);           // visor / eyes, on the face
+    child(this.torso, glow, 0.28, 0.16, 0.1, 0, 0.18, 0.5);         // chest light
+    if (isMonster) {
+      child(this.head, mats.accent, 0.2, 0.55, 0.2, 0.32, 0.7, 0);  // horns
+      child(this.head, mats.accent, 0.2, 0.55, 0.2, -0.32, 0.7, 0);
+      child(this.pelvis, mats.body, 0.3, 0.9, 2.4, 0, 0, -1.5);     // tail
+      child(this.torso, mats.accent, 0.12, 0.3, 0.35, 0, 0.25, -0.6); // back spikes
+      child(this.torso, mats.accent, 0.12, 0.3, 0.35, 0, -0.15, -0.6);
+    }
+    this.raw = Array.from({ length: 33 }, () => new THREE.Vector3());
+    this.smooth = Array.from({ length: 33 }, () => new THREE.Vector3());
+    this.P = Array.from({ length: 33 }, () => new THREE.Vector3());
+    this.first = true;
+    this.lastSet = -1e9;
+    this.ground = 0;
+    this.flat = null;
+    this.hold = false;       // while true, incoming poses are ignored (a move or a freeze owns the body)
+  }
+  // flat: 99 numbers, a canonical pose.
+  setFlat(flat, now) {
+    if (!flat || flat.length < 99) return;
+    if (this.hold) { this.lastSet = now; return; }
+    for (let i = 0; i < 33; i++) this.raw[i].set(flat[3 * i], flat[3 * i + 1], flat[3 * i + 2]);
+    this.flat = flat;
+    this.lastSet = now;
+  }
+  fresh(now) { return now - this.lastSet < 1500; }
+  // dir: -1 faces downtown (-z), +1 faces uptown (+z). z: where it stands on the rail.
+  // xf (optional): whole-body motion for a move: pitch, spin, lift and adv (metres, before scaling).
+  update(dir, z, now, xf) {
+    const vis = this.fresh(now) && rail.ready;
+    this.group.visible = vis;
+    if (!vis) { this.first = true; return; }
+    const { raw, smooth, P } = this;
+    for (let i = 0; i < 33; i++) {
+      if (this.first) smooth[i].copy(raw[i]); else smooth[i].lerp(raw[i], 0.45);
+    }
+    this.first = false;
+    let minY = Infinity;
+    for (let i = 27; i <= 32; i++) minY = Math.min(minY, smooth[i].y);
+    this.ground += ((-minY) - this.ground) * 0.3;
+    const f = dir < 0 ? 1 : -1;      // turning to face uptown is a half turn about the vertical axis
+    const cp = xf ? Math.cos(xf.pitch) : 1, sp = xf ? Math.sin(xf.pitch) : 0;
+    const cs = xf ? Math.cos(xf.spin) : 1, ss = xf ? Math.sin(xf.spin) : 0;
+    for (let i = 0; i < 33; i++) {
+      let cx = smooth[i].x, cy = smooth[i].y, cz = smooth[i].z;
+      if (xf) {
+        const y1 = cy * cp - cz * sp, z1 = cy * sp + cz * cp;       // tip about the hips
+        const x2 = cx * cs - y1 * ss, y2 = cx * ss + y1 * cs;       // roll about the body's long axis
+        cx = x2; cy = y2 + xf.lift; cz = z1 - xf.adv;               // rise, and travel the way it faces
+      }
+      P[i].set(f * cx * S + rail.x, (cy + this.ground) * S, f * cz * S + z);
+    }
+    SEGMENTS.forEach((s, i) => {
+      const a = P[s[0]], b = P[s[1]], mesh = this.seg[i];
+      const d = new THREE.Vector3().subVectors(b, a);
+      const len = d.length();
+      if (len < 1e-4) return;
+      mesh.position.addVectors(a, b).multiplyScalar(0.5);
+      mesh.scale.set(s[2] * S, len, s[2] * S);
+      mesh.quaternion.setFromUnitVectors(UP, d.divideScalar(len));
+    });
+    JOINTS.forEach((j, i) => { this.joints[i].position.copy(P[j]); this.joints[i].scale.setScalar(0.17 * S); });
+
+    const shoulderMid = mid(P[11], P[12]), hipMid = mid(P[23], P[24]), earMid = mid(P[7], P[8]);
+    const forward = new THREE.Vector3().subVectors(P[0], earMid);
+    if (forward.lengthSq() < 1e-6) forward.set(0, 0, dir);
+    forward.normalize();
+    const across = new THREE.Vector3().subVectors(P[11], P[12]);
+    const spine = new THREE.Vector3().subVectors(shoulderMid, hipMid);
+    const shoulderW = Math.max(across.length(), 0.2 * S);
+    const spineLen = Math.max(spine.length(), 0.2 * S);
+    const q = basisQuat(across, spine, forward);
+    this.torso.position.copy(mid(shoulderMid, hipMid));
+    this.torso.quaternion.copy(q);
+    this.torso.scale.set(shoulderW * 1.15, spineLen * 1.05, shoulderW * 0.6);
+    this.pelvis.position.copy(hipMid);
+    this.pelvis.quaternion.copy(q);
+    this.pelvis.scale.set(shoulderW * 0.95, 0.16 * S, shoulderW * 0.55);
+    this.head.position.copy(earMid);
+    this.head.quaternion.copy(q);
+    this.head.scale.setScalar(0.24 * S);
+  }
+}
+const rigA = new Rig({ body: 0x4f6d8f, dark: 0x2b3442, accent: 0xf0883e, glow: 0x66e0ff }, false);
+const rigB = new Rig({ body: 0x5b3f8f, dark: 0x3a2a5c, accent: 0x8fcf6a, glow: 0xff5544 }, true);
+const rigOf = role => (role === 'A' ? rigA : rigB);
+const otherRole = role => (role === 'A' ? 'B' : 'A');
+
+// A match state message from the host. skipRole: a role whose pose this device supplies itself.
+function applySnapshot(s, now, skipRole) {
+  if (!rail.ready) return;
+  world.zA = fromU(s.uA);
+  world.zB = fromU(s.uB);
+  world.phase = s.phase;
+  world.winner = s.winner;
+  world.hostRole = s.hostRole;
+  world.players = s.players;
+  world.cd = s.cd || world.cd;
+  if (s.mv) {
+    if (!world.mv || world.mv.id !== s.mv.id) world.mv = { id: s.mv.id, by: s.mv.by, kind: s.mv.kind, gap: s.mv.gap, start: now - s.mv.t };
+  } else world.mv = null;
+  syncDown(s.down || [], now);
+  showEvents(s.evs);
+  if (skipRole !== 'A' && s.pA) rigA.setFlat(s.pA, now);
+  if (skipRole !== 'B' && s.pB) rigB.setFlat(s.pB, now);
+}
+
+// ---------- camera ----------
+let viewIndex = 0;
+const viewNames = () => (myRole === 'W' ? ['Side', 'Overhead', 'Behind mecha', 'Behind monster'] : ['Behind', 'Side', 'Overhead']);
+function showViewName() { viewBtn.textContent = 'Camera: ' + viewNames()[viewIndex % viewNames().length]; }
+viewBtn.addEventListener('click', () => { viewIndex = (viewIndex + 1) % viewNames().length; showViewName(); });
+function updateCamera(now) {
+  const h = mechaHeight(), x = rail.x;
+  const center = (disp.zA + disp.zB) / 2;
+  const name = viewNames()[viewIndex % viewNames().length];
+  const behind = role => {
+    // Over the shoulders, offset to the park side so the near giant does not hide the far one.
+    if (role === 'A') { camera.position.set(x - 0.42 * h, 1.3 * h, disp.zA - 1.25 * h); camera.lookAt(x, 0.45 * h, disp.zA + 0.9 * h); }
+    else { camera.position.set(x - 0.42 * h, 1.3 * h, disp.zB + 1.25 * h); camera.lookAt(x, 0.45 * h, disp.zB - 0.9 * h); }
+  };
+  if (now < cut.until) {                                     // wide shot from the park side
+    camera.position.set(cut.x - 1.5 * h, 0.7 * h, cut.z + 1.6 * h);
+    camera.lookAt(cut.x, 0.3 * h, cut.z);
+  } else if (name === 'Behind') behind(myRole);
+  else if (name === 'Behind mecha') behind('A');
+  else if (name === 'Behind monster') behind('B');
+  else if (name === 'Side') {
+    camera.position.set(x - 1.7 * h, 0.6 * h, center + 0.2 * h);
+    camera.lookAt(x, 0.4 * h, center);
+  } else {
+    camera.position.set(x, 3.6 * h, center + 1.2 * h);
+    camera.lookAt(x, 0, center);
+  }
+}
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.fov = w < h ? 62 : 50;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ---------- keeping the screen awake during play ----------
+// Asks the browser not to dim or lock the screen. The browser drops the request whenever the page is
+// hidden, so it is asked again each time the page comes back.
+let wakeLock = null, wantAwake = false;
+async function keepAwake() {
+  wantAwake = true;
+  if (wakeLock || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return !!wakeLock;
+  try {
+    const lock = await navigator.wakeLock.request('screen');
+    wakeLock = lock;
+    lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; });
+  } catch (e) { /* refused, for example in low power mode */ }
+  return !!wakeLock;
+}
+document.addEventListener('visibilitychange', () => { if (wantAwake && document.visibilityState === 'visible') keepAwake(); });
+function warnIfNotAwake(ok) {
+  if (ok) return;
+  const hint = $('hint');
+  if (hint) hint.textContent = 'This browser will not keep the screen awake. Set Auto-Lock to Never while you play. ' + hint.textContent;
+}
+
+// ---------- loading helper libraries ----------
+const scriptLoads = {};
+function loadScript(url, what) {
+  if (!scriptLoads[url]) {
+    scriptLoads[url] = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = url;
+      s.onload = () => resolve();
+      s.onerror = () => { delete scriptLoads[url]; reject(new Error('could not load ' + what)); };
+      document.head.appendChild(s);
+    });
+  }
+  return scriptLoads[url];
+}
+// Draws a QR code for text onto a canvas. Returns false if the QR library could not be loaded.
+async function drawQr(canvas, text) {
+  try {
+    if (!window.qrcode) await loadScript(QR_URL, 'the QR code library');
+    const qr = window.qrcode(0, 'M');
+    qr.addData(text); qr.make();
+    const n = qr.getModuleCount(), cell = Math.max(2, Math.floor(280 / (n + 8))), pad = cell * 4;
+    canvas.width = canvas.height = n * cell + pad * 2;
+    const g = canvas.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, canvas.width, canvas.height);
+    g.fillStyle = '#000';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) g.fillRect(pad + c * cell, pad + r * cell, cell, cell);
+    return true;
+  } catch (e) { console.error(e); return false; }
+}
+let peerLoading = null;
+function loadPeer() {
+  if (window.Peer) return Promise.resolve();
+  if (!peerLoading) {
+    peerLoading = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = PEERJS_URL;
+      s.onload = () => resolve();
+      s.onerror = () => { peerLoading = null; reject(new Error('could not load the connection library')); };
+      document.head.appendChild(s);
+    });
+  }
+  return peerLoading;
+}
+
+// ---------- main loop ----------
+let lastFrame = 0;
+function frame(now) {
+  const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.1) : 0;
+  lastFrame = now;
+  appTick(dt, now);
+  const anim = moveAnim(now);
+  disp.zA += (world.zA - disp.zA) * Math.min(1, dt * 12);
+  disp.zB += (world.zB - disp.zB) * Math.min(1, dt * 12);
+  rigA.update(+1, disp.zA, now, anim.A);
+  rigB.update(-1, disp.zB, now, anim.B);
+  updateFx(now, anim);
+  animateCollapses(now);
+  updateCamera(now);
+  tickClip(now);
+
+  let label = null;
+  if (now < flashState.until) label = { text: flashState.text, cls: '' };
+  else if (world.phase === 'over') {
+    label = { text: world.winner === 'A' ? 'NEIGHBORHOOD SAVED · MECHA WINS' : 'THE FLATIRON FALLS · MONSTER WINS', cls: 'result' };
+  } else label = appLabel(now);
+  actionEl.textContent = label ? label.text : '';
+  actionEl.className = label ? label.cls : '';
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+// ===================== special moves, their effects, and move clips (shared by every page) =====================
+
+// ---------- building a pose from a few joints ----------
+// Positions are canonical: metres, hips at the origin, x to the figure's right, y up, -z the way it faces.
+const IDLE = {
+  rE: [0.24, 0.30, -0.06], rW: [0.20, 0.42, -0.26], lE: [-0.24, 0.30, -0.06], lW: [-0.20, 0.42, -0.26],
+  rK: [0.11, -0.45, -0.02], rA: [0.11, -0.88, 0], lK: [-0.11, -0.45, -0.02], lA: [-0.11, -0.88, 0],
+};
+const mirror = p => [-p[0], p[1], p[2]];
+const arms = (e, w) => ({ rE: e, rW: w, lE: mirror(e), lW: mirror(w) });
+const legs = (k, a) => ({ rK: k, rA: a, lK: mirror(k), lA: mirror(a) });
+const ease = (k, a, b) => { const t = Math.min(Math.max((k - a) / (b - a), 0), 1); return t * t * (3 - 2 * t); };
+function blend(p, q, t) {
+  const out = {};
+  for (const key in IDLE) {
+    const a = p[key] || IDLE[key], b = q[key] || IDLE[key];
+    out[key] = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+  return out;
+}
+function figure(parts, bob) {
+  const p = Object.assign({}, IDLE, parts), dy = bob || 0, flat = new Array(99);
+  const put = (i, v) => { flat[3 * i] = v[0]; flat[3 * i + 1] = v[1] + dy; flat[3 * i + 2] = v[2]; };
+  const hand = (e, w, d) => {                 // a point a little beyond the wrist, along the forearm
+    const x = w[0] - e[0], y = w[1] - e[1], z = w[2] - e[2], n = Math.hypot(x, y, z) || 1;
+    return [w[0] + x / n * d, w[1] + y / n * d, w[2] + z / n * d];
+  };
+  put(0, [0, 0.66, -0.1]);
+  for (let i = 1; i <= 6; i++) put(i, [i % 2 ? -0.03 : 0.03, 0.69, -0.08]);
+  put(7, [-0.08, 0.67, 0]); put(8, [0.08, 0.67, 0]);                      // odd landmarks are the figure's left
+  put(9, [-0.03, 0.61, -0.08]); put(10, [0.03, 0.61, -0.08]);
+  put(11, [-0.19, 0.5, 0]); put(12, [0.19, 0.5, 0]);
+  put(13, p.lE); put(14, p.rE); put(15, p.lW); put(16, p.rW);
+  put(17, hand(p.lE, p.lW, 0.08)); put(18, hand(p.rE, p.rW, 0.08));
+  put(19, hand(p.lE, p.lW, 0.1)); put(20, hand(p.rE, p.rW, 0.1));
+  put(21, hand(p.lE, p.lW, 0.05)); put(22, hand(p.rE, p.rW, 0.05));
+  put(23, [-0.1, 0, 0]); put(24, [0.1, 0, 0]);
+  put(25, p.lK); put(26, p.rK); put(27, p.lA); put(28, p.rA);
+  const foot = (k, a, d) => { const h = hand(k, a, 0.05); return [h[0], h[1], h[2] + d]; };
+  put(29, foot(p.lK, p.lA, 0.05)); put(30, foot(p.rK, p.rA, 0.05));
+  put(31, foot(p.lK, p.lA, -0.14)); put(32, foot(p.rK, p.rA, -0.14));
+  return flat;
+}
+// The stand-in opponent: its arms show what it is about to do.
+function botPose(b, now) {
+  const sway = Math.sin(now / 1000 * 2.2) * 0.02;
+  let parts = IDLE;
+  if (b.state === 'windup') {
+    const k = Math.min((now - b.since) / 900, 1);
+    parts = blend(IDLE, arms([0.28, 0.72, -0.02], [0.20, 0.94, -0.06]), k);      // arms rise overhead: the tell
+  } else if (b.state === 'strike') {
+    parts = arms([0.20, 0.42, -0.32], [0.16, 0.44, -0.66]);                      // both arms shoved forward
+  }
+  return figure(parts, sway);
+}
+
+// ---------- the special moves ----------
+// dur: length in ms. hit: when it lands, as a fraction of dur. knock: how far it throws the opponent, in giant heights.
+const MOVES = {
+  thunder: { name: 'THUNDER BLOW', dur: 2000, hit: 0.66, knock: 0.7 },
+  kick:    { name: 'FLYING HEAD KICK', dur: 2800, hit: 0.55, knock: 0.75 },
+  drill:   { name: 'FLYING DRILL', dur: 2600, hit: 0.6, knock: 0.85 },
+  beam:    { name: 'CHEST LASER', nameB: 'GREEN FIRE', dur: 2400, hit: 0.5, knock: 0.6 },
+};
+const moveName = (kind, role) => (role === 'B' && MOVES[kind].nameB) || MOVES[kind].name;
+const WIDE = arms([0.46, 0.52, 0.06], [0.80, 0.56, 0.10]);
+const CLAP = arms([0.22, 0.44, -0.30], [0.03, 0.46, -0.56]);
+const CROUCH = Object.assign(arms([0.26, 0.30, 0.12], [0.30, 0.15, 0.25]), legs([0.15, -0.28, -0.22], [0.12, -0.58, 0.02]));
+const FLYKICK = {
+  rK: [0.10, -0.12, -0.45], rA: [0.10, -0.06, -0.92], lK: [-0.13, -0.25, -0.12], lA: [-0.13, -0.48, 0.22],
+  rE: [0.30, 0.45, 0.10], rW: [0.42, 0.60, 0.20], lE: [-0.28, 0.35, 0.10], lW: [-0.40, 0.25, 0.25],
+};
+const STRAIGHT = Object.assign(arms([0.10, 0.78, -0.03], [0.05, 1.02, -0.04]), legs([0.07, -0.45, 0], [0.07, -0.90, 0]));
+const BRACE = arms([0.36, 0.44, 0.14], [0.52, 0.28, 0.30]);
+// The attacker's pose and body motion at fraction k of a move. gapU: distance to the opponent in giant heights.
+// xf: pitch (tip forward when negative), spin (roll about the body's long axis), lift and adv in metres.
+function moveFrame(kind, k, gapU) {
+  const gapM = gapU * 1.7;
+  let parts = IDLE;
+  const xf = { pitch: 0, spin: 0, lift: 0, adv: 0 };
+  if (kind === 'thunder') {
+    parts = blend(IDLE, WIDE, ease(k, 0, 0.25));
+    parts = blend(parts, CLAP, ease(k, 0.45, 0.58));
+    parts = blend(parts, IDLE, ease(k, 0.82, 1));
+  } else if (kind === 'kick') {
+    parts = blend(IDLE, CROUCH, ease(k, 0, 0.18));
+    parts = blend(parts, FLYKICK, ease(k, 0.18, 0.3));
+    parts = blend(parts, IDLE, ease(k, 0.72, 1));
+    const back = 1 - ease(k, 0.72, 1);
+    xf.lift = 1.15 * ease(k, 0.18, 0.4) * back;
+    xf.adv = Math.max(gapM - 0.75, 0) * ease(k, 0.2, 0.55) * back;
+    xf.pitch = 0.3 * ease(k, 0.2, 0.4) * (1 - ease(k, 0.7, 0.9));
+  } else if (kind === 'drill') {
+    parts = blend(IDLE, STRAIGHT, ease(k, 0, 0.18));
+    parts = blend(parts, IDLE, ease(k, 0.8, 1));
+    const back = 1 - ease(k, 0.74, 1);
+    xf.pitch = -Math.PI / 2 * ease(k, 0, 0.18) * (1 - ease(k, 0.74, 0.95));
+    xf.spin = Math.PI * 2 * 10 * ease(k, 0.16, 0.74);          // ten full turns, so it ends square
+    xf.lift = 0.25 * ease(k, 0, 0.18) * back;
+    xf.adv = Math.max(gapM - 1.05, 0) * ease(k, 0.22, 0.6) * back;
+  } else if (kind === 'beam') {
+    parts = blend(IDLE, BRACE, ease(k, 0, 0.2));
+    parts = blend(parts, IDLE, ease(k, 0.8, 1));
+  }
+  return { flat: figure(parts), xf };
+}
+// The opponent is thrown up and back when the move lands.
+function victimFrame(kind, k) {
+  const t = Math.min(Math.max((k - MOVES[kind].hit) / 0.3, 0), 1), arc = Math.sin(Math.PI * t);
+  return { pitch: 0.5 * arc, spin: 0, lift: 0.35 * arc, adv: 0 };
+}
+// Called once per frame before the giants are drawn: plays the current move on both of them.
+function moveAnim(now) {
+  const out = { A: null, B: null, k: -1, mv: null };
+  rigA.hold = rigB.hold = false;
+  const mv = world.mv;
+  trackClip(mv, now);
+  if (!mv || !MOVES[mv.kind]) return out;
+  const def = MOVES[mv.kind], k = Math.min(Math.max((now - mv.start) / def.dur, 0), 1);
+  const attacker = rigOf(mv.by), victimRole = otherRole(mv.by);
+  const a = moveFrame(mv.kind, k, mv.gap);
+  attacker.setFlat(a.flat, now);
+  attacker.hold = true;                         // the move owns the attacker's body until it ends
+  out[mv.by] = a.xf;
+  out[victimRole] = victimFrame(mv.kind, k);
+  if (mv.kind === 'kick' && k > 0.08 && k < def.hit) rigOf(victimRole).hold = true;   // frozen until the kick lands
+  out.k = k; out.mv = mv;
+  return out;
+}
+
+// ---------- effects ----------
+const fxMat = (color, opacity) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false });
+const fxAdd = (geo, mat) => { const m = new THREE.Mesh(geo, mat); m.visible = false; scene.add(m); return m; };
+const ringGeo = new THREE.TorusGeometry(1, 0.06, 8, 40);
+const fx = {
+  wave: fxAdd(ringGeo, fxMat(0xcfeeff, 0.85)),
+  wave2: fxAdd(ringGeo, fxMat(0xffffff, 0.6)),
+  burst: fxAdd(ringGeo, fxMat(0xfff2b0, 0.9)),
+  beam: fxAdd(new THREE.CylinderGeometry(1, 1, 1, 12), fxMat(0x66e0ff, 0.8)),
+  core: fxAdd(new THREE.CylinderGeometry(1, 1, 1, 8), fxMat(0xffffff, 0.95)),
+  freeze: fxAdd(unitBox, fxMat(0x9fd8ff, 0.35)),
+  fire: Array.from({ length: 12 }, (_, i) => fxAdd(unitBox, fxMat(i % 3 ? 0x5dff6a : 0xd8ff8a, 0.75))),
+};
+const chestOf = rig => mid(rig.P[11], rig.P[12]).lerp(mid(rig.P[23], rig.P[24]), 0.25);
+function stretch(mesh, a, b, radius) {
+  const d = new THREE.Vector3().subVectors(b, a), len = d.length();
+  if (len < 1e-3) { mesh.visible = false; return; }
+  mesh.position.addVectors(a, b).multiplyScalar(0.5);
+  mesh.scale.set(radius, len, radius);
+  mesh.quaternion.setFromUnitVectors(UP, d.divideScalar(len));
+  mesh.visible = true;
+}
+function updateFx(now, anim) {
+  fx.wave.visible = fx.wave2.visible = fx.burst.visible = fx.beam.visible = fx.core.visible = fx.freeze.visible = false;
+  for (const f of fx.fire) f.visible = false;
+  const mv = anim.mv;
+  if (!mv) return;
+  const attacker = rigOf(mv.by), victim = rigOf(otherRole(mv.by));
+  if (!attacker.group.visible || !victim.group.visible) return;
+  const h = mechaHeight(), k = anim.k, def = MOVES[mv.kind];
+  const from = chestOf(attacker), to = chestOf(victim);
+  const lin = (a, b) => Math.min(Math.max((k - a) / (b - a), 0), 1);
+  if (mv.kind === 'thunder' && k > 0.56 && k < def.hit + 0.06) {       // a shock wave rolls from the clap to the opponent
+    [[fx.wave, 0], [fx.wave2, 0.25]].forEach(([m, lag]) => {
+      const t = Math.max(lin(0.56, def.hit + 0.04) - lag, 0) / (1 - lag);
+      m.position.lerpVectors(from, to, t);
+      m.scale.setScalar((0.1 + 0.55 * t) * h);
+      m.material.opacity = 0.85 * (1 - 0.6 * t);
+      m.visible = t > 0;
+    });
+  }
+  if (mv.kind === 'kick' && k > 0.08 && k < def.hit) {                 // the opponent is frozen in place
+    const z = mv.by === 'A' ? disp.zB : disp.zA;
+    fx.freeze.position.set(rail.x, 0.52 * h, z);
+    fx.freeze.scale.set(0.62 * h, 1.06 * h, 0.5 * h);
+    fx.freeze.material.opacity = 0.22 + 0.16 * Math.sin(now / 60);
+    fx.freeze.visible = true;
+  }
+  if (mv.kind === 'beam' && k > 0.22 && k < 0.76) {
+    if (mv.by === 'A') {                                               // the mecha: a laser from the chest
+      const r = (0.03 + 0.012 * Math.sin(now / 25)) * h;
+      stretch(fx.beam, from, to, r);
+      stretch(fx.core, from, to, r * 0.4);
+    } else {                                                           // the monster: green fire from the head
+      const head = attacker.P[0];
+      fx.fire.forEach((m, i) => {
+        const t = (i / fx.fire.length + now / 380) % 1;
+        m.position.lerpVectors(head, to, t);
+        m.position.x += Math.sin(now / 70 + i * 2.1) * 0.03 * h * (0.4 + t);
+        m.position.y += Math.cos(now / 90 + i * 1.3) * 0.03 * h * (0.4 + t);
+        m.scale.setScalar((0.035 + 0.11 * t) * h);
+        m.rotation.set(now / 200 + i, now / 260 + i, 0);
+        m.material.opacity = 0.8 * (1 - 0.5 * t);
+        m.visible = true;
+      });
+    }
+  }
+  if (k >= def.hit && k < def.hit + 0.12) {                            // a flash where the move lands
+    const t = lin(def.hit, def.hit + 0.12);
+    fx.burst.position.copy(to);
+    fx.burst.scale.setScalar((0.15 + 0.8 * t) * h);
+    fx.burst.material.opacity = 0.9 * (1 - t);
+    fx.burst.visible = true;
+  }
+}
+
+// ---------- move clips: a short side-view video of each move, picture only ----------
+// Recorded from a second, hidden camera. Only the 3D scene is in the clip: no labels, score or buttons.
+let clipEnabled = true;
+const clip = { canvas: null, renderer: null, cam: null, rec: null, chunks: [], endAt: 0, startedAt: 0, lastId: 0, list: [], count: 0 };
+const clipSupported = () => typeof MediaRecorder !== 'undefined' && !!HTMLCanvasElement.prototype.captureStream;
+function clipMime() {
+  for (const m of ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm']) {
+    try { if (MediaRecorder.isTypeSupported(m)) return m; } catch (e) { /* try the next one */ }
+  }
+  return '';
+}
+function trackClip(mv, now) {
+  if (mv && mv.id !== clip.lastId) { clip.lastId = mv.id; startClip(mv, now); }
+  else if (!mv && clip.rec && clip.endAt === Infinity) clip.endAt = now + 500;      // a short tail after the move
+  if (clip.rec && now - clip.startedAt > 7000) clip.endAt = Math.min(clip.endAt, now);
+}
+function startClip(mv, now) {
+  if (!clipEnabled || !clipSupported() || clip.rec || !MOVES[mv.kind]) return;
+  try {
+    if (!clip.renderer) {
+      clip.canvas = document.createElement('canvas');
+      clip.canvas.width = 1280; clip.canvas.height = 720;
+      clip.canvas.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+      document.body.appendChild(clip.canvas);
+      clip.renderer = new THREE.WebGLRenderer({ canvas: clip.canvas, antialias: true, preserveDrawingBuffer: true });
+      clip.renderer.setSize(1280, 720, false);
+      clip.cam = new THREE.PerspectiveCamera(45, 16 / 9, 0.5, 2000);
+    }
+    // Fixed side view from the park, framed on both giants and on where the opponent will land.
+    const h = mechaHeight(), gap = Math.abs(disp.zB - disp.zA);
+    const throwTo = (mv.by === 'A' ? 1 : -1) * MOVES[mv.kind].knock * h * 0.5;
+    const center = (disp.zA + disp.zB) / 2 + throwTo;
+    clip.cam.position.set(rail.x - (1.25 * h + gap * 0.9), 0.5 * h, center);
+    clip.cam.lookAt(rail.x, 0.5 * h, center);
+    const mime = clipMime();
+    const rec = new MediaRecorder(clip.canvas.captureStream(30), mime ? { mimeType: mime, videoBitsPerSecond: 6000000 } : undefined);
+    const chunks = [], name = 'protect-or-destroy_' + mv.kind + '_' + (mv.by === 'A' ? 'mecha' : 'monster') + '_' + (++clip.count);
+    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = () => {
+      const type = rec.mimeType || mime || 'video/webm';
+      const blob = new Blob(chunks, { type });
+      if (!blob.size) return;
+      clip.list.unshift({ name: name + (type.includes('mp4') ? '.mp4' : '.webm'), label: moveName(mv.kind, mv.by), blob, url: URL.createObjectURL(blob) });
+      for (const old of clip.list.splice(8)) URL.revokeObjectURL(old.url);    // keep the latest eight
+      showClips();
+    };
+    rec.start();
+    clip.rec = rec; clip.endAt = Infinity; clip.startedAt = now;
+  } catch (e) { console.error(e); clip.rec = null; }
+}
+function tickClip(now) {
+  if (!clip.rec) return;
+  clip.renderer.render(scene, clip.cam);
+  if (now >= clip.endAt) { const rec = clip.rec; clip.rec = null; try { rec.stop(); } catch (e) { /* already stopped */ } }
+}
+async function saveClip(c) {
+  try {
+    const file = new File([c.blob], c.name, { type: c.blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  const a = document.createElement('a');
+  a.href = c.url; a.download = c.name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function showClips() {
+  const btn = $('clipsBtn'), list = $('clipsList');
+  if (!btn || !list) return;
+  btn.hidden = !clip.list.length;
+  btn.textContent = 'Clips (' + clip.list.length + ')';
+  list.textContent = '';
+  for (const c of clip.list) {
+    const row = document.createElement('div'); row.className = 'row';
+    const label = document.createElement('span');
+    label.textContent = c.label + ' · ' + (c.blob.size / 1048576).toFixed(1) + ' MB';
+    const save = document.createElement('button'); save.textContent = 'Save';
+    save.addEventListener('click', () => saveClip(c));
+    row.append(label, save); list.appendChild(row);
+  }
+}
+if ($('clipsBtn')) {
+  $('clipsBtn').addEventListener('click', () => { $('clips').hidden = !$('clips').hidden; });
+  $('clipsClose').addEventListener('click', () => { $('clips').hidden = true; });
+}
+
+
+// ===================== TV page: a big screen for one player's view. No camera, no password. =====================
+myRole = 'W';
+clipEnabled = false;
+const tv = { code: '', peer: null, lastData: 0, role: '', picked: false, starting: false };
+const tvCodeEl = $('tvCodeText'), pairEl = $('pair');
+window.__pod = { world, rail, state: () => ({ code: tv.code, paired: pairEl.hidden, uA: +toU(world.zA).toFixed(2), uB: +toU(world.zB).toFixed(2),
+  phase: world.phase, rigA: rigA.group.visible, rigB: rigB.group.visible, status: statusEl.textContent, view: viewBtn.textContent,
+  qr: !$('qr').hidden, mv: world.mv ? world.mv.kind + ':' + world.mv.by : '' }) };
+viewBtn.addEventListener('click', () => { tv.picked = true; });
+
+async function tvStart() {
+  if (tv.starting || tv.peer) return;
+  tv.starting = true;
+  try {
+    await loadPeer();
+  } catch (e) { statusEl.textContent = 'Could not load. Check the connection.'; tv.starting = false; setTimeout(tvStart, 4000); return; }
+  tv.code = Array.from(crypto.getRandomValues(new Uint8Array(4)), b => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join('');
+  const peer = tv.peer = new Peer(PEER_PREFIX + 'tv-' + tv.code);
+  peer.on('open', () => {
+    tv.starting = false;
+    tvCodeEl.textContent = tv.code.toUpperCase();
+    statusEl.textContent = 'Waiting for a phone \u00b7 code ' + tv.code.toUpperCase();
+    const playUrl = location.origin + location.pathname.replace(/tv\/[^/]*$/, '') + '#tv=' + tv.code;
+    drawQr($('qr'), playUrl).then(ok => { $('qr').hidden = !ok; if (!ok) $('qrNote').hidden = true; });
+  });
+  peer.on('connection', conn => {
+    conn.on('data', d => {
+      if (!d || d.t !== 's') return;
+      const now = performance.now();
+      tv.lastData = now;
+      pairEl.hidden = true;
+      if (d.tvRole && d.tvRole !== tv.role) { tv.role = d.tvRole; tv.picked = false; }
+      if (!tv.picked) { viewIndex = tv.role === 'B' ? 3 : 2; showViewName(); }     // that player's over-the-shoulder view
+      applySnapshot(d, now, null);
+      statusEl.textContent = 'Showing the ' + (tv.role === 'B' ? 'monster' : 'mecha') + ' player';
+    });
+  });
+  peer.on('error', e => {                     // most likely the code is taken: start again with a new one
+    console.error(e);
+    try { peer.destroy(); } catch (e2) { /* ignore */ }
+    tv.peer = null; tv.starting = false;
+    setTimeout(tvStart, 1500);
+  });
+}
+function appArenaReady() { tvStart(); }
+function appTick(dt, now) {
+  if (tv.lastData && now - tv.lastData > 6000) {       // the phone went away: show the code again
+    tv.lastData = 0;
+    pairEl.hidden = false;
+    statusEl.textContent = 'Waiting for a phone \u00b7 code ' + tv.code.toUpperCase();
+  }
+}
+function appLabel() { return null; }
+
+keepAwake();
+window.addEventListener('pointerdown', () => { keepAwake(); });
+showViewName();
+loadArena();
+requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>
