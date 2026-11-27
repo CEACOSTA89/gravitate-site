@@ -150,12 +150,6 @@ const ARENA = {
   bbox: [40.7393, -73.9928, 40.7452, -73.9848],        // south, west, north, east
 };
 const GRID = 29 * Math.PI / 180;   // Manhattan's avenues run about 29 degrees east of true north
-const OVERPASS = [
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
-];
 const city = new THREE.Group();
 scene.add(city);
 const buildingMats = [0xc9c2b8, 0xb5b0a8, 0xd6cfc4, 0xa9adb3].map(
@@ -280,35 +274,29 @@ function setRail(landmark) {
   }
   appArenaReady();
 }
+// The arena's map is stored in the page itself, so it appears at once and needs no map server.
+// It is a snapshot of OpenStreetMap building outlines for the arena (© OpenStreetMap contributors), simplified to
+// about half a metre. One entry per outline, separated by |. An entry is  kind:steps  where kind is a building's
+// height in metres (F in front marks the Flatiron) or P for a park, and steps are the outline's corners as
+// latitude,longitude moves in units of 0.00001 degrees, the first measured from ARENA_ORIGIN.
+const ARENA_ORIGIN = { lat: 40.7380, lon: -73.9950 };
+const ARENA_SNAPSHOT = 'P:301,696,41,-97,1,-2,2,-1,48,13,25,8,16,6,36,17,22,13,43,31,2,3,0,1,-58,138,-2,3,-2,0,-172,-125,-2,-4|22:424,990,46,34,55,-130,-46,-35|142:281,753,-43,104,47,34,45,-107,-18,-13,11,-27,-29,-21|150:312,771,11,-27,18,13,-11,27|14:714,946,-11,-8,2,-7,-8,-5,-6,16,29,21,5,-12,-10,-8|167:434,909,21,-50,-5,-4,3,-8,-15,-11,-24,59|P:713,450,-24,-17,-2,5,-24,-18,-5,11,48,35|19:590,785,3,-8,22,16,-4,8|18:676,672,1,-1,-3,-2,2,-4,6,5,1,-3,15,11,-3,8|71:597,653,-10,-7,2,-6,-14,-11,7,-16,29,5|25:659,660,-6,-4,11,-28,8,2|19:672,647,7,-16,7,2,-8,18|18:680,665,3,-8,19,13,-4,8|46:636,674,7,-15,22,16,-6,16|14:643,659,3,-8,24,18,-3,7|74:559,670,16,-41,12,9,-9,22,2,1,-8,18|22:572,679,8,-18,-2,-1,9,-22,2,2,-2,6,6,4,-14,34|22:579,684,14,-34,4,3,1,-4,3,2,-16,38|22:585,689,16,-38,3,2,-2,6,2,2,-13,32|19:593,777,14,-31,7,5,-13,32|27:607,782,-2,4,-4,-3,13,-32,7,6,-12,27|47:640,729,-13,-9,5,-12,3,1,2,-5,-2,-2,4,-12,9,7,5,-11,4,3|21:640,729,11,-26,7,5,-11,26|17:609,785,12,-28,13,9,-13,28|19:653,739,-6,-5,13,-30,6,4|46:653,739,12,-27,7,5,-11,27|47:619,837,5,-11,-7,-5,-3,7,-7,-5,8,-18,7,5,-1,2,6,4,2,-3,10,8,-10,24|18:661,693,3,-8,23,17,-3,8|18:673,691,1,-1,-8,-6,2,-7,23,17,-3,8|45:583,804,8,-18,5,4,-1,3,16,12,-5,12,-16,-12,-1,3|46:574,897,14,-31,11,9,-13,30|18:667,677,3,-7,5,4,1,-2,19,14,-4,8|19:620,715,17,-40,16,11,-5,11,-9,-7,-4,12,2,2,-2,5,-3,-1,-5,12|89:614,803,2,-4,1,2,1,-1,1,0,15,-34,20,15,-17,39|86:604,661,-2,-2,2,-6,-6,-4,13,-31,26,5,2,4,-33,77,-15,-11|24:673,715,2,2,2,-4,-4,-2,0,1,-16,-12,3,-8,24,18,-16,39,-7,-5|14:535,818,2,-5,-11,-9,-2,5,-18,-13,11,-26,13,10,-2,4,16,12,2,-5,17,13,-11,26|85:546,791,2,-4,-12,-9,-2,5,-17,-13,8,-18,13,9,-1,3,11,9,2,-3,21,15,-8,19|43:575,896,-18,-13,13,-30,-6,-5,6,-15,7,4,-2,5,7,6,2,-5,6,5,-6,15,4,3|49:690,661,5,-13,-7,-2,-8,18,-6,-4,12,-27,25,4,2,1,1,2,-1,3,-11,27|47:584,863,6,-15,-6,-5,-2,5,-7,-6,2,-5,-7,-4,13,-29,25,18,-1,1,7,5,3,-7,7,5,-5,11,10,8,-17,39|23:646,651,11,-24,7,1,-11,28|41:551,879,13,-30,6,4,-13,30|54:599,875,13,9,-14,31,-12,-10|19:671,668,-6,-4,7,-17,6,4|21:502,806,4,-10,47,34,-5,10|50:517,842,-23,-17,8,-19,47,34,-12,29,-24,-18|47:490,834,3,-8,1,0,0,-1,23,17,-4,9|19:606,590,4,-27,5,1,-3,27|19:612,591,3,-27,6,4,-3,25|16:618,593,3,-25,-2,-1,3,-5,4,1,-3,30|15:623,593,3,-30,7,1,-3,31|15:630,595,3,-31,7,2,-3,30|7:704,609,3,-28,3,-5,5,4,-3,30|80:635,562,3,-8,4,3,2,-5,-4,-3,1,-2,24,17,-7,15|18:619,567,-12,-9,3,-6,12,9|47:643,548,3,-8,23,17,-4,8|20:614,538,4,-9,20,15,-2,5,-6,-4,-2,3|25:646,540,3,-8,23,16,-3,9|16:618,530,3,-8,10,7,-1,2,9,7,0,-1,4,3,-3,6|17:621,522,4,-8,21,17,-2,5,-12,-10,-1,3|14:725,587,0,-3,0,-1,-1,3,-5,-3,1,-3,-2,-1,0,1,-7,-5,3,-7,23,17,-4,8|30:639,524,1,-1,-6,-5,0,2,-10,-7,7,-15,9,7,-1,1,6,4,1,-1,5,4,-6,15|25:659,519,3,-9,20,14,-4,9|21:691,583,-11,-8,4,-8,13,10,-2,7|47:658,507,8,-18,23,17,-7,18|14:715,569,6,-16,23,16,-7,16|27:656,506,-3,7,-11,-8,1,-1,-3,-2,-1,1,-8,-6,3,-7|21:684,568,4,-8,15,11,-3,7,-1,1|22:634,490,3,-8,21,15,-4,8|19:637,482,4,-8,22,16,-4,8|19:641,474,3,-8,23,17,-3,7|30:699,527,7,-16,10,7,1,-1,5,4,0,1,6,5,-7,16|47:682,452,1,-2,23,16,-1,3|31:722,522,0,-1,-5,-4,-1,1,-10,-7,4,-8,22,16,-4,8|14:716,442,-3,7,-16,-12,2,-7|14:699,430,3,-6,16,12,-2,6|52:721,587,2,1,1,-2,9,7,-8,20,-7,-1|47:716,488,13,-32,9,7,-1,2,4,3,1,-3,9,7,-5,11,-6,-4,-4,8,6,5,-4,11|21:704,609,-36,-6,12,-28,7,5,-1,9,5,1,0,-7,4,1,-1,6,4,1,2,-12,3,1,0,4,4,1|23:726,418,-7,18,-18,-13,-5,14,-8,-6,-1,4,-23,-17,14,-34,1,1,1,-3,2,-1,3,1,39,29,2,3|45:710,503,6,-15,22,15,-7,16|56:644,466,13,-31,22,16,-13,31|50:640,566,18,13,-8,19,-13,-2|47:649,531,6,-15,23,17,-6,15|54:686,559,13,-32,22,16,-13,31|15:718,611,-6,-1,3,-30,2,2,0,2,4,0|F38:606,590,-11,-2,-1,-2,12,-29,4,4|25:673,279,-3,9,-24,-17,10,-25,22,16,-4,8,4,3,-2,7|17:707,316,4,-8,21,16,-3,8|48:613,248,6,-13,17,13,-5,12|24:609,244,-4,-3,1,-4,-2,-2,-12,-9,-2,5,-6,-5,7,-16,24,18|43:711,308,6,-15,22,15,-7,16|24:676,280,5,-13,21,16,-5,13|44:682,268,12,-27,20,15,-12,27|14:656,246,3,-6,27,19,-2,4,-5,-3,-1,2|8:659,240,3,-8,27,19,-3,8|20:717,293,7,-15,4,3,1,2,12,7,-3,8,3,2,-3,8|50:675,241,2,-3,-4,-3,-1,3,-10,-6,14,-32,9,6,-1,4,4,3,1,-3,9,6,-14,32|18:628,207,3,-8,21,15,-4,7|47:693,240,9,-21,21,16,-9,21|19:718,231,0,-2,-15,-10,3,-6,3,2,2,0,15,11,-3,9|24:703,209,3,-7,23,17,-3,7|13:637,306,5,-12,5,3,-6,12|13:641,309,6,-12,4,3,-5,12|13:646,313,9,-19,4,3,-8,20|13:656,320,-5,-3,8,-20,5,4|6:656,319,10,-22,9,7,-9,23|24:700,353,-6,-5,13,-32,6,5|14:631,260,-13,32,-48,-34,14,-32,6,5,2,-5,14,11,-1,4|13:637,306,-5,-3,8,-20,5,4|128:612,226,-16,-12,10,-24,16,12|14:700,352,13,-31,24,17,-4,9,6,5,-1,2,6,4,-9,20|26:147,730,-23,-17,14,-32,23,17|19:200,604,4,-9,24,18,-4,8|11:153,503,-5,-4,0,-2,-7,-6,2,-5,13,9|46:192,630,11,-25,20,15,-11,25|17:123,435,-11,-8,14,-31,11,8|46:161,463,14,-31,6,5,-13,31|25:176,473,-1,-1,-5,13,-9,-7,3,-7,2,1,15,-35,8,6|31:231,503,10,-24,14,11,-10,24|18:193,642,3,-9,16,12,-3,8|21:170,602,4,-9,22,17,-4,9|21:189,650,3,-5,-2,-2,1,-3,18,13,-4,9|20:189,625,-1,2,-20,-15,3,-9,8,6,-1,2,17,13,-2,4|18:186,658,3,-8,16,12,-4,8|34:179,663,3,-8,22,17,-3,7|44:161,625,6,-13,9,6,-1,3,4,3,1,-3,8,6,-2,5,2,2,-1,3,-3,-1,-2,5|36:174,672,4,-10,23,17,-5,10|36:158,633,3,-8,8,6,-1,3,6,4,1,-2,7,5,-3,8|36:172,681,4,-8,20,16,-3,8|19:154,641,4,-8,20,15,-3,8|17:172,692,3,-8,18,12,-4,8|17:151,649,3,-8,17,12,-3,8|19:168,700,2,-5,-5,-3,2,-4,21,16,-3,8|18:158,704,4,-9,23,17,-4,9|38:150,665,-4,-4,5,-12,23,17,-5,13|37:156,713,4,-8,22,16,-4,8|39:161,698,-23,-17,8,-20,8,7,-2,3,8,6,2,-3,7,5|46:114,736,10,-23,20,14,-10,24|10:150,470,3,-8,11,9,-3,7|45:165,502,-22,-16,7,-16,22,16|11:146,518,9,-21,5,3,-8,19|10:152,519,8,-19,4,4,-7,17|10:157,521,13,-31,5,4,-11,28|16:191,598,-9,-7,13,-32,11,3|19:226,514,-2,20,-6,-1,1,-12,7,-19,4,3|12:224,534,2,-20,3,-7,16,7,-3,9,-12,-2,-1,14|12:229,535,1,-14,6,1,-1,13|12:236,522,6,1,-1,13,-6,-1|40:137,456,-19,-14,4,-8,3,2,4,-9,-2,-1,10,-22,10,7,-13,32,6,5|26:210,600,3,-5,-7,-5,11,-24,25,8,1,1,0,2,-12,28,-1,-1,-3,8|50:189,479,1,-3,-11,-8,10,-25,14,10,0,-2,6,5,2,5,0,1,-11,25|46:197,611,-23,-18,3,-6,14,11,3,-8,2,2,4,-9,-2,-1,8,-20,11,4|84:174,736,0,1,-13,30,1,1,-8,20,-7,2,-19,-14,13,-31,7,6,11,-26,0,0,3,-8,16,12,-4,7|38:134,443,13,-32,7,5,-14,32|38:155,458,13,-31,7,5,-14,31|19:177,587,12,-30,6,2,-13,32|53:104,759,10,-23,24,17,-10,23|28:133,515,-1,-4,9,-20,7,6,0,2,5,4,-7,15|28:242,523,13,-33,19,13,-15,36,-18,-3|28:120,474,-13,33,-22,-6,20,-48,25,18,-3,8|62:230,505,-4,-3,-7,19,-1,12,-17,-2,26,-62,14,10|77:178,490,-6,-5,6,-14,22,16,-16,37,-3,2,-17,-4|26:132,584,4,-8,19,14,-3,8|30:121,596,6,-14,7,5,-2,4,6,5,3,-6,11,8,-7,16|21:127,611,4,-8,14,11,-3,8|84:136,576,-4,9,-5,-3,-2,5,-19,-14,15,-36,26,8,-7,14,22,16,-7,15|41:142,622,-7,16,-20,-15,7,-16|66:140,559,7,-14,25,7,-9,23|14:315,451,2,-7,28,21,-2,6|38:217,309,4,-10,21,16,-4,9|14:122,265,3,-8,14,11,-3,7|46:238,335,7,-15,20,15,-6,15|21:343,471,4,-10,20,14,-5,11|14:118,252,3,-7,21,16,-3,7|22:344,459,4,-9,22,16,-3,9|19:129,357,14,-32,6,5,-13,31|25:142,366,-6,-5,13,-31,7,5|41:221,299,8,-17,19,14,-7,18|46:121,245,9,-20,21,16,-9,20|21:348,450,3,-6,22,16,-3,6|20:255,449,13,-32,7,5,-14,31|24:261,453,15,-34,6,4,-14,35|21:268,458,14,-35,13,10,-15,34|23:229,282,5,-12,22,16,-5,12|24:301,483,14,-32,6,4,-14,32|24:317,494,-10,-7,14,-32,10,8|22:317,494,13,-30,9,6,-13,31|44:248,312,7,-16,20,15,-7,16|21:350,444,3,-7,23,17,-3,6|21:326,501,14,-32,7,5,-14,32|32:333,506,14,-32,8,7,-13,31|33:266,253,-10,23,-19,-14,10,-24|47:284,332,14,-33,22,15,-14,34|61:311,350,13,-33,22,16,-14,32|19:353,437,4,-9,22,17,-3,9|23:169,243,3,-8,15,12,-3,8|46:255,296,13,-32,21,15,-14,32|19:357,428,3,-9,23,17,-4,9|5:201,236,4,-7,21,15,-4,8|19:360,419,4,-9,23,17,-4,9|46:175,228,4,-8,14,10,-3,8|21:204,228,2,-5,1,0,2,-3,21,15,-4,9|24:365,411,3,-8,22,16,-3,8|50:198,224,-3,6,-15,-11,3,-6|46:247,238,13,-31,20,15,-13,31|23:325,318,7,-17,21,16,-7,16|26:182,212,4,-9,17,13,-3,9|23:298,299,4,-9,21,16,-3,8|42:317,444,11,-25,24,17,-4,9,-7,-6,-4,8,8,6,-4,9|47:268,264,6,-15,21,15,-6,15|46:302,290,7,-17,21,16,-7,17|44:216,206,7,-16,20,14,-7,16|23:332,301,4,-10,21,16,-4,10|22:334,290,4,-8,22,17,-3,8|5:339,275,-6,15,-24,-17,14,-32,23,17,-4,9,24,18,-3,7|16:299,253,-2,5,-16,-11,2,-6|23:339,283,3,-6,21,15,-3,7|46:279,238,9,-21,20,15,-9,21|33:378,363,6,-14,27,20,-5,14|56:222,366,14,-32,23,16,-14,33|43:306,426,-3,8,-25,-18,3,-8|46:345,269,6,-14,21,15,-6,15|30:384,349,9,-21,28,20,-10,21|18:323,241,3,-7,22,15,-4,8|49:403,295,-3,8,-18,-12,14,-32,17,13,-3,7,4,3,4,5,-6,14|20:350,254,3,-7,22,15,-3,8|23:326,234,14,-35,22,16,-14,34|19:288,217,4,-8,20,15,-4,8|17:352,245,3,-7,22,16,-3,7|46:291,209,7,-16,20,15,-6,16|21:356,239,3,-7,22,16,-3,7|18:207,335,-1,-1,4,-9,23,17,-4,9|18:259,392,3,-8,24,17,-4,8|14:360,233,3,-7,20,14,-3,7|44:373,313,9,-22,18,12,3,-8,31,21,-13,32|14:363,226,3,-8,20,14,-3,8|21:366,218,3,-7,22,15,-4,8|46:369,210,6,-14,22,16,-6,14|47:173,308,1,-3,-2,-2,5,-12,22,16,-6,16|14:145,298,4,-7,20,15,-4,7|18:214,318,16,12,-3,8,-17,-13,4,-8|19:149,291,3,-8,20,15,-3,8|44:214,317,3,-8,20,14,-4,9|46:200,246,3,-8,19,14,-10,23,-18,-13,3,-8,-25,-19,3,-7|46:177,291,-3,8,-22,-16,17,-40,44,33,-14,31|46:254,450,-14,-11,0,-1,19,-46,21,15,-3,8,-6,-5|53:364,400,-2,5,2,2,-3,7,-2,-1,-9,21,-22,-15,22,-51,47,35,-7,16|23:186,203,6,-15,19,15,-1,3,5,3,1,-3,20,15,-6,14|46:306,348,-2,4,7,6,2,-7,19,14,-7,17,-19,-14,1,-3,-6,-5,-3,6,-21,-16,7,-18|47:129,225,2,-5,-22,-17,9,-22,18,12,-1,4,9,6,1,-3,18,13,-12,28|62:203,411,-22,-16,25,-61,19,14,-5,11,-8,-7,-3,6,10,7,-8,18,-9,-7,-4,10,12,9|45:268,327,-3,8,-15,-12,3,-8|31:355,481,7,5,-13,31,-7,-5|43:110,277,7,-16,19,14,-7,16|26:350,368,23,-55,20,15,-15,35,28,20,-9,20|54:296,430,4,3,-1,2,3,2,-15,36,-7,-5|14:400,249,24,-57,47,35,-37,89,-16,-11,9,-23,-31,-23|41:143,325,-14,32,-7,-5,23,-54,20,15,-9,22|47:154,339,13,10,2,-4,-9,-7,13,-30,20,15,-27,61,-24,-18|42:216,381,3,2,3,-8,5,4,3,-7,15,11,-19,45,-23,-17|20:544,238,-6,-4,9,-20,6,4|19:544,238,8,-17,5,4,-7,18|20:538,234,-29,-21,16,-40,48,34,-8,19,-18,-13|18:558,223,1,1,1,-1,5,4,-9,20,-6,-4|25:181,991,4,-9,22,16,-3,10|11:174,1007,7,-16,25,18,-1,1,2,2,-4,11,-4,-2,-5,0|37:159,903,3,-8,7,5,0,1,2,2,2,-1,10,8,-3,8|18:153,908,-4,9,-23,-18,6,-16,24,18,-3,7|17:153,908,3,-7,24,17,-3,8|71:188,973,3,-6,1,0,2,1,1,-4,-1,-1,-1,-2,3,-6,26,19,-8,18|25:185,982,3,-9,24,17,-4,9|20:229,995,1,-3,-9,-6,4,-9,1,1,1,-3,-1,-1,6,-14,10,7,1,-3,7,5,-1,4,0,1,-3,9,-1,-1,-2,4,1,0,-4,11,-1,0,-2,4|16:213,1025,3,-7,11,9,-2,7|82:232,956,8,-20,-4,-3,12,-30,26,19,-21,49|21:228,952,3,2,-1,2,-3,-1,-24,-17,21,-50,24,18|46:146,945,1,-4,-12,-9,-2,3,-17,-12,10,-24,23,18,4,-9,24,18,-14,31|44:106,946,10,-23,47,34,-20,48,-24,-17,11,-24|41:155,865,-6,14,3,2,1,-3,8,5,-6,13,3,2,-2,3,-13,-10,2,-3,-3,-2,-2,3,-8,-6,21,-48,14,11,-9,21|48:165,897,2,-4,2,1,1,-4,-1,-1,1,-4,2,1,6,-15,-7,-5,-6,13,-9,-7,11,-26,33,24,-17,40|47:196,955,7,-17,22,15,-8,18|34:117,839,2,-5,-8,-5,8,-17,19,14,-9,22|47:192,1037,-3,-2,-1,3,-20,-15,6,-16,21,15,-3,7,2,2|F86:276,539,10,-24,3,-2,40,29,1,3,-1,4,-3,1,-48,-7,-2,-1|22:267,652,7,-16,19,13,-7,17|24:308,991,5,-11,12,8,-5,11|19:295,974,-8,19,-7,-5,1,-3,0,-2,-2,-1,0,-2,-1,-1,0,2,-2,-1,-1,0,-2,3,-6,-4,8,-20,6,5,-1,5,6,4,2,-4|34:243,625,4,-8,19,15,-3,8|57:282,1030,5,-13,19,13,-5,14|46:253,1012,5,-14,22,15,-6,14|16:260,657,4,-8,22,17,-3,7|29:259,666,3,-8,21,15,-3,8|46:245,686,-21,-15,19,-46,21,16|188:245,686,1,2,7,-16,23,17,-10,24,-23,-17,-1,-1,-1,3,-22,-16,5,-11|26:215,693,4,-11,22,16,-2,6,-1,-1,-2,5|16:240,703,3,-7,23,17,-3,7|42:211,703,4,-10,8,5,0,2,5,4,1,-1,7,5,-4,10|4:236,712,4,-9,23,17,-3,9|46:211,703,21,15,-8,18,-3,-3,0,-1,-17,-12|46:236,721,3,-8,21,16,-3,7|6:230,729,4,-9,23,16,-4,9|12:289,970,-5,-4,11,-26,5,4|47:291,967,2,-5,2,1,3,-8,-2,-2,4,-9,9,6,-10,23|18:191,750,13,-30,7,5,-1,2,2,1,0,-2,7,5,-4,10,1,2,0,3,-1,1,-2,0,-1,1,1,3,0,1,-1,2,-2,0,-4,8|20:312,983,-13,-9,10,-24,13,9|25:228,737,3,-8,22,16,-3,7|13:375,956,8,-18,5,3,-8,19|38:225,745,3,-8,22,15,-4,8|18:225,756,2,-4,-5,-4,1,-5,24,17,-4,9|20:218,760,3,-7,22,16,-3,7|31:216,769,3,-8,21,15,-3,8|237:203,790,-22,-16,10,-24,2,2,4,-10,13,9,-4,10,5,4,-3,6,2,2|14:324,845,32,-77,46,34,-56,132,-46,-33|118:389,895,9,-22,12,8,-10,22|51:357,1034,4,-9,-2,-1,2,-3,-10,-7,-1,3,-14,-10,11,-28,48,34,-16,38|59:201,806,4,3,8,-18,-8,-6,5,-12,-2,-2,3,-6,26,19,-23,56,-21,-15|23:432,851,-8,-6,-4,11,8,5,-7,16,-22,-17,19,-46,1,1,1,-1,7,5,0,2,14,10|65:385,963,-5,-3,10,-23,-19,-14,13,-32,20,14,-7,17,2,8|14:357,1022,-4,9,25,19,-30,72,-1,0,-7,16,1,1,-3,6,-8,-6,0,-1,-29,-20,0,0,-9,-6,7,-14,3,-9,0,0,34,-82|16:313,980,9,-21,11,9,-8,20|83:276,637,9,-21,-2,-1,1,-1,-11,-8,-1,4,-9,-6,7,-18,42,14,-21,48|46:246,1028,7,-16,20,15,-7,16|90:398,932,4,3,13,-31,20,14,-27,62,-23,-17|19:361,946,10,-23,7,5,-2,4,7,6,-8,18|51:283,1014,13,-32,24,17,-13,32|63:193,825,-27,-20,14,-32,22,17,-6,13,5,3|68:544,579,11,-27,5,4,-11,24|41:478,481,7,-16,20,14,-7,17|18:485,465,4,-9,15,11,-3,9|30:448,432,5,-12,5,3,2,-6,19,13,-8,18|43:519,499,1,-4,-5,-4,-2,3,-6,-4,1,-4,0,-1,3,-8,1,1,1,-4,7,5,-2,4,6,5,2,-4,8,5,-7,16|46:509,471,-20,-15,6,-16,21,15|20:509,471,3,-8,25,18,-3,8|19:405,459,3,-8,22,16,-4,8|5:516,466,-4,-3,4,-8,-21,-15,4,-8,24,18|47:516,466,7,-16,22,16,-7,15|17:408,451,3,-8,23,17,-3,8|18:499,432,3,-8,21,16,-3,7|42:535,408,-13,31,-20,-15,13,-31|46:523,450,7,-16,21,16,-6,16|24:609,461,0,2,5,4,1,-1,7,4,-4,9,-6,-5,0,-2,-5,-4,-2,1,-6,-4,4,-9|47:602,455,9,-22,21,16,-9,22|46:470,384,7,-16,21,16,-6,16|6:526,431,6,-16,25,18,-7,16|23:425,412,5,-14,20,15,-6,14|63:543,423,-1,-3,-4,-3,5,-14,20,15,-6,15|47:644,425,-8,18,-22,-16,7,-19|47:543,403,14,-33,20,15,-14,33|26:535,390,0,-2,-4,-3,-2,1,-8,-6,3,-7,21,15,-3,7|44:610,421,-6,15,-21,-15,7,-15|46:524,373,8,-19,19,14,-8,19|38:487,345,10,-24,21,15,-10,25|43:610,421,-20,-15,13,-32,21,15|46:557,370,13,-30,21,15,-12,30|40:532,354,6,-15,20,15,-7,14|46:444,366,7,-16,21,15,-7,16|10:435,460,4,-7,23,17,-3,7|28:461,326,10,-23,20,14,-10,24|4:487,345,-6,-4,10,-24,-20,-14,3,-7,23,17,-2,6,2,2|18:474,296,3,-7,24,17,-4,7|18:468,504,4,-8,15,12,-3,8|14:617,405,7,-16,-21,-15,16,-39,47,34,-23,55|30:524,644,-1,2,-7,-5,16,-38,8,2|46:477,368,-7,16,-5,-3,7,-16,-21,-15,10,-24,47,35,-10,23|68:448,565,-2,-7,22,-54,13,10,-10,23,10,7,7,-16,11,8,-14,34|29:435,450,-2,1,-3,6,-19,-14,14,-31,18,14,-1,3,9,6,0,-1,20,14,-9,22|85:495,319,6,-13,-24,-17,18,-44,24,17,-6,13,-5,-3,-9,23,4,3,3,-6,24,17,-12,27|66:435,534,-11,28,-19,-4,-32,-23,32,-76,25,19,4,-11,-1,-1,2,-6,24,17|52:555,552,-2,5,-10,-8,-4,9,10,8,-6,14,-21,-4,-2,-4,17,-39,22,16,-2,5|50:502,528,-11,-8,3,-7,-22,-17,6,-15,23,16,1,-3,12,8,2,-5,12,9,-29,67,-15,-2|24:496,625,10,-27,9,2,-12,30|19:503,630,12,-30,9,2,-14,33|5:346,678,8,-3,3,12,-9,3|21:510,635,14,-33,8,1,-15,36,-1,1|91:548,607,15,3,1,3,-20,47,-13,-10|49:518,395,6,-13,14,10,-5,14|50:529,648,0,1,-5,-3,1,-2,-1,0,16,-39,8,2,-17,42|34:465,404,-1,1,-28,-20,8,-19,48,34,-8,18|14:567,338,-7,17,-23,-17,20,-49,47,35,-13,31|25:618,1010,3,-8,16,11,-3,8|16:580,1003,3,-8,22,16,-3,8|195:601,1038,-4,-3,13,-31,8,6,1,-2,10,8,0,2,5,3,-13,31|12:571,1024,3,-6,23,16,-3,7|46:574,1018,6,-15,20,15,-6,14|66:622,1002,3,-7,-9,-6,10,-24,24,17,-13,31|61:610,1004,-5,-4,-3,8,-19,-13,20,-47,23,17|65:667,1027,-3,6,-13,-9,13,-32,19,14,-11,24|85:684,1047,1,-2,-15,-11,13,-28,29,21,-13,32|81:495,1044,-10,-8,20,-47,23,18,-9,20,-12,-10|67:509,993,2,-3,-1,0,34,-80,38,28,-35,82|46:698,986,13,-30,6,5,-13,30|14:716,944,5,-12,23,17,-5,12|59:719,744,6,-14,22,15,-6,16,-17,-12,0,-1|25:658,835,17,-40,6,5,-17,39|26:695,769,11,-25,5,3,-11,26|21:664,839,17,-39,11,8,-17,40|25:700,773,12,-29,5,5,-11,28|50:706,777,13,-33,5,4,0,1,7,5,-6,15,-1,-1,-6,18|50:717,868,13,-32,12,8,-13,32|46:673,846,-6,16,-21,-16,6,-15|10:716,943,-1,-1,-1,4,-11,-8,2,-7,-9,-7,2,-6,-1,-1,0,-2,1,-1,2,0,1,-3,3,2,-1,2,3,2,1,-3,2,-1,-1,-6,4,-2,1,1,1,3,2,2,9,-18,0,0,2,-2,2,-2,8,6|14:663,900,2,-4,-3,-2,-1,-1,4,-9,-1,-1,3,-8,2,1,3,-8,1,-1,3,2,2,-4,13,9,-15,36|17:631,936,12,-28,6,4,0,1,5,5,-11,27|39:666,924,1,-3,-32,-23,-1,2,-9,-6,7,-16,9,7,-1,3,29,22,2,-4,9,7,-7,16|28:652,831,17,-40,6,4,-17,40|18:720,963,5,-12,14,10,-5,12|46:675,969,12,-30,24,17,-13,30|39:630,936,-17,-13,12,-29,11,8,-4,9,7,5|48:713,689,6,-16,8,6,-3,7,4,3,3,-7,8,6,-6,15|46:654,918,8,6,2,-2,9,7,-12,27,-2,1,-16,-12|70:714,744,-6,-5,-13,30,-13,-9,20,-48,23,18,-6,14,-4,-3|99:676,863,2,-6,-5,-4,19,-45,24,18,-22,50|46:704,991,13,-30,17,12,-12,31|14:697,296,-24,-17,-7,18,9,7,-9,23,13,9,1,0|8:666,297,-2,4,-9,-7,-3,7,-10,-7,3,-7,-5,-3,6,-13,24,17|61:277,350,-15,34,24,17,-4,8,24,17,19,-44,-19,-14,1,-3,-6,-5,-3,6|60:436,385,-6,13,25,18,-2,4,5,3,2,-6,19,13,5,-12,-19,-14,-1,1|145:547,1020,4,4,-19,46,-37,-26,11,-24,12,9,10,-22|P:646,846,-14,32,9,7,-1,3,21,16,4,-8,-3,-2,-1,-1,4,-9,-1,-1,3,-8,2,1,3,-8,1,-1,3,2,2,-4,-10,-7,-1,4|20:258,998,21,15,8,-20,-20,-14|34:275,959,10,-26,10,7,-11,26|14:314,567,-6,-1,0,3,6,2|14:309,627,-2,-1,-2,5,2,1|14:267,595,-9,-6,-2,4,9,6|3:481,599,-2,12,2,1,2,-5,1,-5,0,-2|14:520,648,-1,1,-2,-2,1,-1|14:332,716,-3,-3,-1,3,3,3|137:628,207,-11,27,16,12,12,-27|14:341,757,-56,134,-47,-34,56,-134|48:237,262,15,11,-3,8,-15,-11|27:295,264,-16,-12,3,-5,15,11|262:719,783,9,7,6,-15,-1,-1,3,-8,-7,-5,-4,8,-1,-1|3:250,620,4,-8,3,3,-3,8|16:632,449,-15,-11,3,-6,16,11,-3,7|14:705,469,-6,14,-21,-15,6,-14|14:699,484,-20,-14,-9,21,20,14|P:481,599,-2,12,-9,-3,3,-12|14:434,909,21,-50,-5,-4,3,-8,-15,-11,-24,59|14:455,859,-5,-4,-21,51,5,3|14:453,847,-24,59,-15,-11,24,-59|50:525,752,14,-33,-1,-1,7,-16,47,34,-21,49|19:219,1021,1,-3,-8,-5,0,2,-7,-5,8,-19,3,2,2,-6,20,15,-11,25|20:251,670,4,-8,25,19,-4,8';
 async function fetchArena() {
-  const key = 'arena2:' + ARENA.bbox.join(',');
-  try {
-    const cached = localStorage.getItem(key);
-    if (cached) return JSON.parse(cached);
-  } catch (e) { /* storage unavailable */ }
-  const b = ARENA.bbox.join(',');
-  const query = `[out:json][timeout:25];(way["building"](${b});relation["building"](${b});` +
-    `way["leisure"="park"](${b}););out geom;`;
-  const errors = [];
-  for (const url of OVERPASS) {
-    const host = new URL(url).host;
-    const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), 30000);
-    try {
-      arenaEl.textContent = `Arena: loading ${ARENA.name} from ${host}...`;
-      const res = await fetch(url + '?data=' + encodeURIComponent(query), { signal: ctl.signal });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      if (!data.elements || !data.elements.length) throw new Error('empty result');
-      try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { /* too large or unavailable */ }
-      return data;
-    } catch (e) {
-      errors.push(host + ': ' + (e.name === 'AbortError' ? 'timed out' : e.message));
-    } finally {
-      clearTimeout(timer);
+  const elements = [];
+  ARENA_SNAPSHOT.split('|').forEach((entry, id) => {
+    const cut = entry.indexOf(':'), kind = entry.slice(0, cut), n = entry.slice(cut + 1).split(',').map(Number);
+    const geometry = [];
+    let lat = 0, lon = 0;
+    for (let i = 0; i + 1 < n.length; i += 2) {
+      lat += n[i]; lon += n[i + 1];
+      geometry.push({ lat: ARENA_ORIGIN.lat + lat / 1e5, lon: ARENA_ORIGIN.lon + lon / 1e5 });
     }
-  }
-  throw new Error(errors.join('; '));
+    geometry.push(geometry[0]);
+    const tags = kind === 'P' ? { leisure: 'park' }
+      : { building: 'yes', height: kind.replace('F', ''), name: kind[0] === 'F' ? 'Flatiron Building' : '' };
+    elements.push({ type: 'way', id, tags, geometry });
+  });
+  return { elements };
 }
 let arenaLoading = false;
 async function loadArena() {
@@ -440,11 +428,17 @@ class Rig {
     this.group = new THREE.Group();
     this.group.visible = false;
     scene.add(this.group);
+    this.blocks = new THREE.Group();      // the block figure: shown until (or unless) a character model is attached
+    this.group.add(this.blocks);
+    this.model = null;
+    this.modelGround = 1;
+    this.chest = new THREE.Vector3();
+    this.headPt = new THREE.Vector3();
     const mk = c => new THREE.MeshStandardMaterial({
       color: c, metalness: isMonster ? 0.05 : 0.4, roughness: isMonster ? 0.85 : 0.5, flatShading: true });
     const mats = { body: mk(pal.body), dark: mk(pal.dark), accent: mk(pal.accent) };
     const glow = new THREE.MeshStandardMaterial({ color: pal.glow, emissive: pal.glow, emissiveIntensity: 1.5 });
-    const part = mat => { const m = new THREE.Mesh(unitBox, mat); this.group.add(m); return m; };
+    const part = mat => { const m = new THREE.Mesh(unitBox, mat); this.blocks.add(m); return m; };
     const child = (parent, mat, sx, sy, sz, x, y, z) => {
       const m = new THREE.Mesh(unitBox, mat);
       m.scale.set(sx, sy, sz); m.position.set(x, y, z); parent.add(m);
@@ -481,6 +475,11 @@ class Rig {
     this.lastSet = now;
   }
   fresh(now) { return now - this.lastSet < 1500; }
+  attachModel(body) {
+    this.model = body;
+    this.blocks.visible = false;
+    this.group.add(body.group);
+  }
   // dir: -1 faces downtown (-z), +1 faces uptown (+z). z: where it stands on the rail.
   // xf (optional): whole-body motion for a move: pitch, spin, lift and adv (metres, before scaling).
   update(dir, z, now, xf) {
@@ -506,6 +505,21 @@ class Rig {
         cx = x2; cy = y2 + xf.lift; cz = z1 - xf.adv;               // rise, and travel the way it faces
       }
       P[i].set(f * cx * S + rail.x, (cy + this.ground) * S, f * cz * S + z);
+    }
+    this.chest.copy(mid(P[11], P[12])).lerp(mid(P[23], P[24]), 0.25);
+    this.headPt.copy(P[0]);
+    if (this.model) {
+      // The model keeps its own proportions and stands as tall as the Flatiron; its hips sit where its own legs put them.
+      const m = this.model, U = S * 1.7 / m.head.height;
+      const need = modelHipHeight(m.head, m.bones, i => [smooth[i].x, smooth[i].y, smooth[i].z]);
+      this.modelGround += (need - this.modelGround) * 0.3;
+      const hm = mid(P[23], P[24]);
+      const hip = [hm.x, hm.y - this.ground * S + this.modelGround * U, hm.z];
+      m.apply(i => [P[i].x, P[i].y, P[i].z], hip, U, f, now);
+      const a = m.anchors;
+      this.chest.set(a.chest[0], a.chest[1], a.chest[2]);
+      this.headPt.set(a.head[0], a.head[1], a.head[2]);
+      return;
     }
     SEGMENTS.forEach((s, i) => {
       const a = P[s[0]], b = P[s[1]], mesh = this.seg[i];
@@ -564,7 +578,7 @@ function applySnapshot(s, now, skipRole) {
 
 // ---------- camera ----------
 let viewIndex = 0;
-const viewNames = () => (myRole === 'W' ? ['Side', 'Overhead', 'Behind mecha', 'Behind monster'] : ['Behind', 'Side', 'Overhead']);
+const viewNames = () => (myRole === 'W' ? ['Side', 'Overhead', 'Behind Ghost', 'Behind Nullifier'] : ['Behind', 'Side', 'Overhead']);
 function showViewName() { viewBtn.textContent = 'Camera: ' + viewNames()[viewIndex % viewNames().length]; }
 viewBtn.addEventListener('click', () => { viewIndex = (viewIndex + 1) % viewNames().length; showViewName(); });
 function updateCamera(now) {
@@ -580,8 +594,8 @@ function updateCamera(now) {
     camera.position.set(cut.x - 1.5 * h, 0.7 * h, cut.z + 1.6 * h);
     camera.lookAt(cut.x, 0.3 * h, cut.z);
   } else if (name === 'Behind') behind(myRole);
-  else if (name === 'Behind mecha') behind('A');
-  else if (name === 'Behind monster') behind('B');
+  else if (name === 'Behind Ghost') behind('A');
+  else if (name === 'Behind Nullifier') behind('B');
   else if (name === 'Side') {
     camera.position.set(x - 1.7 * h, 0.6 * h, center + 0.2 * h);
     camera.lookAt(x, 0.4 * h, center);
@@ -684,7 +698,7 @@ function frame(now) {
   let label = null;
   if (now < flashState.until) label = { text: flashState.text, cls: '' };
   else if (world.phase === 'over') {
-    label = { text: world.winner === 'A' ? 'NEIGHBORHOOD SAVED · MECHA WINS' : 'THE FLATIRON FALLS · MONSTER WINS', cls: 'result' };
+    label = { text: world.winner === 'A' ? 'NEIGHBORHOOD SAVED · GHOST WINS' : 'THE FLATIRON FALLS · NULLIFIER WINS', cls: 'result' };
   } else label = appLabel(now);
   actionEl.textContent = label ? label.text : '';
   actionEl.className = label ? label.cls : '';
@@ -692,6 +706,353 @@ function frame(now) {
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
+// ===================== posing a jointed character model from 33 body landmarks (plain arrays, no graphics) =====================
+// A model is a set of rigid parts (trunk, head, upper arms, forearms, hands, thighs, shins, feet), each stored around
+// its own joint. The trunk follows the player's hips and shoulders; every limb part points the way the player's limb
+// points, but keeps the model's own length, so the armour never stretches.
+// Vectors are [x, y, z]; rotations are quaternions [x, y, z, w].
+const mm = {
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  mul: (a, k) => [a[0] * k, a[1] * k, a[2] * k],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  norm(a, fallback) { const n = Math.hypot(a[0], a[1], a[2]); return n > 1e-6 ? [a[0] / n, a[1] / n, a[2] / n] : fallback.slice(); },
+  mid: (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2],
+  qMul(a, b) {
+    return [a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+            a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+            a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+            a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]];
+  },
+  qConj: q => [-q[0], -q[1], -q[2], q[3]],
+  qRot(q, v) {
+    const u = [q[0], q[1], q[2]], t = mm.mul(mm.cross(u, v), 2);
+    return mm.add(mm.add(v, mm.mul(t, q[3])), mm.cross(u, t));
+  },
+  // The shortest turn that takes unit vector a onto unit vector b.
+  qBetween(a, b) {
+    const d = mm.dot(a, b);
+    if (d < -0.999999) {
+      let axis = mm.cross([1, 0, 0], a);
+      if (mm.len(axis) < 1e-4) axis = mm.cross([0, 1, 0], a);
+      axis = mm.norm(axis, [0, 1, 0]);
+      return [axis[0], axis[1], axis[2], 0];
+    }
+    const c = mm.cross(a, b), q = [c[0], c[1], c[2], 1 + d], n = Math.hypot(q[0], q[1], q[2], q[3]);
+    return [q[0] / n, q[1] / n, q[2] / n, q[3] / n];
+  },
+  // A rotation from its three axes (the columns of its matrix).
+  qBasis(x, y, z) {
+    const m00 = x[0], m10 = x[1], m20 = x[2], m01 = y[0], m11 = y[1], m21 = y[2], m02 = z[0], m12 = z[1], m22 = z[2];
+    const tr = m00 + m11 + m22;
+    let q;
+    if (tr > 0) { const s = Math.sqrt(tr + 1) * 2; q = [(m21 - m12) / s, (m02 - m20) / s, (m10 - m01) / s, s / 4]; }
+    else if (m00 > m11 && m00 > m22) { const s = Math.sqrt(1 + m00 - m11 - m22) * 2; q = [s / 4, (m01 + m10) / s, (m02 + m20) / s, (m21 - m12) / s]; }
+    else if (m11 > m22) { const s = Math.sqrt(1 + m11 - m00 - m22) * 2; q = [(m01 + m10) / s, s / 4, (m12 + m21) / s, (m02 - m20) / s]; }
+    else { const s = Math.sqrt(1 + m22 - m00 - m11) * 2; q = [(m02 + m20) / s, (m12 + m21) / s, s / 4, (m10 - m01) / s]; }
+    return q;
+  },
+};
+
+// Body landmark numbers (odd numbers are the figure's left side).
+const LM = { L: { S: 11, E: 13, W: 15, H: 23, K: 25, A: 27, T: 31 }, R: { S: 12, E: 14, W: 16, H: 24, K: 26, A: 28, T: 32 } };
+const FOOT_REST = mm.norm([0, -0.4, -1], [0, 0, -1]);     // a foot flat on the ground, as the landmarks see it
+
+// Worked out once per model: each bone's resting direction and length.
+function modelBones(rest) {
+  const bones = {};
+  for (const sd of ['L', 'R']) {
+    for (const [name, a, b] of [['uarm', 'S', 'E'], ['farm', 'E', 'W'], ['thigh', 'H', 'K'], ['shin', 'K', 'A']]) {
+      const d = mm.sub(rest[b + sd], rest[a + sd]);
+      bones[name + sd] = { dir: mm.norm(d, [0, -1, 0]), len: mm.len(d) };
+    }
+  }
+  return bones;
+}
+
+// How high the hips must sit (in model metres) for the lower foot to rest on the ground, for a pose in canonical space.
+// at(i) returns landmark i as [x, y, z].
+function modelHipHeight(model, bones, at) {
+  let drop = 0;
+  for (const sd of ['L', 'R']) {
+    const m = LM[sd];
+    const t = mm.norm(mm.sub(at(m.K), at(m.H)), [0, -1, 0]), s = mm.norm(mm.sub(at(m.A), at(m.K)), [0, -1, 0]);
+    drop = Math.max(drop, -(t[1] * bones['thigh' + sd].len + s[1] * bones['shin' + sd].len));
+  }
+  return drop + model.sole;
+}
+
+// The pose of every part, in world space.
+//   at(i): landmark i in world space. hip: where the model's hip centre goes. U: world metres per model metre.
+// Returns { parts: { name: { p, q } }, anchors: { chest, head, fistL, fistR } }.
+function poseModel(model, bones, at, hip, U) {
+  const rest = model.rest, out = {}, anchors = {};
+  const hipMid = mm.mid(at(23), at(24)), shMid = mm.mid(at(11), at(12));
+  const y = mm.norm(mm.sub(shMid, hipMid), [0, 1, 0]);
+  let x = mm.sub(at(12), at(11));
+  x = mm.norm(mm.sub(x, mm.mul(y, mm.dot(x, y))), [1, 0, 0]);
+  const z = mm.cross(x, y);
+  const qT = mm.qBasis(x, y, z), qTi = mm.qConj(qT);
+  const place = r => mm.add(hip, mm.mul(mm.qRot(qT, r), U));
+  const aim = (restDir, liveDir) => mm.qMul(qT, mm.qBetween(restDir, mm.qRot(qTi, liveDir)));
+  out.trunk = { p: hip, q: qT };
+
+  // head: sits on the model's neck and looks where the player looks
+  const ears = mm.mid(at(7), at(8));
+  const look = mm.norm(mm.sub(at(0), ears), mm.qRot(qT, [0, 0, -1]));
+  const local = mm.qRot(qTi, look);
+  local[1] = Math.max(-0.5, Math.min(0.5, local[1] + 0.1)) ;                    // a person's nose sits a little below the ears
+  if (local[2] > -0.2) local[2] = -0.2;                                         // never let a bad reading turn the head backwards
+  out.head = { p: place(rest.neck), q: mm.qMul(qT, mm.qBetween([0, 0, -1], mm.norm(local, [0, 0, -1]))) };
+
+  for (const sd of ['L', 'R']) {
+    const m = LM[sd];
+    // arm
+    const shoulder = place(rest['S' + sd]);
+    const dU = mm.norm(mm.sub(at(m.E), at(m.S)), mm.qRot(qT, bones['uarm' + sd].dir));
+    const elbow = mm.add(shoulder, mm.mul(dU, bones['uarm' + sd].len * U));
+    const dF = mm.norm(mm.sub(at(m.W), at(m.E)), dU);
+    const wrist = mm.add(elbow, mm.mul(dF, bones['farm' + sd].len * U));
+    const qF = aim(bones['farm' + sd].dir, dF);
+    out['uarm' + sd] = { p: shoulder, q: aim(bones['uarm' + sd].dir, dU) };
+    out['farm' + sd] = { p: elbow, q: qF };
+    out['hand' + sd] = { p: wrist, q: qF };
+    anchors['fist' + sd] = mm.add(wrist, mm.mul(dF, 0.06 * U));
+    // leg
+    const hipJ = place(rest['H' + sd]);
+    const dT = mm.norm(mm.sub(at(m.K), at(m.H)), mm.qRot(qT, bones['thigh' + sd].dir));
+    const knee = mm.add(hipJ, mm.mul(dT, bones['thigh' + sd].len * U));
+    const dS = mm.norm(mm.sub(at(m.A), at(m.K)), dT);
+    const ankle = mm.add(knee, mm.mul(dS, bones['shin' + sd].len * U));
+    const dToe = mm.norm(mm.sub(at(m.T), at(m.A)), mm.qRot(qT, FOOT_REST));
+    out['thigh' + sd] = { p: hipJ, q: aim(bones['thigh' + sd].dir, dT) };
+    out['shin' + sd] = { p: knee, q: aim(bones['shin' + sd].dir, dS) };
+    out['foot' + sd] = { p: ankle, q: aim(FOOT_REST, dToe) };
+  }
+  anchors.chest = place(mm.add(mm.mul(mm.add(rest.SL, rest.SR), 0.5), [0, -0.12, -0.16]));
+  anchors.head = mm.add(out.head.p, mm.mul(mm.qRot(out.head.q, [0, 0.22, -0.05]), U));
+  return { parts: out, anchors };
+}
+// ===================== character models: loading, drawing and their effects =====================
+// Each giant is a model file made by the converter (tools/convert.py): rigid armour parts around the body's joints,
+// plus a short description of the effects the game draws itself (flames, glow, sparks, orbs).
+// If a model cannot be loaded, the giant stays as the block figure.
+const MODEL_BASE = /\/(watch|tv)\/(index\.html)?$/.test(location.pathname) ? '../models/' : 'models/';
+const MODEL_VERSION = '1';
+const MODEL_OF = { A: 'ghost', B: 'nullifier' };
+
+function parseModel(buf) {
+  const dv = new DataView(buf);
+  if (dv.getUint32(0, true) !== 0x4d444f50) throw new Error('not a model file');
+  const n = dv.getUint32(4, true);
+  const head = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, n)));
+  head.blob = buf.slice(8 + n);
+  return head;
+}
+
+let glowTexture = null;
+function glowTex() {
+  if (glowTexture) return glowTexture;
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d'), grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.25, 'rgba(255,255,255,0.55)');
+  grad.addColorStop(0.6, 'rgba(255,255,255,0.12)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+  glowTexture = new THREE.CanvasTexture(c);
+  return glowTexture;
+}
+function halo(color, opacity) {
+  const mat = new THREE.SpriteMaterial({ map: glowTex(), transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending });
+  mat.color.setRGB(color[0], color[1], color[2]);
+  const s = new THREE.Sprite(mat);
+  s.renderOrder = 3;
+  return s;
+}
+// Flames: the colour ramp is stored on the vertices; tips sway, and the whole thing adds light instead of covering.
+function flameMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: { time: { value: 0 }, gain: { value: 0.3 } },
+    vertexShader: `
+      attribute vec4 fcol; attribute float tip; uniform float time; varying vec4 vCol;
+      void main() {
+        vCol = fcol;
+        float w = tip * tip;
+        vec3 p = position;
+        p.x += sin(time * 5.0 + position.y * 9.0 + position.z * 7.0) * 0.04 * w;
+        p.z += cos(time * 4.2 + position.y * 8.0 + position.x * 6.0) * 0.04 * w;
+        p.y += sin(time * 6.5 + position.x * 11.0 + position.z * 5.0) * 0.05 * w;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+      }`,
+    fragmentShader: `
+      uniform float gain; varying vec4 vCol;
+      void main() { gl_FragColor = vec4(vCol.rgb * gain, vCol.a); }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  });
+}
+// Orbs: dark glass with a bright edge.
+function orbMaterial(fire) {
+  return new THREE.ShaderMaterial({
+    uniforms: { rim: { value: new THREE.Vector3(fire[0], fire[1], fire[2]) } },
+    vertexShader: `
+      varying vec3 vN; varying vec3 vV;
+      void main() {
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform vec3 rim; varying vec3 vN; varying vec3 vV;
+      void main() {
+        float f = pow(1.0 - max(dot(normalize(vN), normalize(vV)), 0.0), 2.2);
+        gl_FragColor = vec4(mix(rim * 0.07, rim * 1.25, f), 1.0);
+      }`,
+  });
+}
+
+class ModelBody {
+  constructor(head) {
+    this.head = head;
+    this.bones = modelBones(head.rest);
+    this.group = new THREE.Group();
+    this.parts = {};
+    this.flame = null;
+    const blob = head.blob;
+    const lift = v => Math.max(v, 0.07);                 // the armour is nearly black; keep it readable against the city
+    const mats = head.materials.map(m => {
+      if (m.flame) return this.flame || (this.flame = flameMaterial());
+      const mat = new THREE.MeshStandardMaterial({ metalness: Math.min(m.metal, 0.35), roughness: Math.max(m.rough, 0.4), side: THREE.DoubleSide });
+      mat.color.setRGB(lift(m.color[0]), lift(m.color[1]), lift(m.color[2]));
+      if (m.emissive) { mat.emissive.setRGB(m.emissive[0], m.emissive[1], m.emissive[2]); mat.emissiveIntensity = Math.min(m.strength, 2.5); }
+      return mat;
+    });
+    for (const p of head.parts) {
+      const g = new THREE.Group();
+      for (const e of p.groups) {
+        const q = new Uint16Array(blob, e.pos, e.nv * 3), pos = new Float32Array(e.nv * 3);
+        for (let i = 0; i < pos.length; i++) pos[i] = q[i] / 65535 * e.ext[i % 3] + e.lo[i % 3];
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const idx = e.wide ? new Uint32Array(blob, e.idx, e.nt * 3) : new Uint16Array(blob, e.idx, e.nt * 3);
+        geo.setIndex(new THREE.BufferAttribute(idx, 1));
+        const isFlame = e.col !== undefined;
+        if (isFlame) {
+          geo.setAttribute('fcol', new THREE.BufferAttribute(new Uint8Array(blob, e.col, e.nv * 4), 4, true));
+          geo.setAttribute('tip', new THREE.BufferAttribute(new Uint8Array(blob, e.tip, e.nv), 1, true));
+        } else geo.computeVertexNormals();
+        const mesh = new THREE.Mesh(geo, mats[e.mat]);
+        mesh.frustumCulled = false;
+        if (isFlame) mesh.renderOrder = 2;
+        g.add(mesh);
+      }
+      this.parts[p.name] = g;
+      this.group.add(g);
+    }
+    const fx = head.fx;
+    for (const h of fx.halos) {
+      const s = halo(h.color, h.a);
+      s.position.set(h.at[0], h.at[1], h.at[2]);
+      s.scale.set(h.size, h.size, 1);
+      this.parts[h.part].add(s);
+    }
+    // sparks rising from the head
+    this.sparkN = fx.sparks.n;
+    this.sparkSeed = Array.from({ length: this.sparkN * 4 }, (_, i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); });
+    this.sparkPos = new Float32Array(this.sparkN * 3);
+    const sg = new THREE.BufferGeometry();
+    sg.setAttribute('position', new THREE.BufferAttribute(this.sparkPos, 3));
+    this.sparkMat = new THREE.PointsMaterial({ size: 1, sizeAttenuation: true, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending, map: glowTex() });
+    this.sparkMat.color.setRGB(fx.sparks.color[0], fx.sparks.color[1], fx.sparks.color[2]);
+    this.sparks = new THREE.Points(sg, this.sparkMat);
+    this.sparks.frustumCulled = false; this.sparks.renderOrder = 3;
+    this.group.add(this.sparks);
+    // orbs: some float around the body, two hang from the fists on cables
+    this.orbs = [];
+    const orbGeo = new THREE.SphereGeometry(1, 20, 14), orbMat = orbMaterial(fx.fire);
+    const addOrb = (o, hang) => {
+      const m = new THREE.Mesh(orbGeo, orbMat); m.frustumCulled = false;
+      const glow = halo(fx.fire, 0.35);
+      this.group.add(m); this.group.add(glow);
+      const orb = { m, glow, o, hang, line: null, linePos: null, at: null };
+      if (hang) {
+        orb.linePos = new Float32Array(6);
+        const lg = new THREE.BufferGeometry();
+        lg.setAttribute('position', new THREE.BufferAttribute(orb.linePos, 3));
+        const lm = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.9 });
+        lm.color.setRGB(fx.fire[0] * 0.8, fx.fire[1] * 0.8, fx.fire[2] * 0.8);
+        orb.line = new THREE.Line(lg, lm); orb.line.frustumCulled = false;
+        this.group.add(orb.line);
+      }
+      this.orbs.push(orb);
+    };
+    fx.orbs.forEach(o => addOrb(o, null));
+    if (fx.hangOrb) { addOrb(fx.hangOrb, 'fistL'); addOrb(fx.hangOrb, 'fistR'); }
+    this.anchors = null;
+  }
+  // at(i): landmark i in world space. hip: the hip centre in world space. U: world metres per model metre. f: +1 or -1, the way it faces.
+  apply(at, hip, U, f, now) {
+    const res = poseModel(this.head, this.bones, at, hip, U);
+    for (const name in res.parts) {
+      const g = this.parts[name], t = res.parts[name];
+      if (!g) continue;
+      g.position.set(t.p[0], t.p[1], t.p[2]);
+      g.quaternion.set(t.q[0], t.q[1], t.q[2], t.q[3]);
+      g.scale.setScalar(U);
+    }
+    this.anchors = res.anchors;
+    const time = now / 1000;
+    if (this.flame) this.flame.uniforms.time.value = time;
+    // sparks
+    const sp = this.head.fx.sparks, top = this.parts[sp.part], seed = this.sparkSeed, P = this.sparkPos;
+    const base = mm.add(res.parts[sp.part].p, mm.mul(mm.qRot(res.parts[sp.part].q, sp.at), U));
+    for (let i = 0; i < this.sparkN; i++) {
+      const life = (time * (0.25 + 0.35 * seed[4 * i]) + seed[4 * i + 1]) % 1;
+      P[3 * i] = base[0] + (seed[4 * i + 2] - 0.5) * 2 * sp.spread[0] * U * (0.6 + life);
+      P[3 * i + 1] = base[1] + (life - 0.35) * sp.spread[1] * 4 * U;
+      P[3 * i + 2] = base[2] + (seed[4 * i + 3] - 0.5) * 2 * sp.spread[2] * U * (0.6 + life);
+    }
+    this.sparks.geometry.attributes.position.needsUpdate = true;
+    this.sparkMat.size = 0.035 * U;
+    // orbs
+    this.orbs.forEach((orb, i) => {
+      let p;
+      const r = orb.o.r * U;
+      if (orb.hang) {
+        const fist = res.anchors[orb.hang], sway = Math.sin(time * 1.7 + i) * 0.05 * U;
+        p = [fist[0] + sway, fist[1] - orb.o.drop * U, fist[2] + Math.cos(time * 1.3 + i) * 0.04 * U];
+        orb.at = orb.at ? mm.add(orb.at, mm.mul(mm.sub(p, orb.at), 0.25)) : p;      // it trails the fist a little
+        p = orb.at;
+        const L = orb.linePos;
+        L[0] = fist[0]; L[1] = fist[1]; L[2] = fist[2]; L[3] = p[0]; L[4] = p[1] + r * 0.9; L[5] = p[2];
+        orb.line.geometry.attributes.position.needsUpdate = true;
+      } else {
+        const c = orb.o.c, bob = Math.sin(time * 1.1 + i * 2.1) * 0.05 * U;
+        p = [hip[0] + f * c[0] * U, hip[1] + c[1] * U + bob, hip[2] + f * c[2] * U];
+        orb.at = orb.at ? mm.add(orb.at, mm.mul(mm.sub(p, orb.at), 0.12)) : p;      // it drifts after the body
+        p = orb.at;
+      }
+      orb.m.position.set(p[0], p[1], p[2]); orb.m.scale.setScalar(r);
+      orb.glow.position.set(p[0], p[1], p[2]); orb.glow.scale.set(r * 4.2, r * 4.2, 1);
+    });
+  }
+}
+
+async function loadModels() {
+  for (const role of ['A', 'B']) {
+    try {
+      const res = await fetch(MODEL_BASE + MODEL_OF[role] + '.podm?v=' + MODEL_VERSION);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      rigOf(role).attachModel(new ModelBody(parseModel(await res.arrayBuffer())));
+    } catch (err) {
+      console.warn('model for ' + role + ' not loaded, using the block figure:', err);
+    }
+  }
+}
+loadModels();
 
 // ===================== special moves, their effects, and move clips (shared by every page) =====================
 
@@ -836,7 +1197,7 @@ const fx = {
   freeze: fxAdd(unitBox, fxMat(0x9fd8ff, 0.35)),
   fire: Array.from({ length: 12 }, (_, i) => fxAdd(unitBox, fxMat(i % 3 ? 0x5dff6a : 0xd8ff8a, 0.75))),
 };
-const chestOf = rig => mid(rig.P[11], rig.P[12]).lerp(mid(rig.P[23], rig.P[24]), 0.25);
+const chestOf = rig => rig.chest.clone();
 function stretch(mesh, a, b, radius) {
   const d = new THREE.Vector3().subVectors(b, a), len = d.length();
   if (len < 1e-3) { mesh.visible = false; return; }
@@ -877,7 +1238,7 @@ function updateFx(now, anim) {
       stretch(fx.beam, from, to, r);
       stretch(fx.core, from, to, r * 0.4);
     } else {                                                           // the monster: green fire from the head
-      const head = attacker.P[0];
+      const head = attacker.headPt;
       fx.fire.forEach((m, i) => {
         const t = (i / fx.fire.length + now / 380) % 1;
         m.position.lerpVectors(head, to, t);
@@ -935,7 +1296,7 @@ function startClip(mv, now) {
     clip.cam.lookAt(rail.x, 0.5 * h, center);
     const mime = clipMime();
     const rec = new MediaRecorder(clip.canvas.captureStream(30), mime ? { mimeType: mime, videoBitsPerSecond: 6000000 } : undefined);
-    const chunks = [], name = 'protect-or-destroy_' + mv.kind + '_' + (mv.by === 'A' ? 'mecha' : 'monster') + '_' + (++clip.count);
+    const chunks = [], name = 'protect-or-destroy_' + mv.kind + '_' + (mv.by === 'A' ? 'ghost' : 'nullifier') + '_' + (++clip.count);
     rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
     rec.onstop = () => {
       const type = rec.mimeType || mime || 'video/webm';
@@ -1018,7 +1379,7 @@ async function tvStart() {
       if (d.tvRole && d.tvRole !== tv.role) { tv.role = d.tvRole; tv.picked = false; }
       if (!tv.picked) { viewIndex = tv.role === 'B' ? 3 : 2; showViewName(); }     // that player's over-the-shoulder view
       applySnapshot(d, now, null);
-      statusEl.textContent = 'Showing the ' + (tv.role === 'B' ? 'monster' : 'mecha') + ' player';
+      statusEl.textContent = 'Showing the ' + (tv.role === 'B' ? 'Nullifier' : 'Ghost') + ' player';
     });
   });
   peer.on('error', e => {                     // most likely the code is taken: start again with a new one
