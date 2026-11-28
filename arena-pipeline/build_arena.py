@@ -35,7 +35,7 @@ from shapely.ops import voronoi_diagram
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TILE_W, TILE_H = 12.0, 14.0
-FPS_SIM, FPS_OUT, SECONDS = 30, 15, 6.5
+FPS_SIM, FPS_OUT, SECONDS = 30, 15, 12.0     # SECONDS: the longest a collapse may run
 GIANT_SPEED = 18.0                  # m/s: how fast the knocked giant slams into the building
 FACADES = ['facade_brick', 'facade_limestone', 'facade_beige', 'facade_modern']
 
@@ -260,7 +260,13 @@ def simulate(b, pieces, direction, rail, mats):
     pusher.rigid_body.collision_shape = 'BOX'
     pusher.keyframe_insert('location', frame=1)
     pusher.location = to_bl(bx, hit_h / 2, end_z)
-    pusher.keyframe_insert('location', frame=1 + max(3, round(travel / GIANT_SPEED * FPS_SIM)))
+    hit_end = 1 + max(3, round(travel / GIANT_SPEED * FPS_SIM))
+    pusher.keyframe_insert('location', frame=hit_end)
+    # then the giant is gone (it fell through the wreckage): the floors that came to rest on it drop
+    pusher.location = to_bl(bx, -hit_h, end_z)
+    pusher.keyframe_insert('location', frame=hit_end + 4)
+    # long enough for the top to fall from the roof after the giant has gone through, and settle
+    last = min(sc.frame_end, hit_end + round((math.sqrt(2 * b['height'] / 9.81) + 3.0) * FPS_SIM))
     for fc in (pusher.animation_data.action.fcurves if hasattr(pusher.animation_data.action, 'fcurves') else []):
         for k in fc.keyframe_points:
             k.interpolation = 'LINEAR'
@@ -269,7 +275,7 @@ def simulate(b, pieces, direction, rail, mats):
     Ci = C.inverted()
     frames = []
     step = FPS_SIM // FPS_OUT
-    for f in range(1, sc.frame_end + 1):
+    for f in range(1, last + 1):
         sc.frame_set(f)
         if (f - 1) % step:
             continue
