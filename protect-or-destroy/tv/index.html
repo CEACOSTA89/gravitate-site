@@ -106,6 +106,114 @@ const PEERJS_URL = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
 // Our own match server (match-server/ in the site repository), in place of the free public PeerJS server.
 const MATCH_SERVER = { host: 'pod-match.gravitatepictures.workers.dev', port: 443, path: '/', secure: true };
 const newPeer = id => (id ? new Peer(id, MATCH_SERVER) : new Peer(MATCH_SERVER));
+// ---------- relay through our match server, for devices that cannot connect phone to phone ----------
+// RelayConn looks like a PeerJS data connection (on / send / close / open / metadata), but its
+// messages travel through a relay room on the match server.
+class RelayConn {
+  constructor(metadata, sendFn, closeFn) { this.metadata = metadata || {}; this.open = false; this.relayed = true; this._h = {}; this._send = sendFn; this._close = closeFn; this._closed = false; }
+  on(ev, fn) { (this._h[ev] = this._h[ev] || []).push(fn); return this; }
+  _emit(ev, x) { for (const fn of this._h[ev] || []) { try { fn(x); } catch (e) { console.error(e); } } }
+  send(d) { if (this.open) this._send(d); }
+  close() { if (this._closed) return; this._closed = true; this.open = false; try { this._close(); } catch (e) { /* ignore */ } this._emit('close'); }
+  _opened() { if (this.open || this._closed) return; this.open = true; this._emit('open'); }
+  _gone() { if (this._closed) return; this._closed = true; this.open = false; this._emit('close'); }
+}
+function relayUrl(q) {
+  const port = MATCH_SERVER.port && MATCH_SERVER.port !== 443 && MATCH_SERVER.port !== 80 ? ':' + MATCH_SERVER.port : '';
+  return (MATCH_SERVER.secure ? 'wss://' : 'ws://') + MATCH_SERVER.host + port + '/relay?' + new URLSearchParams(q);
+}
+// Join someone's relay room (an opponent, viewer or TV phone reaching a host).
+function relayJoin(room, metadata) {
+  let ws = null, pinger = null, lastPong = Date.now();
+  const c = new RelayConn(metadata, d => { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ d })); },
+    () => { clearInterval(pinger); try { ws.close(); } catch (e) { /* ignore */ } });
+  try { ws = new WebSocket(relayUrl({ room, role: 'peer', meta: JSON.stringify(metadata || {}) })); } catch (e) { setTimeout(() => c._gone(), 0); return c; }
+  ws.onmessage = ev => {
+    let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (m.t === 'ready') c._opened();
+    else if (m.t === 'data') c._emit('data', m.d);
+    else if (m.t === 'pong') lastPong = Date.now();
+  };
+  ws.onopen = () => { pinger = setInterval(() => {
+    if (Date.now() - lastPong > 15000) { c.close(); return; }       // the line went dead without saying so
+    try { ws.send('{"ping":1}'); } catch (e) { /* closing */ }
+  }, 5000); };
+  ws.onclose = () => { clearInterval(pinger); c._gone(); };
+  ws.onerror = () => { /* onclose follows */ };
+  return c;
+}
+// Keep a line open to this host's relay room, and hand each arrival to onIncoming like a PeerJS connection.
+function relayHost(room, onIncoming) {
+  const h = { room, ws: null, conns: new Map(), stopped: false, lastPong: Date.now(), pinger: null };
+  const connect = () => {
+    if (h.stopped) return;
+    let ws;
+    try { ws = h.ws = new WebSocket(relayUrl({ room, role: 'host' })); } catch (e) { setTimeout(connect, 3000); return; }
+    h.lastPong = Date.now();
+    ws.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (m.t === 'join') {
+        const id = m.id, old = h.conns.get(id);
+        if (old) old._gone();
+        const c = new RelayConn(m.meta,
+          d => { if (h.ws && h.ws.readyState === 1) h.ws.send(JSON.stringify({ to: id, d })); },
+          () => { h.conns.delete(id); if (h.ws && h.ws.readyState === 1) h.ws.send(JSON.stringify({ to: id, close: true })); });
+        h.conns.set(id, c);
+        onIncoming(c);
+        setTimeout(() => c._opened(), 0);
+      } else if (m.t === 'data') {
+        const c = h.conns.get(m.id); if (c) c._emit('data', m.d);
+      } else if (m.t === 'leave') {
+        const c = h.conns.get(m.id); if (c) { h.conns.delete(m.id); c._gone(); }
+      } else if (m.t === 'pong') h.lastPong = Date.now();
+    };
+    ws.onclose = () => {
+      if (h.ws !== ws) return;
+      h.ws = null;
+      for (const c of h.conns.values()) c._gone();
+      h.conns.clear();
+      if (!h.stopped) setTimeout(connect, 2000);
+    };
+    ws.onerror = () => { /* onclose follows */ };
+  };
+  h.pinger = setInterval(() => {
+    if (h.stopped || !h.ws || h.ws.readyState !== 1) return;
+    if (Date.now() - h.lastPong > 15000) { try { h.ws.close(); } catch (e) { /* ignore */ } return; }   // dead line: onclose reconnects
+    try { h.ws.send('{"ping":1}'); } catch (e) { /* closing */ }
+  }, 5000);
+  document.addEventListener('visibilitychange', () => {       // back on screen: check the line straight away
+    if (document.visibilityState === 'visible' && !h.stopped && h.ws && h.ws.readyState === 1) {
+      h.lastPong = Math.min(h.lastPong, Date.now() - 10000);
+      try { h.ws.send('{"ping":1}'); } catch (e) { /* closing */ }
+    }
+  });
+  h.close = () => { h.stopped = true; clearInterval(h.pinger); try { if (h.ws) h.ws.close(); } catch (e) { /* ignore */ } };
+  connect();
+  return h;
+}
+// Connect to a host phone to phone, and through the relay if that has not worked after a few seconds.
+// Returns one connection; whichever way opens first carries the match.
+function dualConnect(peer, id, opts, delay) {
+  const f = new RelayConn(opts && opts.metadata, d => { if (f.via && f.via.open) f.via.send(d); },
+    () => { for (const c of f.tries) { try { c.close(); } catch (e) { /* ignore */ } } });
+  f.relayed = false; f.tries = []; f.via = null;
+  const use = c => {
+    f.tries.push(c);
+    c.on('open', () => {
+      if (f.via || f._closed) { if (f.via !== c) { try { c.close(); } catch (e) { /* ignore */ } } return; }
+      f.via = c; f.relayed = !!c.relayed;
+      for (const o of f.tries) if (o !== c) { try { o.close(); } catch (e) { /* ignore */ } }
+      f._opened();
+    });
+    c.on('data', d => { if (f.via === c) f._emit('data', d); });
+    c.on('close', () => { if (f.via === c) f._gone(); });
+  };
+  f.fallback = () => { if (f.triedRelay || f.via || f._closed) return; f.triedRelay = true; use(relayJoin(id, opts && opts.metadata)); };
+  let direct = null;
+  try { if (peer && !peer.destroyed) { direct = peer.connect(id, opts); use(direct); } } catch (e) { console.error(e); }
+  setTimeout(f.fallback, direct ? (delay || 3000) : 0);
+  return f;
+}
 const QR_URL = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
 const PEER_PREFIX = 'gp-pod-';
 const $ = id => document.getElementById(id);
@@ -1386,7 +1494,7 @@ async function tvStart() {
     const playUrl = location.origin + location.pathname.replace(/tv\/[^/]*$/, '') + '#tv=' + tv.code;
     drawQr($('qr'), playUrl).then(ok => { $('qr').hidden = !ok; if (!ok) $('qrNote').hidden = true; });
   });
-  peer.on('connection', conn => {
+  const onConn = conn => {
     conn.on('data', d => {
       if (!d || d.t !== 's') return;
       const now = performance.now();
@@ -1397,10 +1505,13 @@ async function tvStart() {
       applySnapshot(d, now, null);
       statusEl.textContent = 'Showing the ' + (tv.role === 'B' ? 'Nullifier' : 'Ghost') + ' player';
     });
-  });
+  };
+  peer.on('connection', onConn);
+  tv.relay = relayHost(PEER_PREFIX + 'tv-' + tv.code, onConn);       // a phone that cannot reach the TV directly comes through the relay
   peer.on('error', e => {                     // most likely the code is taken: start again with a new one
     console.error(e);
     try { peer.destroy(); } catch (e2) { /* ignore */ }
+    if (tv.relay) { tv.relay.close(); tv.relay = null; }
     tv.peer = null; tv.starting = false;
     setTimeout(tvStart, 1500);
   });
