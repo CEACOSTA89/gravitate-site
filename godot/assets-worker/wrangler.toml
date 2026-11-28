@@ -1,0 +1,7 @@
+name = "pod-assets"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+[[kv_namespaces]]
+binding = "FILES"
+id = "5a5eab32dc5749e4905ea5b6eab1e433"
