@@ -26,7 +26,7 @@ var _since_flip := 10.0
 var _cycle := 1
 var _target := 0.0
 var _loading := false
-var _row: HBoxContainer
+var _row: BoxContainer
 var _or: Label
 var _portrait := false
 
@@ -41,7 +41,7 @@ func _ready() -> void:
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 
-	var row := HBoxContainer.new()
+	var row := BoxContainer.new()          # turns vertical on upright phones
 	_row = row
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 44)
@@ -76,7 +76,7 @@ func _layout() -> void:
 	var screen := Vector2(win.size)
 	_portrait = screen.x < screen.y
 	win.content_scale_size = Vector2i(1080, 1920) if _portrait else Vector2i(1920, 1080)
-	_mat.set_shader_parameter("orb_radius", 0.118 if _portrait else 0.165)
+	_mat.set_shader_parameter("orb_radius", 0.105 if _portrait else 0.165)
 	_mat.set_shader_parameter("center", Vector2(0.5, 0.36) if _portrait else Vector2(0.5, 0.42))
 	var title := 92 if _portrait else 84
 	for l in [_protect, _destroy]:
