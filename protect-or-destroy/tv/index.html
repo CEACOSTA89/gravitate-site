@@ -103,6 +103,9 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 
 // ===================== shared by the play page and the watch page =====================
 const PEERJS_URL = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+// Our own match server (match-server/ in the site repository), in place of the free public PeerJS server.
+const MATCH_SERVER = { host: 'pod-match.gravitatepictures.workers.dev', port: 443, path: '/', secure: true };
+const newPeer = id => (id ? new Peer(id, MATCH_SERVER) : new Peer(MATCH_SERVER));
 const QR_URL = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
 const PEER_PREFIX = 'gp-pod-';
 const $ = id => document.getElementById(id);
@@ -1362,7 +1365,7 @@ async function tvStart() {
     await loadPeer();
   } catch (e) { statusEl.textContent = 'Could not load. Check the connection.'; tv.starting = false; setTimeout(tvStart, 4000); return; }
   tv.code = Array.from(crypto.getRandomValues(new Uint8Array(4)), b => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join('');
-  const peer = tv.peer = new Peer(PEER_PREFIX + 'tv-' + tv.code);
+  const peer = tv.peer = newPeer(PEER_PREFIX + 'tv-' + tv.code);
   peer.on('open', () => {
     tv.starting = false;
     tvCodeEl.textContent = tv.code.toUpperCase();
