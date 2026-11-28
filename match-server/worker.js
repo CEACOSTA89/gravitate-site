@@ -15,8 +15,8 @@ import { DurableObject } from 'cloudflare:workers';
 
 const ALLOWED_ORIGINS = [/^https:\/\/gravitatepictures\.com$/, /^https:\/\/www\.gravitatepictures\.com$/,
   /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
-const HOLD_MS = 8000;      // how long messages for an absent player are held
-const SILENT_MS = 15000;   // a connection with no message for this long counts as gone (clients ping every 5 s)
+const HOLD_MS = 5000;      // how long messages for an absent player are held
+const SILENT_MS = 12000;   // a connection with no message for this long counts as gone (clients ping every 5 s)
 const RELAYED = ['OFFER', 'ANSWER', 'CANDIDATE', 'LEAVE', 'EXPIRE'];
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
