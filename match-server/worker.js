@@ -5,6 +5,10 @@
 // Durable Object (the lobby), so two phones can always find each other. It only passes the
 // short connection set-up messages between players; the match itself runs phone to phone.
 //
+// When two devices cannot connect phone to phone, the match runs through a relay room instead
+// (/relay, one Durable Object per match): the host keeps a line open to its room, and an
+// opponent, viewer or TV that cannot reach it directly sends and receives through the room.
+//
 // Differences from the public server, made for phones:
 // - A player who drops off briefly (a phone switching apps) keeps their place for a few
 //   seconds: messages for them are held and delivered when they come back.
@@ -38,9 +42,47 @@ export default {
     if (url.pathname === '/peerjs' && request.headers.get('Upgrade') === 'websocket') {
       return env.LOBBY.get(env.LOBBY.idFromName('main')).fetch(request);
     }
+    if (url.pathname === '/relay' && request.headers.get('Upgrade') === 'websocket') {
+      const room = url.searchParams.get('room') || '';
+      if (!ID_RE.test(room)) return new Response('Bad room', { status: 400, headers: cors });
+      return env.ROOMS.get(env.ROOMS.idFromName(room)).fetch(request);
+    }
+    if (url.pathname === '/turn') {
+      return new Response(JSON.stringify({ iceServers: await iceServers(env) }), { headers: { ...cors, 'Content-Type': 'application/json' } });
+    }
     return new Response('Not found', { status: 404, headers: cors });
   },
 };
+
+// The servers a phone uses to reach the other phone. A TURN relay carries the game traffic when the
+// two phones cannot connect directly (common on mobile data and on Wi-Fi that keeps devices apart).
+// Short-lived relay credentials come from Cloudflare's TURN service; the key is kept in two Worker
+// secrets, TURN_KEY_ID and TURN_KEY_API_TOKEN, set in the Cloudflare dashboard.
+// Used until the TURN secrets are set, or if Cloudflare's TURN service does not answer. It includes
+// the free public PeerJS relay the game used before, so nothing gets worse without our own relay.
+const STUN_ONLY = [{ urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.l.google.com:19302'] },
+  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' }];
+let iceCache = null;                 // { servers, until }
+async function iceServers(env) {
+  if (!env.TURN_KEY_ID || !env.TURN_KEY_API_TOKEN) return STUN_ONLY;
+  if (iceCache && Date.now() < iceCache.until) return iceCache.servers;
+  try {
+    const res = await fetch('https://rtc.live.cloudflare.com/v1/turn/keys/' + env.TURN_KEY_ID + '/credentials/generate-ice-servers', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + env.TURN_KEY_API_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ttl: 86400 }),
+    });
+    if (!res.ok) throw new Error('TURN credentials: HTTP ' + res.status);
+    const data = await res.json();
+    const servers = Array.isArray(data.iceServers) ? data.iceServers : data.iceServers ? [data.iceServers] : null;
+    if (!servers || !servers.length) throw new Error('TURN credentials: empty answer');
+    iceCache = { servers, until: Date.now() + 6 * 3600 * 1000 };     // reused for 6 h of their 24 h life
+    return servers;
+  } catch (e) {
+    console.error(e);
+    return STUN_ONLY;
+  }
+}
 
 export class Lobby extends DurableObject {
   constructor(ctx, env) {
@@ -141,6 +183,78 @@ export class Lobby extends DurableObject {
   async webSocketClose(ws) {
     const a = ws.deserializeAttachment();
     if (a && !a.gone) { a.gone = true; ws.serializeAttachment(a); }
+  }
+
+  async webSocketError(ws) { await this.webSocketClose(ws); }
+}
+
+// A relay room for one match (or one TV). The host keeps a line open; each opponent, viewer or TV
+// that joins gets an id, and the room passes messages between it and the host.
+//   host -> room: { to: id, d: data } | { to: id, close: true } | { ping: 1 }
+//   room -> host: { t: 'join', id, meta } | { t: 'data', id, d } | { t: 'leave', id } | { t: 'pong' }
+//   peer -> room: { d: data } | { ping: 1 }
+//   room -> peer: { t: 'ready' } (the host is there) | { t: 'data', d } | { t: 'pong' }
+export class Room extends DurableObject {
+  host() {
+    for (const ws of this.ctx.getWebSockets('host')) if (ws.readyState === 1) return ws;
+    return null;
+  }
+
+  async fetch(request) {
+    const url = new URL(request.url);
+    const [client, server] = Object.values(new WebSocketPair());
+    if (url.searchParams.get('role') === 'host') {
+      for (const old of this.ctx.getWebSockets('host')) {
+        old.serializeAttachment({ role: 'old' });
+        try { old.close(1000, 'replaced'); } catch (e) { /* already closed */ }
+      }
+      this.ctx.acceptWebSocket(server, ['host']);
+      server.serializeAttachment({ role: 'host' });
+      for (const p of this.ctx.getWebSockets('peer')) {          // anyone already waiting
+        const a = p.deserializeAttachment();
+        if (!a || p.readyState !== 1) continue;
+        server.send(JSON.stringify({ t: 'join', id: a.id, meta: a.meta }));
+        try { p.send('{"t":"ready"}'); } catch (e) { /* gone */ }
+      }
+    } else {
+      let meta = {};
+      try { meta = JSON.parse(url.searchParams.get('meta') || '{}') || {}; } catch (e) { /* none */ }
+      if (JSON.stringify(meta).length > 500) meta = {};
+      const id = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+      this.ctx.acceptWebSocket(server, ['peer', 'p:' + id]);
+      server.serializeAttachment({ role: 'peer', id, meta });
+      const host = this.host();
+      if (host) {
+        host.send(JSON.stringify({ t: 'join', id, meta }));
+        server.send('{"t":"ready"}');
+      }                                                            // otherwise it waits for the host
+    }
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  async webSocketMessage(ws, data) {
+    const a = ws.deserializeAttachment();
+    if (!a || a.role === 'old') return;
+    let m;
+    try { m = JSON.parse(typeof data === 'string' ? data : new TextDecoder().decode(data)); } catch (e) { return; }
+    if (!m || typeof m !== 'object') return;
+    if (m.ping) { ws.send('{"t":"pong"}'); return; }
+    if (a.role === 'host') {
+      const p = this.ctx.getWebSockets('p:' + String(m.to))[0];
+      if (!p) return;
+      if (m.close) { try { p.close(1000, 'closed by host'); } catch (e) { /* gone */ } return; }
+      try { p.send(JSON.stringify({ t: 'data', d: m.d })); } catch (e) { /* gone */ }
+    } else {
+      const host = this.host();
+      if (host) { try { host.send(JSON.stringify({ t: 'data', id: a.id, d: m.d })); } catch (e) { /* gone */ } }
+    }
+  }
+
+  async webSocketClose(ws) {
+    const a = ws.deserializeAttachment();
+    if (!a || a.role !== 'peer') return;
+    const host = this.host();
+    if (host) { try { host.send(JSON.stringify({ t: 'leave', id: a.id })); } catch (e) { /* gone */ } }
   }
 
   async webSocketError(ws) { await this.webSocketClose(ws); }
