@@ -26,6 +26,9 @@ var _since_flip := 10.0
 var _cycle := 1
 var _target := 0.0
 var _loading := false
+var _row: HBoxContainer
+var _or: Label
+var _portrait := false
 
 
 func _ready() -> void:
@@ -39,12 +42,14 @@ func _ready() -> void:
 	add_child(bg)
 
 	var row := HBoxContainer.new()
+	_row = row
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 44)
 	add_child(row)
 	_place(row, 0.755, 0.855)
 	_protect = _label(row, "PROTECT", "PodTitle")
-	_label(row, "OR", "PodOr").modulate = Color(1, 1, 1, 0.45)
+	_or = _label(row, "OR", "PodOr")
+	_or.modulate = Color(1, 1, 1, 0.45)
 	_destroy = _label(row, "DESTROY", "PodTitle")
 
 	_status = _label(self, "", "PodSmall")
@@ -60,7 +65,33 @@ func _ready() -> void:
 
 	if next_scene != "":
 		_loading = ResourceLoader.load_threaded_request(next_scene) == OK
+	get_viewport().size_changed.connect(_layout)
+	_layout()
 	_apply()
+
+
+## Phones held upright: a portrait canvas, a smaller orb higher up, and the title sized to fit the width.
+func _layout() -> void:
+	var win := get_window()
+	var screen := Vector2(win.size)
+	_portrait = screen.x < screen.y
+	win.content_scale_size = Vector2i(1080, 1920) if _portrait else Vector2i(1920, 1080)
+	_mat.set_shader_parameter("orb_radius", 0.118 if _portrait else 0.165)
+	_mat.set_shader_parameter("center", Vector2(0.5, 0.36) if _portrait else Vector2(0.5, 0.42))
+	var title := 92 if _portrait else 84
+	for l in [_protect, _destroy]:
+		l.add_theme_font_size_override("font_size", title)
+	_or.add_theme_font_size_override("font_size", 30)
+	for l in [_protect, _or, _destroy]:
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_row.vertical = _portrait
+	_row.add_theme_constant_override("separation", 6 if _portrait else 44)
+	if _portrait:
+		_place(_row, 0.63, 0.80)
+		_place(_status, 0.82, 0.85)
+	else:
+		_place(_row, 0.755, 0.855)
+		_place(_status, 0.88, 0.925)
 
 
 func _process(delta: float) -> void:
