@@ -14,6 +14,7 @@ extends Node3D
 const DIR := "res://arena/"
 
 @export var preview := true
+@export var spar := true              ## the two giants fight on their own (replaces the building-by-building preview)
 @export var knock_every := 4.5
 
 var manifest: Dictionary
@@ -56,7 +57,12 @@ func _ready() -> void:
 		order.erase(k)
 		order.append(k)
 	_dust_mat = _make_dust_material()
-	if preview:
+	if spar:
+		preview = false
+		var s: Node = preload("res://fighters/spar.gd").new()
+		s.set("arena", self)
+		add_child(s)
+	elif preview:
 		_preview_setup()
 
 
