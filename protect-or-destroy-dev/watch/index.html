@@ -98,8 +98,10 @@
   <button id="clipsClose" class="secondary">Close</button>
 </div>
 
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // ===================== shared by the play page and the watch page =====================
 const PEERJS_URL = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
@@ -269,6 +271,7 @@ const landmarkMat = new THREE.MeshStandardMaterial({ color: 0xe3b341, flatShadin
 const rubbleMat = new THREE.MeshStandardMaterial({ color: 0x4a4541, flatShading: true });
 const parkMat = new THREE.MeshStandardMaterial({ color: 0x4f7a4a });
 const byKey = new Map();            // building key -> mesh, the same key on every device
+queueMicrotask(() => { buildingMats.forEach(m => cutaway(m)); cutaway(landmarkMat); cutaway(rubbleMat); });
 
 // lat/lon -> scene [x, z], turned so the avenues run along z. +z is uptown, +x is the west side.
 function project(lat, lon) {
@@ -378,7 +381,7 @@ function setRail(landmark) {
   // Clear small structures (kiosks, statues) from the ground the fighters use.
   for (const m of city.children) {
     const u = m.userData;
-    if (u && u.building && !u.landmark && u.cz > rail.tipZ && u.cz < fromU(3.4) && Math.abs(u.cx - rail.x) < 40) {
+    if (u && u.building && !u.landmark && !u.nyc && u.cz > rail.tipZ && u.cz < fromU(3.4) && Math.abs(u.cx - rail.x) < 40) {
       m.visible = false;
       u.cleared = true;
     }
@@ -414,13 +417,19 @@ async function loadArena() {
   if (arenaLoading) return;
   arenaLoading = true;
   retryBtn.hidden = true;
-  const reset = () => { city.clear(); byKey.clear(); localDown.clear(); collapsing.length = 0; };
+  const reset = () => { city.clear(); byKey.clear(); localDown.clear(); collapsing.length = 0; nyc.collapse.clear(); nyc.gen++; };
   try {
     const data = await fetchArena();
     reset();
-    const count = buildArena(data);
-    if (!count) throw new Error('no buildings in the map data');
-    arenaEl.textContent = `Arena: ${ARENA.name} (${count} buildings) · giants ${Math.round(mechaHeight())} m tall · © OpenStreetMap contributors`;
+    let count = 0;
+    try { count = await buildNycArena(data); } catch (e) { console.warn('NYC arena did not load; using the map snapshot', e); reset(); }
+    if (count) {
+      arenaEl.textContent = `Arena: ${ARENA.name} (${count} buildings, NYC Open Data) · giants ${Math.round(mechaHeight())} m tall`;
+    } else {
+      count = buildArena(data);
+      if (!count) throw new Error('no buildings in the map data');
+      arenaEl.textContent = `Arena: ${ARENA.name} (${count} buildings) · giants ${Math.round(mechaHeight())} m tall · © OpenStreetMap contributors`;
+    }
   } catch (e) {
     console.error(e);
     reset();
@@ -433,6 +442,192 @@ async function loadArena() {
   }
 }
 retryBtn.addEventListener('click', loadArena);
+
+
+
+// ---------- see-through cutaway: no building blocks the view of the fight ----------
+// Every building material discards what lies inside a cone from the camera to the fight, so walls between the
+// camera and the giants open up wherever the camera is (it sits among real buildings now).
+const cutU = { cutCam: { value: new THREE.Vector3() }, cutTgt: { value: new THREE.Vector3() }, cutR: { value: 40 } };
+function cutaway(mat) {
+  if (!mat || mat.userData.cutaway) return;
+  mat.userData.cutaway = true;
+  mat.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, cutU);
+    sh.vertexShader = 'varying vec3 vCutPos;\n' + sh.vertexShader.replace('#include <begin_vertex>',
+      '#include <begin_vertex>\n  vCutPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    sh.fragmentShader = 'uniform vec3 cutCam;\nuniform vec3 cutTgt;\nuniform float cutR;\nvarying vec3 vCutPos;\n' +
+      sh.fragmentShader.replace('void main() {', `void main() {
+  vec3 cutD = cutTgt - cutCam;
+  float cutT = clamp(dot(vCutPos - cutCam, cutD) / max(dot(cutD, cutD), 1.0), 0.0, 1.0);
+  if (cutT < 0.9 && distance(vCutPos, cutCam + cutD * cutT) < cutR * (0.3 + 0.7 * cutT)) discard;`);
+  };
+  mat.customProgramCacheKey = () => 'cutaway';
+}
+function cutawayAll(root) { root.traverse(o => { if (o.isMesh) (Array.isArray(o.material) ? o.material : [o.material]).forEach(cutaway); }); }
+
+// ---------- the NYC arena: real buildings (NYC Open Data), baked collapses, dust ----------
+// Made by arena-pipeline/ in the site repository. arena.json has every building's footprint and height (for hits,
+// with keys that are the same on every device), city.glb the buildings themselves, and collapse/ each reachable
+// building cut into chunks plus two baked collapses: hit by a giant going uptown, and going downtown.
+const ARENA_DIR = /\/(watch|tv)\/(index\.html)?$/.test(location.pathname) ? '../arena/' : 'arena/';
+const gltfLoader = new GLTFLoader();
+const nyc = { manifest: null, collapse: new Map(), gen: 0 };
+const loadGltf = url => new Promise((resolve, reject) => gltfLoader.load(url, resolve, undefined, reject));
+async function buildNycArena(snapshot) {
+  const gen = nyc.gen;
+  const [manifest, gltf] = await Promise.all([
+    fetch(ARENA_DIR + 'arena.json').then(r => { if (!r.ok) throw new Error('arena.json: HTTP ' + r.status); return r.json(); }),
+    loadGltf(ARENA_DIR + 'city.glb')]);
+  if (gen !== nyc.gen) return 0;
+  nyc.manifest = manifest;
+  for (const el of snapshot.elements) {            // the park, from the map snapshot
+    if (!el.tags || el.tags.leisure !== 'park') continue;
+    for (const ring of ringsOf(el)) {
+      const pts = ring.map(p => project(p.lat, p.lon));
+      const geo = new THREE.ShapeGeometry(new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z))));
+      geo.rotateX(-Math.PI / 2);
+      const mesh = new THREE.Mesh(geo, parkMat);
+      mesh.position.y = 0.05;
+      city.add(mesh);
+    }
+  }
+  const root = gltf.scene, byName = new Map();
+  cutawayAll(root);
+  root.traverse(o => { if (o.name && !byName.has(o.name)) byName.set(o.name, o); });
+  let landmark = null, count = 0;
+  for (const b of manifest.buildings) {
+    count++;
+    if (!b.chunks) continue;                         // scenery: merged into a few meshes
+    const node = byName.get(b.key);
+    if (!node) continue;
+    addBuilding(node, b.key, b.pts, { landmark: b.landmark, height: b.height, sy: 1, nyc: b });
+    if (b.landmark) landmark = node.userData;
+  }
+  for (const o of [...root.children]) if (!(o.userData && o.userData.building)) city.add(o);
+  setRail(landmark);
+  for (const b of manifest.buildings) if (b.chunks) loadCollapse(b);   // in the background, ready before anyone falls
+  return count;
+}
+function loadCollapse(b) {
+  if (nyc.collapse.has(b.key)) return nyc.collapse.get(b.key);
+  const gen = nyc.gen;
+  const entry = { ready: null };
+  nyc.collapse.set(b.key, entry);
+  Promise.all([loadGltf(ARENA_DIR + 'collapse/' + b.key + '.glb'),
+    fetch(ARENA_DIR + 'collapse/' + b.key + '.bin').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })])
+    .then(([g, buf]) => {
+      if (gen !== nyc.gen) return;
+      const group = g.scene;
+      cutawayAll(group);
+      group.visible = false;
+      group.position.set(b.centre[0], 0, b.centre[1]);
+      const nodes = [];
+      for (let i = 0; i < b.chunks; i++) nodes.push(group.getObjectByName('c' + i));
+      city.add(group);
+      entry.ready = { group, nodes, track: new Int16Array(buf), n: b.chunks, frames: b.frames, fps: nyc.manifest.fps };
+    })
+    .catch(e => { console.warn('collapse for ' + b.key + ' did not load', e); nyc.collapse.delete(b.key); });
+  return entry;
+}
+const qa = new THREE.Quaternion(), qb = new THREE.Quaternion();
+// Put a building's chunks where the baked collapse has them at time t (seconds). Returns false once it has settled.
+function poseCollapse(c, take, t) {
+  const f = Math.max(0, t * c.fps), f0 = Math.min(Math.floor(f), c.frames - 1), f1 = Math.min(f0 + 1, c.frames - 1), k = f - f0;
+  const A = c.track, base0 = (take * c.frames + f0) * c.n * 7, base1 = (take * c.frames + f1) * c.n * 7;
+  for (let i = 0; i < c.n; i++) {
+    const node = c.nodes[i];
+    if (!node) continue;
+    const a = base0 + i * 7, b = base1 + i * 7;
+    node.position.set((A[a] + (A[b] - A[a]) * k) / 100, (A[a + 1] + (A[b + 1] - A[a + 1]) * k) / 100, (A[a + 2] + (A[b + 2] - A[a + 2]) * k) / 100);
+    qa.set(A[a + 3], A[a + 4], A[a + 5], A[a + 6]).normalize();
+    qb.set(A[b + 3], A[b + 4], A[b + 5], A[b + 6]).normalize();
+    node.quaternion.copy(qa).slerp(qb, k);
+  }
+  return f < c.frames - 1;
+}
+// One collapse step for a real building. Returns false when it is finished.
+function stepNycCollapse(m, now) {
+  const u = m.userData, entry = loadCollapse(u.nyc), c = entry.ready;
+  if (!c) { u.t0 = now; return true; }              // its chunks are still loading: it falls as soon as they arrive
+  if (!u.swapped) {
+    u.swapped = true;
+    m.visible = false;
+    c.group.visible = true;
+    spawnDust(u, now);
+  }
+  const take = u.cz > rail.tipZ ? 0 : 1;            // uptown of the Flatiron's tip: knocked uptown; else downtown
+  const t = (now - u.t0) / 1000;
+  trailDust(u, c, t, now);
+  return poseCollapse(c, take, t);
+}
+function restoreNyc(m) {
+  const u = m.userData, entry = nyc.collapse.get(u.key);
+  m.visible = true;
+  u.swapped = false;
+  if (entry && entry.ready) { entry.ready.group.visible = false; poseCollapse(entry.ready, 0, 0); }
+}
+
+// ---------- dust ----------
+// Soft billowing clouds: a wave rolling out from the base when a building comes down, and puffs trailing the
+// falling debris. Only looks; nothing here is sent anywhere.
+const dustTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d'), grad = g.createRadialGradient(32, 32, 2, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,255,255,1)'); grad.addColorStop(0.45, 'rgba(255,255,255,0.55)'); grad.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+})();
+const dust = [];
+const DUST_MAX = 160;
+function puff(x, y, z, vx, vy, vz, size, grow, life, delay, now) {
+  if (dust.length >= DUST_MAX) { const old = dust.shift(); scene.remove(old.sprite); old.sprite.material.dispose(); }
+  const tone = 0.72 + Math.random() * 0.14;
+  const mat = new THREE.SpriteMaterial({ map: dustTex, color: new THREE.Color(tone, tone * 0.96, tone * 0.9), transparent: true,
+    opacity: 0, depthWrite: false, fog: true });
+  const sprite = new THREE.Sprite(mat);
+  sprite.position.set(x, y, z);
+  sprite.scale.setScalar(size);
+  scene.add(sprite);
+  dust.push({ sprite, v: new THREE.Vector3(vx, vy, vz), size, grow, life, t0: now + delay, spin: (Math.random() - 0.5) * 0.4 });
+}
+function spawnDust(u, now) {
+  const h = u.height || 30, n = Math.min(50, 14 + Math.round(h * 0.4));
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, r = Math.random();
+    const x = u.minX + Math.random() * (u.maxX - u.minX), z = u.minZ + Math.random() * (u.maxZ - u.minZ);
+    const speed = 6 + Math.random() * 10;
+    puff(x, 2 + Math.random() * 8, z, Math.cos(a) * speed, 1 + Math.random() * 3, Math.sin(a) * speed,
+      8 + h * 0.1, 3 + h * 0.04 + r * 3, 7 + Math.random() * 5, Math.random() * 900, now);
+  }
+  for (let i = 0; i < Math.round(n / 3); i++) {     // a taller column rising where it stood
+    puff(u.cx + (Math.random() - 0.5) * 12, h * (0.2 + Math.random() * 0.6), u.cz + (Math.random() - 0.5) * 12,
+      (Math.random() - 0.5) * 3, 2 + Math.random() * 3, (Math.random() - 0.5) * 3, 14 + h * 0.2, 3 + h * 0.05, 8 + Math.random() * 4, 400 + Math.random() * 1400, now);
+  }
+}
+function trailDust(u, c, t, now) {
+  if (t > 3.5 || now - (u.lastTrail || 0) < 120) return;
+  u.lastTrail = now;
+  for (let k = 0; k < 2; k++) {
+    const node = c.nodes[(Math.random() * c.n) | 0];
+    if (!node || node.position.y < 4) continue;
+    const p = node.getWorldPosition(new THREE.Vector3());
+    puff(p.x, p.y, p.z, (Math.random() - 0.5) * 4, -1 - Math.random() * 2, (Math.random() - 0.5) * 4, 6 + Math.random() * 6, 3 + Math.random() * 3, 4 + Math.random() * 2, 0, now);
+  }
+}
+function updateDust(now) {
+  for (let i = dust.length - 1; i >= 0; i--) {
+    const d = dust[i], age = (now - d.t0) / 1000;
+    if (age < 0) continue;
+    if (age > d.life) { scene.remove(d.sprite); d.sprite.material.dispose(); dust.splice(i, 1); continue; }
+    const dt = 1 / 60, drag = Math.exp(-0.9 * age);
+    d.sprite.position.addScaledVector(d.v, dt * drag);
+    d.sprite.scale.setScalar(d.size + d.grow * age * 3);
+    d.sprite.material.rotation += d.spin * dt;
+    const k = age / d.life;
+    d.sprite.material.opacity = Math.min(1, age / 0.6) * (1 - k) * (1 - k) * 0.42;
+  }
+}
 
 // ---------- collapses, cut scene, on-screen labels ----------
 const localDown = new Map();        // key -> mesh, buildings this screen shows as fallen
@@ -481,6 +676,8 @@ function collapseLocal(mesh, now) {
 function restoreLocal(mesh) {
   const u = mesh.userData;
   u.destroyed = false;
+  u.dusted = false;
+  if (u.nyc) restoreNyc(mesh);
   mesh.scale.y = u.sy;
   mesh.material = u.mat;
   localDown.delete(u.key);
@@ -498,12 +695,15 @@ function syncDown(keys, now) {
 function animateCollapses(now) {
   for (let i = collapsing.length - 1; i >= 0; i--) {
     const m = collapsing[i], u = m.userData;
+    if (u.nyc) { if (!stepNycCollapse(m, now)) collapsing.splice(i, 1); continue; }
+    if (!u.dusted) { u.dusted = true; spawnDust(u, now); }
     const k = Math.min((now - u.t0) / 900, 1);
     const e = k * k * (3 - 2 * k);
     m.scale.y = u.sy * (1 - 0.94 * e);
     if (k >= 1) { m.material = rubbleMat; collapsing.splice(i, 1); }
   }
   if (now >= cut.until) document.body.classList.remove('cut');
+  updateDust(now);
 }
 function showEvents(evs) {
   for (const e of evs || []) {
@@ -534,6 +734,108 @@ function basisQuat(xAxis, yAxis, forwardHint) {
   const x = new THREE.Vector3().crossVectors(y, z).normalize();
   return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
 }
+
+// ---------- fighting style: stance, footwork, guard and pre-baked strikes, layered on the pose ----------
+// Whatever drives a giant (a camera, the keys, the network), this keeps it loose and ready like a boxer: an
+// orthodox stance (left foot forward), knees bent and bouncing, a forward lean, rolling shoulders and head
+// movement, and a guard for any arm that is hanging down. Each punch plays the next strike of a fixed combination,
+// counted by the host and sent with the match, so every screen plays the same one. All in the pose's own units:
+// metres, hips at the origin, x to the giant's right, y up, -z the way it faces. Odd landmarks are its left.
+const STRIKE_ORDER = ['jab', 'cross', 'hook', 'jab', 'uppercut', 'sidekick', 'cross', 'roundhouse'];
+const strikeFor = n => STRIKE_ORDER[(Math.max(1, n) - 1) % STRIKE_ORDER.length];
+const ARM = { L: { s: 11, e: 13, w: 15, hand: [17, 19, 21] }, R: { s: 12, e: 14, w: 16, hand: [18, 20, 22] } };
+const LEG = { L: { k: 25, a: 27, foot: [29, 31] }, R: { k: 26, a: 28, foot: [30, 32] } };
+const lerp3 = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+function pull(st, i, p, w) { st[i].x += (p[0] - st[i].x) * w; st[i].y += (p[1] - st[i].y) * w; st[i].z += (p[2] - st[i].z) * w; }
+function pullEnd(st, i, rest, p, w) {          // a wrist or ankle, with its hand or foot points following it
+  const dx = (p[0] - st[i].x) * w, dy = (p[1] - st[i].y) * w, dz = (p[2] - st[i].z) * w;
+  for (const j of [i, ...rest]) { st[j].x += dx; st[j].y += dy; st[j].z += dz; }
+}
+const arm = (st, side, e, w, k) => { const a = ARM[side]; pull(st, a.e, e, k); pullEnd(st, a.w, a.hand, w, k); };
+const leg = (st, side, kn, an, k) => { const l = LEG[side]; pull(st, l.k, kn, k); pullEnd(st, l.a, l.foot, an, k); };
+const GUARD = { L: [[-0.20, 0.33, -0.14], [-0.10, 0.58, -0.30]], R: [[0.20, 0.30, -0.08], [0.09, 0.56, -0.16]] };
+// Each strike: its length (ms) and what it does at progress k (0..1); w is how strongly it holds the body (0..1).
+const STRIKES = {
+  jab: { dur: 320, pose(st, k, w) {                       // lead hand straight out and back
+    arm(st, 'L', [-0.17, 0.47, -0.32], [-0.11, 0.50, -0.68], w);
+    arm(st, 'R', GUARD.R[0], GUARD.R[1], w);
+    return { yaw: 0.3 };
+  } },
+  cross: { dur: 380, pose(st, k, w) {                     // rear hand straight, the hips and shoulders turning into it
+    arm(st, 'R', [0.17, 0.47, -0.34], [0.09, 0.50, -0.74], w);
+    arm(st, 'L', [-0.18, 0.34, -0.12], [-0.08, 0.58, -0.22], w);
+    return { yaw: -0.55, dy: -0.02 };
+  } },
+  hook: { dur: 430, pose(st, k, w) {                      // lead arm bent flat, swung across
+    const sw = Math.min(1, k / 0.55);
+    arm(st, 'L', lerp3([-0.32, 0.50, -0.18], [-0.12, 0.50, -0.42], sw), lerp3([-0.40, 0.51, -0.22], [0.04, 0.52, -0.44], sw), w);
+    arm(st, 'R', GUARD.R[0], GUARD.R[1], w);
+    return { yaw: 0.35 - 0.9 * sw };
+  } },
+  uppercut: { dur: 430, pose(st, k, w) {                  // rear hand dips, then drives up
+    const up = k < 0.32 ? 0 : Math.min(1, (k - 0.32) / 0.3);
+    arm(st, 'R', lerp3([0.20, 0.24, -0.10], [0.16, 0.36, -0.30], up), lerp3([0.14, 0.20, -0.22], [0.06, 0.60, -0.46], up), w);
+    arm(st, 'L', GUARD.L[0], GUARD.L[1], w);
+    return { yaw: -0.35, dy: -0.08 + 0.11 * up };
+  } },
+  sidekick: { dur: 680, pose(st, k, w) {                  // Bruce Lee: chamber the lead knee, drive the heel out, lean back
+    const ext = k < 0.3 ? 0 : Math.min(1, (k - 0.3) / 0.25);
+    leg(st, 'L', lerp3([-0.12, -0.02, -0.30], [-0.06, 0.02, -0.46], ext), lerp3([-0.10, -0.32, -0.20], [-0.04, 0.06, -0.94], ext), w);
+    arm(st, 'L', GUARD.L[0], GUARD.L[1], w);
+    arm(st, 'R', GUARD.R[0], GUARD.R[1], w);
+    return { yaw: 0.6, pitch: -0.45 * ext };
+  } },
+  roundhouse: { dur: 720, pose(st, k, w) {                // rear leg whips round to the front at chest height
+    const sw = k < 0.25 ? 0 : Math.min(1, (k - 0.25) / 0.3);
+    leg(st, 'R', lerp3([0.26, -0.06, -0.22], [0.10, 0.10, -0.42], sw), lerp3([0.42, -0.30, -0.02], [-0.06, 0.20, -0.86], sw), w);
+    arm(st, 'L', GUARD.L[0], GUARD.L[1], w);
+    arm(st, 'R', [0.26, 0.30, 0.04], [0.30, 0.12, 0.10], w);
+    return { yaw: -0.9 * sw, pitch: -0.25 * sw };
+  } },
+};
+const easeIO = k => k * k * (3 - 2 * k);
+const strikeEnv = k => (k < 0.28 ? easeIO(k / 0.28) : k < 0.58 ? 1 : 1 - easeIO((k - 0.58) / 0.42));
+function fightStyle(rig, now) {
+  const st = rig.st, src = rig.smooth;
+  for (let i = 0; i < 33; i++) st[i].copy(src[i]);
+  const t = now / 1000 + rig.phase, TAU = Math.PI * 2;
+  let s = rig.strike, k = 0;
+  if (s) { k = (now - s.t0) / STRIKES[s.kind].dur; if (k >= 1 || k < 0) { rig.strike = s = null; } }
+  const w = s ? strikeEnv(k) : 0, calm = 1 - 0.7 * w;
+  // guard: an arm hanging down comes up to the chin (an arm the player is using is left alone)
+  for (const side of ['L', 'R']) {
+    const a = ARM[side], g = Math.min(1, Math.max(0, (st[a.s].y - st[a.w].y) / 0.25));
+    if (g > 0) arm(st, side, GUARD[side][0], GUARD[side][1], g);
+  }
+  // footwork: lead foot forward, rear foot back, a little wider, knees following halfway
+  const shuffle = 0.03 * Math.sin(TAU * 0.8 * t) * calm;
+  for (const [side, dz, dx] of [['L', -0.14 + shuffle, -0.03], ['R', 0.10 - shuffle, 0.03]]) {
+    const l = LEG[side];
+    for (const j of [l.a, ...l.foot]) { st[j].z += dz; st[j].x += dx; }
+    st[l.k].z += dz * 0.5 - 0.04; st[l.k].x += dx * 0.5;
+  }
+  let yaw = 0.15 + 0.08 * Math.sin(TAU * 0.6 * t) * calm, pitch = 0.12;
+  let dy = -0.05 + 0.025 * Math.sin(TAU * 1.7 * t) * calm;
+  const sway = 0.04 * Math.sin(TAU * 0.6 * t + 0.5) * calm, bob = 0.025 * Math.sin(TAU * 0.9 * t + 1.1) * calm;
+  if (s) {
+    const r = STRIKES[s.kind].pose(st, k, w);
+    yaw = yaw * (1 - w) + (r.yaw || 0) * w;
+    pitch += (r.pitch || 0) * w;
+    dy += (r.dy || 0) * w;
+  }
+  // the upper body turns and leans about the hips, crouches and bounces, and sways; the head bobs a little more
+  const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  for (let i = 0; i <= 22; i++) {
+    const p = st[i];
+    let x = p.x * cy - p.z * sy, z = p.x * sy + p.z * cy, y = p.y;
+    const y2 = y * cp + z * sp; z = z * cp - y * sp; y = y2;
+    p.set(x + sway + (i <= 10 ? bob : 0), y, z);
+  }
+  for (let i = 0; i <= 24; i++) st[i].y += dy;
+  st[25].y += dy * 0.5; st[26].y += dy * 0.5;
+  return st;
+}
+
 class Rig {
   constructor(pal, isMonster) {
     this.group = new THREE.Group();
@@ -576,6 +878,9 @@ class Rig {
     this.ground = 0;
     this.flat = null;
     this.hold = false;       // while true, incoming poses are ignored (a move or a freeze owns the body)
+    this.st = Array.from({ length: 33 }, () => new THREE.Vector3());   // the pose with the fighting style on it
+    this.strike = null;      // the strike being played: { kind, t0 }
+    this.phase = isMonster ? 1.7 : 0;
   }
   // flat: 99 numbers, a canonical pose.
   setFlat(flat, now) {
@@ -586,6 +891,7 @@ class Rig {
     this.lastSet = now;
   }
   fresh(now) { return now - this.lastSet < 1500; }
+  playStrike(kind, now) { if (STRIKES[kind]) this.strike = { kind, t0: now }; }
   attachModel(body) {
     this.model = body;
     this.blocks.visible = false;
@@ -602,14 +908,15 @@ class Rig {
       if (this.first) smooth[i].copy(raw[i]); else smooth[i].lerp(raw[i], 0.45);
     }
     this.first = false;
+    const src = xf || this.hold ? smooth : fightStyle(this, now);   // special moves keep their own animation
     let minY = Infinity;
-    for (let i = 27; i <= 32; i++) minY = Math.min(minY, smooth[i].y);
+    for (let i = 27; i <= 32; i++) minY = Math.min(minY, src[i].y);
     this.ground += ((-minY) - this.ground) * 0.3;
     const f = dir < 0 ? 1 : -1;      // turning to face uptown is a half turn about the vertical axis
     const cp = xf ? Math.cos(xf.pitch) : 1, sp = xf ? Math.sin(xf.pitch) : 0;
     const cs = xf ? Math.cos(xf.spin) : 1, ss = xf ? Math.sin(xf.spin) : 0;
     for (let i = 0; i < 33; i++) {
-      let cx = smooth[i].x, cy = smooth[i].y, cz = smooth[i].z;
+      let cx = src[i].x, cy = src[i].y, cz = src[i].z;
       if (xf) {
         const y1 = cy * cp - cz * sp, z1 = cy * sp + cz * cp;       // tip about the hips
         const x2 = cx * cs - y1 * ss, y2 = cx * ss + y1 * cs;       // roll about the body's long axis
@@ -622,7 +929,7 @@ class Rig {
     if (this.model) {
       // The model keeps its own proportions and stands as tall as the Flatiron; its hips sit where its own legs put them.
       const m = this.model, U = S * 1.7 / m.head.height;
-      const need = modelHipHeight(m.head, m.bones, i => [smooth[i].x, smooth[i].y, smooth[i].z]);
+      const need = modelHipHeight(m.head, m.bones, i => [src[i].x, src[i].y, src[i].z]);
       this.modelGround += (need - this.modelGround) * 0.3;
       const hm = mid(P[23], P[24]);
       const hip = [hm.x, hm.y - this.ground * S + this.modelGround * U, hm.z];
@@ -685,7 +992,13 @@ function applySnapshot(s, now, skipRole) {
   showEvents(s.evs);
   if (skipRole !== 'A' && s.pA) rigA.setFlat(s.pA, now);
   if (skipRole !== 'B' && s.pB) rigB.setFlat(s.pB, now);
+  if (s.pc) for (const r of ['A', 'B']) {
+    const n = s.pc[r] || 0;
+    if (seenPunches[r] === undefined) seenPunches[r] = n;          // joined mid-match: nothing to replay
+    else if (n > seenPunches[r]) { seenPunches[r] = n; rigOf(r).playStrike(strikeFor(n), now); }
+  }
 }
+const seenPunches = {};
 
 // ---------- camera ----------
 let viewIndex = 0;
@@ -714,6 +1027,10 @@ function updateCamera(now) {
     camera.position.set(x, 3.6 * h, center + 1.2 * h);
     camera.lookAt(x, 0, center);
   }
+  cutU.cutCam.value.copy(camera.position);
+  if (now < cut.until) cutU.cutTgt.value.set(cut.x, 0.3 * h, cut.z);
+  else cutU.cutTgt.value.set(x, 0.45 * h, center);
+  cutU.cutR.value = 0.55 * h;
 }
 function resize() {
   const w = window.innerWidth, h = window.innerHeight;
@@ -1560,6 +1877,8 @@ function demoTick(dt, now) {
     if (b.state === 'windup' && now - b.since > 900) {
       b.state = 'strike'; b.since = now;
       demoKnock(otherRole(demo.striker), KNOCK);
+      demo.pc = (demo.pc || 0) + 1;
+      rigOf(demo.striker).playStrike(strikeFor(demo.pc), now);
       flash(demo.striker === 'A' ? 'GHOST HITS' : 'NULLIFIER HITS', 700);
     } else if (b.state === 'strike' && now - b.since > 350) {
       b.state = 'ready'; b.since = now; demo.striker = null; demo.next = now + 1100;
