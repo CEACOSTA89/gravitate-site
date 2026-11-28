@@ -668,7 +668,20 @@ async function drawQr(canvas, text) {
   } catch (e) { console.error(e); return false; }
 }
 let peerLoading = null;
-function loadPeer() {
+// Relay (TURN) servers from our match server, so phones that cannot connect directly still can.
+let iceLoading = null;
+function loadIce() {
+  if (!iceLoading) {
+    const ask = fetch('https://' + MATCH_SERVER.host + '/turn', { cache: 'no-store' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => { if (j && Array.isArray(j.iceServers) && j.iceServers.length) MATCH_SERVER.config = { iceServers: j.iceServers }; })
+      .catch(() => { iceLoading = null; });                      // ask again next time; connect without a relay now
+    iceLoading = Promise.race([ask, new Promise(r => setTimeout(r, 4000))]);
+  }
+  return iceLoading;
+}
+function loadPeer() { return Promise.all([loadPeerScript(), loadIce()]); }
+function loadPeerScript() {
   if (window.Peer) return Promise.resolve();
   if (!peerLoading) {
     peerLoading = new Promise((resolve, reject) => {

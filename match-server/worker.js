@@ -38,9 +38,42 @@ export default {
     if (url.pathname === '/peerjs' && request.headers.get('Upgrade') === 'websocket') {
       return env.LOBBY.get(env.LOBBY.idFromName('main')).fetch(request);
     }
+    if (url.pathname === '/turn') {
+      return new Response(JSON.stringify({ iceServers: await iceServers(env) }), { headers: { ...cors, 'Content-Type': 'application/json' } });
+    }
     return new Response('Not found', { status: 404, headers: cors });
   },
 };
+
+// The servers a phone uses to reach the other phone. A TURN relay carries the game traffic when the
+// two phones cannot connect directly (common on mobile data and on Wi-Fi that keeps devices apart).
+// Short-lived relay credentials come from Cloudflare's TURN service; the key is kept in two Worker
+// secrets, TURN_KEY_ID and TURN_KEY_API_TOKEN, set in the Cloudflare dashboard.
+// Used until the TURN secrets are set, or if Cloudflare's TURN service does not answer. It includes
+// the free public PeerJS relay the game used before, so nothing gets worse without our own relay.
+const STUN_ONLY = [{ urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.l.google.com:19302'] },
+  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' }];
+let iceCache = null;                 // { servers, until }
+async function iceServers(env) {
+  if (!env.TURN_KEY_ID || !env.TURN_KEY_API_TOKEN) return STUN_ONLY;
+  if (iceCache && Date.now() < iceCache.until) return iceCache.servers;
+  try {
+    const res = await fetch('https://rtc.live.cloudflare.com/v1/turn/keys/' + env.TURN_KEY_ID + '/credentials/generate-ice-servers', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + env.TURN_KEY_API_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ttl: 86400 }),
+    });
+    if (!res.ok) throw new Error('TURN credentials: HTTP ' + res.status);
+    const data = await res.json();
+    const servers = Array.isArray(data.iceServers) ? data.iceServers : data.iceServers ? [data.iceServers] : null;
+    if (!servers || !servers.length) throw new Error('TURN credentials: empty answer');
+    iceCache = { servers, until: Date.now() + 6 * 3600 * 1000 };     // reused for 6 h of their 24 h life
+    return servers;
+  } catch (e) {
+    console.error(e);
+    return STUN_ONLY;
+  }
+}
 
 export class Lobby extends DurableObject {
   constructor(ctx, env) {
