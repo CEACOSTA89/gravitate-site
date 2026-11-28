@@ -185,22 +185,23 @@ func _camera(now: float, delta: float) -> void:
 	var pos: Vector3
 	var look: Vector3
 	if now < cut_until:                                         # a building is coming down: wide shot of it
-		pos = cut_at + Vector3(-1.3 * h, 0.75 * h, 1.4 * h)
-		look = cut_at + Vector3(0, 0.25 * h, 0)
+		var side := 1.0 if cut_at.z > mid else -1.0                # from the fight's side, over the avenue
+		pos = Vector3(x - 0.15 * h, 1.1 * h, cut_at.z - side * 2.2 * h)
+		look = cut_at + Vector3(0, 0.2 * h, 0)
 	else:
 		if now > cam_switch_at:
 			cam_mode = (cam_mode + 1) % 3
 			cam_switch_at = now + 9.0
 		match cam_mode:
-			0:      # behind Ghost, over the shoulder, looking uptown at Nullifier
-				pos = Vector3(x - 0.45 * h, 1.25 * h, shown["A"] - 1.3 * h)
-				look = Vector3(x, 0.5 * h, shown["A"] + 0.9 * h)
+			0:      # behind Ghost, high over the avenue (the buildings line both sides), looking uptown
+				pos = Vector3(x - 0.12 * h, 1.3 * h, shown["A"] - 2.0 * h)
+				look = Vector3(x, 0.55 * h, (shown["A"] + shown["B"]) / 2.0)
 			1:      # behind Nullifier, looking downtown at Ghost and the Flatiron
-				pos = Vector3(x - 0.45 * h, 1.25 * h, shown["B"] + 1.3 * h)
-				look = Vector3(x, 0.5 * h, shown["B"] - 0.9 * h)
+				pos = Vector3(x - 0.12 * h, 1.3 * h, shown["B"] + 2.0 * h)
+				look = Vector3(x, 0.55 * h, (shown["A"] + shown["B"]) / 2.0)
 			_:      # high and wide, circling slowly
 				var a := now * 0.12
-				pos = Vector3(x + sin(a) * 2.2 * h, 1.7 * h, mid + cos(a) * 2.2 * h)
+				pos = Vector3(x + sin(a) * 2.6 * h, 2.3 * h, mid + cos(a) * 2.6 * h)
 				look = Vector3(x, 0.4 * h, mid)
 	cam.position = cam.position.lerp(pos, minf(1.0, delta * 2.5)) if cam.position != Vector3.ZERO else pos
 	cam.look_at(look, Vector3.UP)
