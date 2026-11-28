@@ -39,6 +39,8 @@ func _ready() -> void:
 	_environment()
 	_ground_and_parks()
 	var city: Node3D = $City
+	_make_skins()
+	_skin(city)
 	for b in manifest["buildings"]:
 		if not b.has("chunks"):
 			continue
@@ -68,13 +70,13 @@ func _ready() -> void:
 
 # ---------- look: sky, sun, haze, glow, filmic colour ----------
 func _environment() -> void:
-	var sky_mat := ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color(0.32, 0.47, 0.70)
-	sky_mat.sky_horizon_color = Color(0.62, 0.70, 0.80)
-	sky_mat.sky_energy_multiplier = 0.8
-	sky_mat.ground_horizon_color = Color(0.62, 0.66, 0.70)
-	sky_mat.ground_bottom_color = Color(0.22, 0.24, 0.27)
-	sky_mat.sun_angle_max = 20.0
+	if OS.has_feature("web"):                              # ?sky=sunset to try the sunset
+		var q = JavaScriptBridge.eval("new URLSearchParams(location.search).get('sky') || ''", true)
+		if str(q) == "sunset":
+			sky_name = "sunset"
+	var sky_mat := PanoramaSkyMaterial.new()
+	sky_mat.panorama = load(SKIN_DIR + "sky/" + sky_name + ".jpg")
+	sky_mat.energy_multiplier = 1.0 if sky_name == "day" else 0.9
 	var sky := Sky.new()
 	sky.sky_material = sky_mat
 	var env := Environment.new()
@@ -101,6 +103,12 @@ func _environment() -> void:
 	sun.rotation_degrees = Vector3(-38.0, -32.0, 0.0)
 	sun.light_energy = 1.35
 	sun.light_color = Color(1.0, 0.96, 0.9)
+	if sky_name == "sunset":                               # golden hour: a low warm sun and warm haze
+		sun.rotation_degrees = Vector3(-14.0, -70.0, 0.0)
+		sun.light_color = Color(1.0, 0.70, 0.45)
+		sun.light_energy = 1.5
+		env.fog_light_color = Color(0.86, 0.68, 0.52)
+		env.ambient_light_energy = 0.32
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 1200.0
 	add_child(sun)
@@ -112,8 +120,11 @@ func _ground_and_parks() -> void:
 	plane.size = Vector2(4000, 4000)
 	ground.mesh = plane
 	var asphalt := StandardMaterial3D.new()
-	asphalt.albedo_color = Color(0.11, 0.115, 0.125)
+	asphalt.albedo_texture = load("res://arena/skins/asphalt.jpg")
+	asphalt.uv1_scale = Vector3(4000.0 / 9.0, 4000.0 / 9.0, 1.0)
+	asphalt.albedo_color = Color(0.62, 0.62, 0.64)
 	asphalt.roughness = 0.95
+	asphalt.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	ground.material_override = asphalt
 	add_child(ground)
 	var parks: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(DIR + "parks.json"))
@@ -137,6 +148,64 @@ func _ground_and_parks() -> void:
 		m.mesh = st.commit()
 		m.material_override = grass
 		add_child(m)
+
+
+
+# ---------- skins: the city's materials, from the CC0 textures in arena/skins/ (see SOURCES.md there) ----------
+# The arena's buildings carry material names from the pipeline (facade_brick, facade_limestone, facade_beige,
+# facade_modern, facade_landmark, roof, concrete); each is replaced here.
+const SKIN_DIR := "res://arena/skins/"
+var skins := {}
+@export_enum("day", "sunset") var sky_name := "day"
+
+
+func _wall(tex: String, size: float, tint := Color(1, 1, 1), bay := 3.3, floor_h := 3.7) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = preload("res://arena/skins/facade.gdshader")
+	m.set_shader_parameter("wall_tex", load(SKIN_DIR + tex + ".jpg"))
+	m.set_shader_parameter("wall_size", size)
+	m.set_shader_parameter("tint", Vector3(tint.r, tint.g, tint.b))
+	m.set_shader_parameter("bay", bay)
+	m.set_shader_parameter("floor_h", floor_h)
+	return m
+
+
+func _plain(tex: String, uv_scale: float, rough := 0.95) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_texture = load(SKIN_DIR + tex + ".jpg")
+	m.uv1_scale = Vector3(uv_scale, uv_scale, 1.0)
+	m.roughness = rough
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	return m
+
+
+func _make_skins() -> void:
+	skins["facade_brick"] = _wall("wall_brick", 2.4)
+	skins["facade_beige"] = _wall("wall_beige", 2.4, Color(1.0, 0.96, 0.9))
+	skins["facade_limestone"] = _wall("wall_limestone", 3.0, Color(1.05, 1.03, 1.0))
+	skins["facade_landmark"] = _wall("wall_landmark", 2.6, Color(1.08, 1.0, 0.9), 2.6, 3.5)    # the Flatiron: limestone, close-set windows
+	var modern := _plain("facade_modern2", 12.0 / 10.0, 0.4)    # the textures have their own windows: one repeat = 10 m
+	modern.uv1_scale = Vector3(12.0 / 10.0, 14.0 / 10.0, 1.0)
+	modern.metallic = 0.25
+	skins["facade_modern"] = modern
+	skins["roof"] = _plain("roof", 12.0 / 5.0)
+	skins["concrete"] = _plain("concrete", 12.0 / 3.0)
+
+
+func _skin(root: Node) -> void:
+	for mi in root.find_children("*", "MeshInstance3D", true, false):
+		var mesh: Mesh = mi.mesh
+		if mesh == null:
+			continue
+		for i in mesh.get_surface_count():
+			var mat := mesh.surface_get_material(i)
+			if mat == null:
+				continue
+			var key := mat.resource_name.get_basename()
+			for name in skins:
+				if key.begins_with(name):
+					mi.set_surface_override_material(i, skins[name])
+					break
 
 
 # ---------- collapses ----------
@@ -168,6 +237,7 @@ func _collapse_for(e: Dictionary):
 		return null                                        # still loading: it falls as soon as it arrives
 	var packed: PackedScene = ResourceLoader.load_threaded_get(e["scene_path"]) if status == ResourceLoader.THREAD_LOAD_LOADED else load(e["scene_path"])
 	var scene: Node3D = packed.instantiate()
+	_skin(scene)
 	scene.visible = false
 	var cen: Array = e["data"]["centre"]
 	scene.position = Vector3(cen[0], 0.0, cen[1])
