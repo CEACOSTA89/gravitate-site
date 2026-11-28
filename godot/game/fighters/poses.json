@@ -1,0 +1,353 @@
+{
+ "about": "Fighting poses for the rigged giants. Each pose: bone -> rotation in degrees [x, y, z], applied in XYZ order on top of the bone's rest pose (bone y runs along the bone). Arms and legs hang down at rest: x negative swings them forward, z swings them out to the side (+ for the left limb). For the spine, x positive leans forward and y turns the shoulders. Strikes list keyframes at progress k (0..1); the stance plays between strikes. hips_drop is metres, at the character's own size. Leg bones (listed in flip_xz) have their own x and z axes turned the other way from the arms; the numbers here use the arms' sense (x negative = forward) and the loader negates x and z for those bones.",
+ "stance": {
+  "hips_drop": 0.06,
+  "bones": {
+   "spine": [
+    8,
+    0,
+    0
+   ],
+   "chest": [
+    4,
+    12,
+    0
+   ],
+   "neck": [
+    -8,
+    -8,
+    0
+   ],
+   "upper_arm_L": [
+    -38,
+    0,
+    12
+   ],
+   "forearm_L": [
+    -118,
+    0,
+    0
+   ],
+   "upper_arm_R": [
+    -30,
+    0,
+    -12
+   ],
+   "forearm_R": [
+    -124,
+    0,
+    0
+   ],
+   "thigh_L": [
+    -20,
+    0,
+    4
+   ],
+   "shin_L": [
+    24,
+    0,
+    0
+   ],
+   "foot_L": [
+    -4,
+    0,
+    0
+   ],
+   "thigh_R": [
+    10,
+    0,
+    -4
+   ],
+   "shin_R": [
+    22,
+    0,
+    0
+   ],
+   "foot_R": [
+    -12,
+    0,
+    0
+   ]
+  }
+ },
+ "strikes": {
+  "jab": {
+   "dur": 0.32,
+   "keys": [
+    [
+     0.45,
+     {
+      "upper_arm_L": [
+       -88,
+       0,
+       6
+      ],
+      "forearm_L": [
+       -4,
+       0,
+       0
+      ],
+      "chest": [
+       4,
+       -18,
+       0
+      ]
+     }
+    ]
+   ]
+  },
+  "cross": {
+   "dur": 0.38,
+   "keys": [
+    [
+     0.45,
+     {
+      "upper_arm_R": [
+       -88,
+       0,
+       -6
+      ],
+      "forearm_R": [
+       -4,
+       0,
+       0
+      ],
+      "chest": [
+       4,
+       34,
+       0
+      ],
+      "spine": [
+       10,
+       14,
+       0
+      ],
+      "thigh_R": [
+       4,
+       0,
+       -4
+      ]
+     }
+    ]
+   ]
+  },
+  "hook": {
+   "dur": 0.43,
+   "keys": [
+    [
+     0.25,
+     {
+      "upper_arm_L": [
+       -30,
+       0,
+       75
+      ],
+      "forearm_L": [
+       -95,
+       0,
+       0
+      ],
+      "chest": [
+       4,
+       -25,
+       0
+      ]
+     }
+    ],
+    [
+     0.55,
+     {
+      "upper_arm_L": [
+       -60,
+       0,
+       70
+      ],
+      "forearm_L": [
+       -95,
+       0,
+       0
+      ],
+      "chest": [
+       4,
+       40,
+       0
+      ]
+     }
+    ]
+   ]
+  },
+  "uppercut": {
+   "dur": 0.43,
+   "keys": [
+    [
+     0.25,
+     {
+      "upper_arm_R": [
+       -10,
+       0,
+       -10
+      ],
+      "forearm_R": [
+       -120,
+       0,
+       0
+      ],
+      "spine": [
+       16,
+       10,
+       0
+      ]
+     }
+    ],
+    [
+     0.55,
+     {
+      "upper_arm_R": [
+       -70,
+       0,
+       -8
+      ],
+      "forearm_R": [
+       -140,
+       0,
+       0
+      ],
+      "spine": [
+       -4,
+       24,
+       0
+      ],
+      "chest": [
+       0,
+       20,
+       0
+      ]
+     }
+    ]
+   ]
+  },
+  "sidekick": {
+   "dur": 0.68,
+   "keys": [
+    [
+     0.3,
+     {
+      "thigh_L": [
+       -90,
+       0,
+       10
+      ],
+      "shin_L": [
+       110,
+       0,
+       0
+      ],
+      "spine": [
+       -10,
+       0,
+       0
+      ]
+     }
+    ],
+    [
+     0.55,
+     {
+      "thigh_L": [
+       -92,
+       0,
+       25
+      ],
+      "shin_L": [
+       4,
+       0,
+       0
+      ],
+      "foot_L": [
+       -30,
+       0,
+       0
+      ],
+      "spine": [
+       -28,
+       -30,
+       0
+      ],
+      "chest": [
+       0,
+       -20,
+       0
+      ]
+     }
+    ]
+   ]
+  },
+  "roundhouse": {
+   "dur": 0.72,
+   "keys": [
+    [
+     0.3,
+     {
+      "thigh_R": [
+       -60,
+       0,
+       -55
+      ],
+      "shin_R": [
+       100,
+       0,
+       0
+      ],
+      "spine": [
+       -10,
+       30,
+       0
+      ]
+     }
+    ],
+    [
+     0.55,
+     {
+      "thigh_R": [
+       -85,
+       0,
+       -40
+      ],
+      "shin_R": [
+       10,
+       0,
+       0
+      ],
+      "spine": [
+       -20,
+       55,
+       0
+      ],
+      "chest": [
+       0,
+       20,
+       0
+      ]
+     }
+    ]
+   ]
+  }
+ },
+ "combo": [
+  "jab",
+  "cross",
+  "hook",
+  "jab",
+  "uppercut",
+  "sidekick",
+  "cross",
+  "roundhouse"
+ ],
+ "flip_xz": [
+  "thigh_L",
+  "shin_L",
+  "foot_L",
+  "thigh_R",
+  "shin_R",
+  "foot_R"
+ ]
+}
